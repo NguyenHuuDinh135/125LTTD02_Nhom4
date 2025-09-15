@@ -3,6 +3,7 @@ package com.nhom4.moviereservation.model;
 import java.util.List;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
@@ -14,8 +15,10 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class Role extends BaseEntity {
-
+public class Role {
+    @Id
+    private Long id;
+    
     private String fullName;
     private Byte age;
     private String pictureUrl;

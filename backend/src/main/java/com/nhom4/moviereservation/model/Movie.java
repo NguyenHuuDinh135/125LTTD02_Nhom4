@@ -1,21 +1,28 @@
 package com.nhom4.moviereservation.model;
 
+import java.math.BigDecimal;
+import java.util.List;
+
 import com.nhom4.moviereservation.model.enums.MovieType;
-import jakarta.persistence.*;
+
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.math.BigDecimal;
-import java.util.List;
 
 @Entity
 @Table(name = "movies")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class Movie extends BaseEntity {
-
+public class Movie {
+    @Id
+    private Long id;
     private String title;
     private String summary;
     private Integer year;

@@ -7,6 +7,7 @@ import com.nhom4.moviereservation.model.enums.PaymentMethod;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
@@ -19,8 +20,9 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class Payment extends BaseEntity {
-
+public class Payment {
+    @Id
+    private Long id;
     private Integer amount;
     private LocalDateTime paymentDateTime;
 

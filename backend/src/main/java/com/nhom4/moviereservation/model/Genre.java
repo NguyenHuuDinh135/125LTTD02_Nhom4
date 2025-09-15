@@ -1,18 +1,24 @@
 package com.nhom4.moviereservation.model;
 
-import jakarta.persistence.*;
+import java.util.List;
+
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
-
 @Entity
 @Table(name = "genres")
 @Data
-@NoArgsConstructor
+@NoArgsConstructor  
 @AllArgsConstructor
-public class Genre extends BaseEntity {
+public class Genre{
+
+    @Id
+    private Long id;
 
     private String name;
 
