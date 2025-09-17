@@ -1,7 +1,8 @@
 package com.nhom4.moviereservation.model;
 
-import java.time.LocalDateTime;
 import java.util.List;
+
+import com.nhom4.moviereservation.model.enums.Role;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -20,11 +21,12 @@ public class User {
 
     @Id
     private Long id;
-
+    private String fullname;
+    private String email;
+    private String password;
     private String address;
     private String contact;
-    private LocalDateTime createdAt = LocalDateTime.now();
-    private LocalDateTime updatedAt;
+    private Role role;
 
     @OneToMany(mappedBy = "user")
     private List<Booking> bookings;

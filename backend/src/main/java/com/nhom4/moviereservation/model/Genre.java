@@ -20,7 +20,7 @@ public class Genre{
     @Id
     private Long id;
 
-    private String name;
+    private String genre;
 
     @OneToMany(mappedBy = "genre")
     private List<MovieGenre> movieGenres;
