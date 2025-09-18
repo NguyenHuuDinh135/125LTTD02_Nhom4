@@ -1,4 +1,4 @@
-// package com.nhom4.moviereservation.config;
+package com.nhom4.moviereservation.config;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -9,9 +9,11 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-// import org.springframework.beans.factory.annotation.Autowired;
-// import org.springframework.boot.CommandLineRunner;
-// import org.springframework.stereotype.Component;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.annotation.Primary;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.nhom4.moviereservation.model.*;
 import com.nhom4.moviereservation.model.enums.BookingStatus;
@@ -25,8 +27,8 @@ import com.nhom4.moviereservation.model.enums.TheaterType;
 import com.nhom4.moviereservation.model.enums.UserRole;
 import com.nhom4.moviereservation.repository.*;
 
-// // import jakarta.persistence.EntityManager;
-// // import jakarta.persistence.PersistenceContext;
+// import jakarta.persistence.EntityManager;
+// import jakarta.persistence.PersistenceContext;
 
 
 @Component
@@ -138,7 +140,7 @@ public class DataSeeder implements CommandLineRunner {
     private Genre createGenre(Long id, String name) {
         Genre genre = new Genre();
         genre.setId(id);
-        genre.setName(name);
+        genre.setGenre(name);
         return genre;
     }
 
@@ -318,11 +320,11 @@ public class DataSeeder implements CommandLineRunner {
 
     private void seedTheaters() {
         List<Theater> theaters = Arrays.asList(
-            createTheater(1L, "Rạp CGV Vincom", TheaterType.Missing),
-            createTheater(2L, "Rạp Lotte Cinema", TheaterType.Missing),
-            createTheater(3L, "Rạp BHD Star", TheaterType.Blocked),
-            createTheater(4L, "Rạp Galaxy Nguyễn Trãi", TheaterType.Missing),
-            createTheater(5L, "Rạp Quốc Gia", TheaterType.Blocked)
+            createTheater(1L, "Rạp CGV Vincom", TheaterType.Royal),
+            createTheater(2L, "Rạp Lotte Cinema", TheaterType.Normal),
+            createTheater(3L, "Rạp BHD Star", TheaterType.Royal),
+            createTheater(4L, "Rạp Galaxy Nguyễn Trãi", TheaterType.Normal),
+            createTheater(5L, "Rạp Quốc Gia", TheaterType.Normal)
         );
         theaterRepository.saveAll(theaters);
         System.out.println("Seeded " + theaters.size() + " theaters");
@@ -458,30 +460,30 @@ public class DataSeeder implements CommandLineRunner {
     
         List<TheaterSeat> theaterSeats = Arrays.asList(
             // Rạp CGV Vincom (theaters.get(0))
-            createTheaterSeat("A", 1, theaters.get(0), SeatType.Blocked), // Hỗ trợ Booking 1
-            createTheaterSeat("A", 2, theaters.get(0), SeatType.Blocked),
-            createTheaterSeat("A", 3, theaters.get(0), SeatType.Missing),
-            createTheaterSeat("A", 4, theaters.get(0), SeatType.Missing),
+            createTheaterSeat("A", 1, theaters.get(0), SeatType.Normal), // Hỗ trợ Booking 1
+            createTheaterSeat("A", 2, theaters.get(0), SeatType.Normal),
+            createTheaterSeat("A", 3, theaters.get(0), SeatType.Royal),
+            createTheaterSeat("A", 4, theaters.get(0), SeatType.Royal),
             // Rạp Lotte Cinema (theaters.get(1))
-            createTheaterSeat("B", 1, theaters.get(1), SeatType.Blocked),
-            createTheaterSeat("B", 2, theaters.get(1), SeatType.Missing),
-            createTheaterSeat("B", 5, theaters.get(1), SeatType.Blocked), // Hỗ trợ Booking 2
-            createTheaterSeat("B", 6, theaters.get(1), SeatType.Missing),
+            createTheaterSeat("B", 1, theaters.get(1), SeatType.Normal),
+            createTheaterSeat("B", 2, theaters.get(1), SeatType.Royal),
+            createTheaterSeat("B", 5, theaters.get(1), SeatType.Normal), // Hỗ trợ Booking 2
+            createTheaterSeat("B", 6, theaters.get(1), SeatType.Normal),
             // Rạp BHD Star (theaters.get(2))
-            createTheaterSeat("C", 1, theaters.get(2), SeatType.Missing),
-            createTheaterSeat("C", 2, theaters.get(2), SeatType.Blocked),
-            createTheaterSeat("C", 10, theaters.get(2), SeatType.Blocked), // Hỗ trợ Booking 3
-            createTheaterSeat("C", 11, theaters.get(2), SeatType.Missing),
+            createTheaterSeat("C", 1, theaters.get(2), SeatType.Royal),
+            createTheaterSeat("C", 2, theaters.get(2), SeatType.Normal),
+            createTheaterSeat("C", 10, theaters.get(2), SeatType.Normal), // Hỗ trợ Booking 3
+            createTheaterSeat("C", 11, theaters.get(2), SeatType.Royal),
             // Rạp Galaxy Nguyễn Trãi (theaters.get(3))
-            createTheaterSeat("D", 1, theaters.get(3), SeatType.Missing),
-            createTheaterSeat("D", 2, theaters.get(3), SeatType.Blocked),
-            createTheaterSeat("D", 3, theaters.get(3), SeatType.Blocked), // Hỗ trợ Booking 4
-            createTheaterSeat("D", 4, theaters.get(3), SeatType.Missing),
+            createTheaterSeat("D", 1, theaters.get(3), SeatType.Normal),
+            createTheaterSeat("D", 2, theaters.get(3), SeatType.Normal),
+            createTheaterSeat("D", 3, theaters.get(3), SeatType.Normal), // Hỗ trợ Booking 4
+            createTheaterSeat("D", 4, theaters.get(3), SeatType.Royal),
             // Rạp Quốc Gia (theaters.get(4))
-            createTheaterSeat("E", 1, theaters.get(4), SeatType.Blocked),
-            createTheaterSeat("E", 2, theaters.get(4), SeatType.Blocked),
-            createTheaterSeat("E", 7, theaters.get(4), SeatType.Missing), // Hỗ trợ Booking 5
-            createTheaterSeat("E", 8, theaters.get(4), SeatType.Missing)
+            createTheaterSeat("E", 1, theaters.get(4), SeatType.Royal),
+            createTheaterSeat("E", 2, theaters.get(4), SeatType.Normal),
+            createTheaterSeat("E", 7, theaters.get(4), SeatType.Royal), // Hỗ trợ Booking 5
+            createTheaterSeat("E", 8, theaters.get(4), SeatType.Royal)
         ).stream().filter(Objects::nonNull).collect(Collectors.toList());
         theaterSeatRepository.saveAll(theaterSeats);
         System.out.println("Seeded " + theaterSeats.size() + " theaterSeats");
