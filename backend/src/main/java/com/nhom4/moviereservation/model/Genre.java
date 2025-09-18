@@ -22,7 +22,7 @@ public class Genre{
     @Column(name = "genre_id")
     private Long id;
 
-    private String name;
+    private String genre;
 
     @OneToMany(mappedBy = "genre")
     private List<MovieGenre> movieGenres;

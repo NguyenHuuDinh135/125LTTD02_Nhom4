@@ -1,4 +1,4 @@
-package com.nhom4.moviereservation.config;
+// package com.nhom4.moviereservation.config;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -9,11 +9,9 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.CommandLineRunner;
-import org.springframework.context.annotation.Primary;
-import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
+// import org.springframework.beans.factory.annotation.Autowired;
+// import org.springframework.boot.CommandLineRunner;
+// import org.springframework.stereotype.Component;
 
 import com.nhom4.moviereservation.model.*;
 import com.nhom4.moviereservation.model.enums.BookingStatus;
@@ -27,8 +25,8 @@ import com.nhom4.moviereservation.model.enums.TheaterType;
 import com.nhom4.moviereservation.model.enums.UserRole;
 import com.nhom4.moviereservation.repository.*;
 
-// import jakarta.persistence.EntityManager;
-// import jakarta.persistence.PersistenceContext;
+// // import jakarta.persistence.EntityManager;
+// // import jakarta.persistence.PersistenceContext;
 
 
 @Component
