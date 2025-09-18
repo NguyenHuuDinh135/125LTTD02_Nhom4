@@ -3,7 +3,14 @@ package com.nhom4.moviereservation.model;
 import java.time.LocalDateTime;
 import java.util.List;
 
+
 import jakarta.persistence.Column;
+
+import com.nhom4.moviereservation.model.enums.UserRole;
+
+import com.nhom4.moviereservation.model.enums.Role;
+
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -28,6 +35,7 @@ public class User {
     @Id
     @Column(name = "user_id")
     private Long id;
+
     
     @Column(name = "full_name", length = 50)
     private String fullName;
