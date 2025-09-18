@@ -1,4 +1,4 @@
-// package com.nhom4.moviereservation.config;
+package com.nhom4.moviereservation.config;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -9,11 +9,24 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-// import org.springframework.beans.factory.annotation.Autowired;
-// import org.springframework.boot.CommandLineRunner;
-// import org.springframework.stereotype.Component;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.stereotype.Component;
 
-import com.nhom4.moviereservation.model.*;
+import com.nhom4.moviereservation.model.Booking;
+import com.nhom4.moviereservation.model.Genre;
+import com.nhom4.moviereservation.model.Movie;
+import com.nhom4.moviereservation.model.MovieGenre;
+import com.nhom4.moviereservation.model.MovieGenreId;
+import com.nhom4.moviereservation.model.MovieRole;
+import com.nhom4.moviereservation.model.MovieRoleId;
+import com.nhom4.moviereservation.model.Payment;
+import com.nhom4.moviereservation.model.Role;
+import com.nhom4.moviereservation.model.Show;
+import com.nhom4.moviereservation.model.Theater;
+import com.nhom4.moviereservation.model.TheaterSeat;
+import com.nhom4.moviereservation.model.TheaterSeatId;
+import com.nhom4.moviereservation.model.User;
 import com.nhom4.moviereservation.model.enums.BookingStatus;
 import com.nhom4.moviereservation.model.enums.MovieType;
 import com.nhom4.moviereservation.model.enums.PaymentMethod;
@@ -23,10 +36,17 @@ import com.nhom4.moviereservation.model.enums.ShowStatus;
 import com.nhom4.moviereservation.model.enums.ShowType;
 import com.nhom4.moviereservation.model.enums.TheaterType;
 import com.nhom4.moviereservation.model.enums.UserRole;
-import com.nhom4.moviereservation.repository.*;
-
-// // import jakarta.persistence.EntityManager;
-// // import jakarta.persistence.PersistenceContext;
+import com.nhom4.moviereservation.repository.BookingRepository;
+import com.nhom4.moviereservation.repository.GenreRepository;
+import com.nhom4.moviereservation.repository.MovieGenreRepository;
+import com.nhom4.moviereservation.repository.MovieRepository;
+import com.nhom4.moviereservation.repository.MovieRoleRepository;
+import com.nhom4.moviereservation.repository.PaymentRepository;
+import com.nhom4.moviereservation.repository.RoleRepository;
+import com.nhom4.moviereservation.repository.ShowRepository;
+import com.nhom4.moviereservation.repository.TheaterRepository;
+import com.nhom4.moviereservation.repository.TheaterSeatRepository;
+import com.nhom4.moviereservation.repository.UserRepository;
 
 
 @Component
@@ -138,7 +158,7 @@ public class DataSeeder implements CommandLineRunner {
     private Genre createGenre(Long id, String name) {
         Genre genre = new Genre();
         genre.setId(id);
-        genre.setName(name);
+        genre.setGenre(name);
         return genre;
     }
 
