@@ -1,4 +1,5 @@
 package com.nhom4.moviereservation.config;
+package com.nhom4.moviereservation.config;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -15,7 +16,20 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.nhom4.moviereservation.model.*;
+import com.nhom4.moviereservation.model.Booking;
+import com.nhom4.moviereservation.model.Genre;
+import com.nhom4.moviereservation.model.Movie;
+import com.nhom4.moviereservation.model.MovieGenre;
+import com.nhom4.moviereservation.model.MovieGenreId;
+import com.nhom4.moviereservation.model.MovieRole;
+import com.nhom4.moviereservation.model.MovieRoleId;
+import com.nhom4.moviereservation.model.Payment;
+import com.nhom4.moviereservation.model.Role;
+import com.nhom4.moviereservation.model.Show;
+import com.nhom4.moviereservation.model.Theater;
+import com.nhom4.moviereservation.model.TheaterSeat;
+import com.nhom4.moviereservation.model.TheaterSeatId;
+import com.nhom4.moviereservation.model.User;
 import com.nhom4.moviereservation.model.enums.BookingStatus;
 import com.nhom4.moviereservation.model.enums.MovieType;
 import com.nhom4.moviereservation.model.enums.PaymentMethod;
@@ -140,6 +154,7 @@ public class DataSeeder implements CommandLineRunner {
     private Genre createGenre(Long id, String name) {
         Genre genre = new Genre();
         genre.setId(id);
+        genre.setGenre(name);
         genre.setGenre(name);
         return genre;
     }
