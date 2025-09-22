@@ -1,5 +1,4 @@
 package com.nhom4.moviereservation.config;
-package com.nhom4.moviereservation.config;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
