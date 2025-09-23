@@ -42,8 +42,12 @@ public class ConfigSecurity {
                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                .requestMatchers(HttpMethod.GET, "/public/**").permitAll()
                .anyRequest().authenticated()
-            );
-
+            )
+            
+            .formLogin(form -> form.disable()) // Vô hiệu hóa form login mặc định của Spring Security
+            
+            .sessionManagement(session -> session
+            .sessionCreationPolicy(SessionCreationPolicy.STATELESS)); // Sử dụng chính sách phiên không trạng thái, tránh dùng session để lưu trữ thông tin người dùng
 
       return http.build();
    }
