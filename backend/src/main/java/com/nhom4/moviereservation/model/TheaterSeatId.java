@@ -14,5 +14,5 @@ import lombok.NoArgsConstructor;
 public class TheaterSeatId implements Serializable {
     private String seatRow;
     private Integer seatNumber;
-    private Long theaterId;
+    private Integer theaterId;
 }
