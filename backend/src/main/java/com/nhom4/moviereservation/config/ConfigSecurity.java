@@ -44,6 +44,7 @@ public class ConfigSecurity {
                .anyRequest().authenticated()
             )
             
+            .httpBasic(Customizer.withDefaults()) // Sử dụng xác thực HTTP Basic
             .formLogin(form -> form.disable()) // Vô hiệu hóa form login mặc định của Spring Security
             
             .sessionManagement(session -> session
@@ -51,6 +52,11 @@ public class ConfigSecurity {
 
       return http.build();
    }
+
+   // @Bean
+   // public PasswordEncoder passwordEncoder() {
+   //    return new BCryptPasswordEncoder();
+   // }
 
 }
 
