@@ -12,6 +12,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.ForeignKey;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
@@ -35,8 +37,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class Show {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "show_id")
-    private Long id;
+    private Integer id;
     @Column(name = "start_time")
     private LocalTime startTime;
     @Column(name = "end_time")

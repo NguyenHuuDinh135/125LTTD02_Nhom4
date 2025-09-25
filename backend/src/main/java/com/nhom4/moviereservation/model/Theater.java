@@ -8,6 +8,8 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
@@ -24,8 +26,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class Theater{
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "theater_id")
-    private Long id;
+    private Integer id;
     @Column(name = "theater_name")
     private String name;
 
