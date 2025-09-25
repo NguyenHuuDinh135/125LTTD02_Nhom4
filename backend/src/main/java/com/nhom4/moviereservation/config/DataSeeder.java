@@ -125,7 +125,7 @@ public class DataSeeder implements CommandLineRunner {
     System.out.println("Seeded " + users.size() + " users");
     }
 
-    private User createUser(String fullName, String email, String password, String address, String contact, UserRole role) {
+    // private User createUser(String fullName, String email, String password, String address, String contact, UserRole role) {
     private User createUser(String fullName, String email, String password, String address, String contact, UserRole role) {
         User user = new User();
         user.setFullName(fullName);

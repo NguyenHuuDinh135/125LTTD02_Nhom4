@@ -1,22 +1,14 @@
 package com.nhom4.moviereservation.config;
 
-import java.util.List;
-
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 @Configuration // Đánh dấu lớp này là một lớp cấu hình
 @EnableWebSecurity // Kích hoạt cấu hình bảo mật web của Spring Security
@@ -41,10 +33,11 @@ public class ConfigSecurity {
                .requestMatchers(SWAGGER_WHITELIST).permitAll()
                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                .requestMatchers(HttpMethod.GET, "/public/**").permitAll()
+               .requestMatchers("/auth/**").permitAll()
                .anyRequest().authenticated()
             )
             
-            .httpBasic(Customizer.withDefaults()) // Sử dụng xác thực HTTP Basic
+            // .httpBasic(Customizer.withDefaults()) // Sử dụng xác thực HTTP Basic
             .formLogin(form -> form.disable()) // Vô hiệu hóa form login mặc định của Spring Security
             
             .sessionManagement(session -> session
