@@ -104,24 +104,23 @@ public class DataSeeder implements CommandLineRunner {
     
     private void seedUsers() {
     List<User> users = Arrays.asList(
-        createUser(1L, "Nguyen Van A", "user1@example.com", "password123", "Hà Nội", "0912345678", UserRole.ADMIN),
-        createUser(2L, "Tran Thi B", "user2@example.com", "password123", "Hồ Chí Minh", "0987654321", UserRole.API_USER),
-        createUser(3L, "Le Van C", "user3@example.com", "password123", "Đà Nẵng", "0911112222", UserRole.API_USER),
-        createUser(4L, "Pham Thi D", "user4@example.com", "password123", "Cần Thơ", "0903334444", UserRole.API_USER),
-        createUser(5L, "Hoang Van E", "user5@example.com", "password123", "Hải Phòng", "0935556666", UserRole.API_USER),
-        createUser(6L, "Nguyen Thi F", "user6@example.com", "password123", "Huế", "0927778888", UserRole.API_USER),
-        createUser(7L, "Tran Van G", "user7@example.com", "password123", "Nha Trang", "0919990000", UserRole.API_USER),
-        createUser(8L, "Le Thi H", "user8@example.com", "password123", "Vũng Tàu", "0988889999", UserRole.API_USER),
-        createUser(9L, "Pham Van I", "user9@example.com", "password123", "Quảng Ninh", "0912223333", UserRole.API_USER),
-        createUser(10L, "Hoang Thi J", "user10@example.com", "password123", "Đà Lạt", "0904445555", UserRole.API_USER)
+        createUser( "Nguyen Van A", "user1@example.com", "password123", "Hà Nội", "0912345678", UserRole.ADMIN),
+        createUser("Tran Thi B", "user2@example.com", "password123", "Hồ Chí Minh", "0987654321", UserRole.API_USER),
+        createUser("Le Van C", "user3@example.com", "password123", "Đà Nẵng", "0911112222", UserRole.API_USER),
+        createUser("Pham Thi D", "user4@example.com", "password123", "Cần Thơ", "0903334444", UserRole.API_USER),
+        createUser("Hoang Van E", "user5@example.com", "password123", "Hải Phòng", "0935556666", UserRole.API_USER),
+        createUser("Nguyen Thi F", "user6@example.com", "password123", "Huế", "0927778888", UserRole.API_USER),
+        createUser("Tran Van G", "user7@example.com", "password123", "Nha Trang", "0919990000", UserRole.API_USER),
+        createUser("Le Thi H", "user8@example.com", "password123", "Vũng Tàu", "0988889999", UserRole.API_USER),
+        createUser("Pham Van I", "user9@example.com", "password123", "Quảng Ninh", "0912223333", UserRole.API_USER),
+        createUser("Hoang Thi J", "user10@example.com", "password123", "Đà Lạt", "0904445555", UserRole.API_USER)
     );
     userRepository.saveAll(users);
     System.out.println("Seeded " + users.size() + " users");
     }
 
-    private User createUser(Long id, String fullName, String email, String password, String address, String contact, UserRole role) {
+    private User createUser(String fullName, String email, String password, String address, String contact, UserRole role) {
         User user = new User();
-        user.setId(id);
         user.setFullName(fullName);
         user.setEmail(email);
         user.setPassword(password);
