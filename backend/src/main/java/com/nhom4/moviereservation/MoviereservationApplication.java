@@ -9,10 +9,10 @@ public class MoviereservationApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(MoviereservationApplication.class, args);
 		// String url = "http://localhost:8080/";
-		String swaggerUrl = "http://localhost:8080/swagger-ui.html";
+		// String swaggerUrl = "http://localhost:8080/swagger-ui.html";
 		//System.out.println("Opening browser to: " + url);
 		// openBrowser(url);
-		 openBrowser(swaggerUrl);
+		//openBrowser(swaggerUrl);
 	}
 	private static void openBrowser(String url) {
 		try {

@@ -2,8 +2,6 @@
 package com.nhom4.moviereservation.auth;
 
 
-import com.nhom4.moviereservation.model.User;
-import com.nhom4.moviereservation.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -11,10 +9,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
-
 import com.nhom4.moviereservation.model.User;
-import com.nhom4.moviereservation.model.enums.Role;
 import com.nhom4.moviereservation.model.enums.UserRole;
 import com.nhom4.moviereservation.repository.UserRepository;
 
@@ -32,7 +27,7 @@ public class AuthService {
     public AuthResponse login(LoginRequest request){
         authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
         UserDetails user = userRepository.findByEmail(request.getEmail()).orElseThrow();
-        String role = user.getAuthorities().stream().findFirst().map(grantedAuthority -> grantedAuthority.getAuthority()).orElse("api_user");
+        String role = user.getAuthorities().stream().findFirst().map(grantedAuthority -> grantedAuthority.getAuthority()).orElse("API_USER");
         return AuthResponse.builder()
             .email(user.getUsername())
             .role(role)
