@@ -21,7 +21,7 @@ public class UserService {
         return userRepository.findAll();
     }
 
-    public Optional<User> findById(Long id) {
+    public Optional<User> findById(Integer id) {
         return userRepository.findById(id);
     }
 
@@ -29,7 +29,7 @@ public class UserService {
         return userRepository.save(user);
     }
 
-    public void deleteById(Long id) {
+    public void deleteById(Integer id) {
         userRepository.deleteById(id);
     }
     public boolean existsByEmail(String email) {
