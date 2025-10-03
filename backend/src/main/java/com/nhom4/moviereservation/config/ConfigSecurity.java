@@ -34,6 +34,7 @@ public class ConfigSecurity {
                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                .requestMatchers(HttpMethod.GET, "/public/**").permitAll()
                .requestMatchers("/auth/**").permitAll()
+               .requestMatchers("/admin/**").permitAll() //test nhanh CRUD admin không login
                .anyRequest().authenticated()
             )
             

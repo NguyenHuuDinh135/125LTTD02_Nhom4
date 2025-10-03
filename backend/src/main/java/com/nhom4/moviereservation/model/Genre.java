@@ -2,6 +2,8 @@ package com.nhom4.moviereservation.model;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -16,10 +18,9 @@ import lombok.NoArgsConstructor;
 @Entity
 @Table(name = "genres")
 @Data
-@NoArgsConstructor  
+@NoArgsConstructor
 @AllArgsConstructor
-public class Genre{
-
+public class Genre {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "genre_id")
@@ -27,8 +28,7 @@ public class Genre{
 
     private String genre;
 
-    @OneToMany(mappedBy = "genre")
-    private List<MovieGenre> movieGenres;
-
-    // Getters and setters
+        @OneToMany(mappedBy = "genre")
+        @JsonIgnore
+        private List<MovieGenre> movieGenres;
 }
