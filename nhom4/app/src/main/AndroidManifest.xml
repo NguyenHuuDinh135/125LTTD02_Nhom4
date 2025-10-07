@@ -23,7 +23,7 @@
             android:name=".ui.page.LoginActivity"
             android:exported="true">
         </activity>
-
+        <activity android:name=".ui.page.ProfileActivity" android:exported="false" />
 
 
     </application>
