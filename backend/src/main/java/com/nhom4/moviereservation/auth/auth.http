@@ -27,6 +27,10 @@ Content-Type: application/json
 }
 ### - Read Genre
 GET http://localhost:8080/admin/genre
+
+###Get for id
+GET http://localhost:8080/admin/genre/11
+
 ### - Update Genre
 PUT http://localhost:8080/admin/genre/11 
 Content-Type: application/json
@@ -35,4 +39,4 @@ Content-Type: application/json
   "genre": "Animated Cartoon"
 }
 ### - Delete Genre
-DELETE http://localhost:8080/admin/genre/12
+DELETE http://localhost:8080/admin/genre/11
