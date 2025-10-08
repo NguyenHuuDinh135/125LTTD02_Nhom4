@@ -2,6 +2,12 @@ package com.nhom4.moviereservation.model;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonProperty.Access;
+import jakarta.persistence.CascadeType;
+
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -22,6 +28,7 @@ public class Role {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "role_id")
+    @JsonProperty(access = Access.READ_ONLY)
     private Integer id;
     
     @Column(name = "full_name", length = 50)
@@ -30,7 +37,8 @@ public class Role {
     @Column(name = "picture_url")
     private String pictureUrl;
 
-    @OneToMany(mappedBy = "role")
+    @OneToMany(mappedBy = "role", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
     private List<MovieRole> movieRoles;
 
     // Getters and setters

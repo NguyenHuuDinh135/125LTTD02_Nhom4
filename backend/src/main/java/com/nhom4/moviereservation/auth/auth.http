@@ -17,3 +17,34 @@ Content-Type: application/json
   "email": "tesuser@example.com",
   "password": "123456"
 }
+
+### CRUD Role
+
+### Thêm
+POST http://localhost:8080/admin/roles
+Content-Type: application/json
+
+{
+  "fullName": "Nguyen Van B",
+  "age": 20,
+  "pictureUrl": "avatar.png"
+}
+
+### Xem tất cả
+GET http://localhost:8080/admin/roles
+
+### Xem 1 đối tượng
+GET http://localhost:8080/admin/roles/1
+
+### Sửa 1 đối tượng
+PUT http://localhost:8080/admin/roles/1
+Content-Type: application/json
+
+{
+  "fullName": "Tran Van C",
+  "age": 20,
+  "pictureUrl": "avatar.png"
+}
+
+### Xoá 1 đối tượng
+DELETE http://localhost:8080/admin/roles/1
