@@ -1,0 +1,26 @@
+### CRUD Genre
+### - Create
+POST http://localhost:8080/admin/genre
+Content-Type: application/json
+
+{
+  "genre": "Cartoon"
+}
+### - Read Genre
+GET http://localhost:8080/admin/genre
+
+###Get for id
+GET http://localhost:8080/admin/genre/11
+
+### - Update Genre
+PUT http://localhost:8080/admin/genre/11 
+Content-Type: application/json
+
+{
+  "genre": "Animated Cartoon"
+}
+### - Delete Genre
+DELETE http://localhost:8080/admin/genre/11
+
+### - find movie by genre_id
+GET http://localhost:8080/admin/movie/by-genre/1

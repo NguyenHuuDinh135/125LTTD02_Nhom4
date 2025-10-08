@@ -1,5 +1,7 @@
 package com.nhom4.moviereservation.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
 import jakarta.persistence.ForeignKey;
@@ -24,6 +26,7 @@ public class MovieGenre {
     @ManyToOne
     @MapsId("movieId")
     @JoinColumn(name = "movie_id", foreignKey = @ForeignKey(name = "fk_mgenres_movie_id"))
+    @JsonIgnore
     private Movie movie;
 
     @ManyToOne
