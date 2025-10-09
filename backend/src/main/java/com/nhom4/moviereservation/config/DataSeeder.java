@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
+import com.nhom4.moviereservation.genres.GenreRepository;
 import com.nhom4.moviereservation.model.Booking;
 import com.nhom4.moviereservation.model.Genre;
 import com.nhom4.moviereservation.model.Movie;
@@ -37,7 +38,6 @@ import com.nhom4.moviereservation.model.enums.ShowType;
 import com.nhom4.moviereservation.model.enums.TheaterType;
 import com.nhom4.moviereservation.model.enums.UserRole;
 import com.nhom4.moviereservation.repository.BookingRepository;
-import com.nhom4.moviereservation.repository.GenreRepository;
 import com.nhom4.moviereservation.repository.MovieGenreRepository;
 import com.nhom4.moviereservation.repository.MovieRepository;
 import com.nhom4.moviereservation.repository.MovieRoleRepository;
