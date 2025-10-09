@@ -42,11 +42,11 @@ import com.nhom4.moviereservation.repository.MovieGenreRepository;
 import com.nhom4.moviereservation.repository.MovieRepository;
 import com.nhom4.moviereservation.repository.MovieRoleRepository;
 import com.nhom4.moviereservation.repository.PaymentRepository;
-import com.nhom4.moviereservation.repository.RoleRepository;
 import com.nhom4.moviereservation.repository.ShowRepository;
 import com.nhom4.moviereservation.repository.TheaterRepository;
 import com.nhom4.moviereservation.repository.TheaterSeatRepository;
 import com.nhom4.moviereservation.repository.UserRepository;
+import com.nhom4.moviereservation.roles.RoleRepository;
 
 // import jakarta.persistence.EntityManager;
 // import jakarta.persistence.PersistenceContext;

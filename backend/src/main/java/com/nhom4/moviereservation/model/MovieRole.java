@@ -27,18 +27,24 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+// @JsonIdentityInfo(
+//     generator = ObjectIdGenerators.PropertyGenerator.class,
+//     property = "id"
+// )
 public class MovieRole {
     @EmbeddedId
     private MovieRoleId id;
 
     @ManyToOne
     @MapsId("movieId")  // ánh xạ movieId trong MovieRoleId
+    //@JsonIgnore
     @JoinColumn(name = "movie_id", foreignKey = @ForeignKey(name = "fk_mroles_movie_id"))
     @JsonIgnore
     private Movie movie;
 
     @ManyToOne
     @MapsId("roleId")  // ánh xạ roleId trong MovieRoleId
+    //@JsonIgnore
     @JoinColumn(name = "role_id", foreignKey = @ForeignKey(name = "fk_mroles_role_id"))
     private Role role;
 
