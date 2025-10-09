@@ -33,7 +33,6 @@ public class ConfigSecurity {
                .requestMatchers(SWAGGER_WHITELIST).permitAll()
                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                .requestMatchers(HttpMethod.GET, "/public/**").permitAll()
-
                .requestMatchers("/**").permitAll() //test nhanh CRUD admin không login
                .anyRequest().authenticated()
             )
