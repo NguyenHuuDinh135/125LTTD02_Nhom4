@@ -43,15 +43,24 @@ public class RoleService {
     }
 
     public Role update(Integer id, Role roleDetails) {
-        return roleRepository.findById(id)
-            .map(existing -> {
+    return roleRepository.findById(id)
+        .map(existing -> {
+            // Chỉ cập nhật nếu field không null
+            if (roleDetails.getFullName() != null) {
                 existing.setFullName(roleDetails.getFullName());
+            }
+            if (roleDetails.getAge() != null) {
                 existing.setAge(roleDetails.getAge());
+            }
+            if (roleDetails.getPictureUrl() != null) {
                 existing.setPictureUrl(roleDetails.getPictureUrl());
-                return roleRepository.save(existing);
-            })
-            .orElse(null);
-    }
+            }
+            // Lưu bản ghi đã chỉnh sửa
+            return roleRepository.save(existing);
+        })
+        .orElse(null);
+}
+
 
     public Role delete(Integer id) {
         return roleRepository.findById(id)

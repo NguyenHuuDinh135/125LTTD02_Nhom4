@@ -1,5 +1,6 @@
 package com.nhom4.moviereservation.roles;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -44,13 +45,52 @@ public class RoleController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> update(@PathVariable Integer id, @RequestBody Role role) {
-        Role updated = roleService.update(id, role);
-        if (updated != null) {
-            return ResponseEntity.ok(updated);
+    //Chỉ cập nhật mỗi fullname và k có định dạng sẵn
+    public ResponseEntity<?> updateRole(@PathVariable Integer id, @RequestBody Map<String, String> requestBody) {
+        String fullName = (String) requestBody.get("fullName");
+
+        if (fullName == null || fullName.trim().isEmpty()) {
+            Map<String, Object> error = new HashMap<>();
+            error.put("error", "Full name is required for update.");
+            return ResponseEntity.badRequest().body(error);
         }
-        return ResponseEntity.notFound().build();
-    }
+
+        Role roleDetails = new Role();
+        roleDetails.setFullName(fullName);
+
+        Role updated = roleService.update(id, roleDetails);
+
+        Map<String, Object> response = new HashMap<>();
+        if (updated != null) {
+            response.put("Rows matched", 1);
+            response.put("Changed", 1);
+            response.put("Warnings", 0);
+            return ResponseEntity.ok(response);
+        } else {
+            response.put("Rows matched", 0);
+            response.put("Changed", 0);
+            response.put("Warnings", 1);
+            return ResponseEntity.status(404).body(response);
+        }
+}
+    // Cập nhật đa dụng (Muốn cập nhật bao nhiêu giá trị trong 3 giá trị cũng được)
+    // Tuy nhiên do thông báo không khớp nên tạm thời không sử dụng
+    /*public ResponseEntity<?> updateRole(@PathVariable Integer id, @RequestBody Role roleDetails) {
+        Role updated = roleService.update(id, roleDetails);
+
+        Map<String, Object> response = new HashMap<>();
+        if (updated != null) {
+            response.put("Rows matched", 1);
+            response.put("Changed", 1);
+            response.put("Warnings", 0);
+            return ResponseEntity.ok(response);
+        } else {
+            response.put("Rows matched", 0);
+            response.put("Changed", 0);
+            response.put("Warnings", 1);
+            return ResponseEntity.status(404).body(response);
+        }
+    }*/
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Integer id) {
