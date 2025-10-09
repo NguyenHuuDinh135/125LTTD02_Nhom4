@@ -1,6 +1,7 @@
 package com.nhom4.moviereservation.model;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.nhom4.moviereservation.model.enums.RoleType;
 
 import jakarta.persistence.Column;
@@ -38,6 +39,7 @@ public class MovieRole {
     @MapsId("movieId")  // ánh xạ movieId trong MovieRoleId
     //@JsonIgnore
     @JoinColumn(name = "movie_id", foreignKey = @ForeignKey(name = "fk_mroles_movie_id"))
+    @JsonIgnore
     private Movie movie;
 
     @ManyToOne

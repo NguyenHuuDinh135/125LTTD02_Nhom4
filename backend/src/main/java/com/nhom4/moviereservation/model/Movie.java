@@ -3,8 +3,7 @@ package com.nhom4.moviereservation.model;
 import java.math.BigDecimal;
 import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonIdentityInfo;
-import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.nhom4.moviereservation.model.enums.MovieType;
 
 import jakarta.persistence.Column;
@@ -45,12 +44,15 @@ public class Movie {
     private MovieType movieType;
 
     @OneToMany(mappedBy = "movie")
+    @JsonIgnore
     private List<Show> shows;
 
     @OneToMany(mappedBy = "movie")
+    @JsonIgnore
     private List<MovieGenre> movieGenres;
 
     @OneToMany(mappedBy = "movie")
+    @JsonIgnore
     private List<MovieRole> movieRoles;
 
     // Getters and setters

@@ -1,0 +1,53 @@
+### Cấu hình cơ bản (có thể thay đổi URL nếu cần)
+@baseUrl = http://localhost:8080
+
+### CRUD Genre
+
+### - Create Genre
+# POST http://localhost:8080/genres
+POST {{baseUrl}}/genres
+Content-Type: application/json
+
+{
+  "genre": "Cartoon"
+}
+
+###
+
+### - Read All Genres
+# GET http://localhost:8080/genres
+GET {{baseUrl}}/genres
+Accept: application/json
+
+###
+
+### - Read Genre by ID
+# GET http://localhost:8080/genres/11
+GET {{baseUrl}}/genres/11
+Accept: application/json
+
+###
+
+### - Update Genre
+# PUT http://localhost:8080/genres/11
+PUT {{baseUrl}}/genres/11
+Content-Type: application/json
+
+{
+  "genre": "Animated Cartoon"
+}
+
+###
+
+### - Delete Genre
+# DELETE http://localhost:8080/genres/11
+DELETE {{baseUrl}}/genres/11
+
+###
+
+### - Find Movies by Genre ID
+# GET http://localhost:8080/genres/by-genre/1
+GET {{baseUrl}}/genres/1/movies
+Accept: application/json
+
+###

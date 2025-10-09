@@ -10,6 +10,6 @@ import com.nhom4.moviereservation.model.User;
 @Repository
 public interface UserRepository extends JpaRepository<User, Integer> {
     Optional<User> findByEmail(String email);
-    Optional<User> findById(Long id);
-    void deleteById(Long id);
+    Optional<User> findById(Integer id);
+    void deleteById(Integer id);
 }

@@ -37,6 +37,8 @@ dependencies {
     implementation(libs.material)
     implementation(libs.activity)
     implementation(libs.constraintlayout)
+    implementation("com.squareup.retrofit2:retrofit:3.0.0")
+    implementation("io.reactivex.rxjava3:rxjava:3.1.10")
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
