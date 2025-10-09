@@ -167,9 +167,12 @@ public class MovieController {
          return movieById.map(ResponseEntity::ok)
                   .orElseGet(() -> ResponseEntity.notFound().build());
       } catch (Exception e) {
-         e.printStackTrace();  // Xem log trong console
+         Map<String, Object> response = new HashMap<>();
+         response.put("Changed", 0);
+         response.put("Rows matched", 1);
+         response.put("Status", "Erorr");
          return ResponseEntity.status(500)
-            .body("Error: " + e.getMessage());
+            .body(response);
       }
    }
 }
