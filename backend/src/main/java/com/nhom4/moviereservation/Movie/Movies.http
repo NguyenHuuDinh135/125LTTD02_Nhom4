@@ -1,0 +1,56 @@
+### 🟢 Lấy danh sách tất cả phim
+GET http://localhost:8080/movies
+Accept: application/json
+
+###
+
+### 🟢 Lấy phim theo ID
+GET http://localhost:8080/movies/id/1
+Accept: application/json
+
+###
+
+### 🟢 Lọc phim theo loại (movieType)
+# Các giá trị movieType có thể là: ACTION, COMEDY, DRAMA... (tuỳ enum của bạn)
+GET http://localhost:8080/movies/filtered?movieType=CommingSoon
+Accept: application/json
+
+###
+
+### 🟢 Lấy danh sách vai trò trong phim theo movieId
+GET http://localhost:8080/movies/id/1/roles
+Accept: application/json
+
+###
+
+### 🟡 Tạo mới phim
+POST http://localhost:8080/movies
+Content-Type: application/json
+Accept: application/json
+
+{
+  "title": "Inception",
+  "description": "A mind-bending thriller about dream infiltration.",
+  "duration": 148,
+  "releaseDate": "2010-07-16",
+  "movieType": "ACTION",
+  "language": "English",
+  "posterUrl": "https://example.com/inception.jpg"
+}
+
+###
+
+### 🟠 Cập nhật phim theo ID
+PUT http://localhost:8080/movies/id/1
+Content-Type: application/json
+Accept: application/json
+
+{
+  "movieType": "Removed"
+}
+
+###
+
+### 🔴 Xóa phim theo ID
+DELETE http://localhost:8080/movies/id/1
+Accept: application/json
