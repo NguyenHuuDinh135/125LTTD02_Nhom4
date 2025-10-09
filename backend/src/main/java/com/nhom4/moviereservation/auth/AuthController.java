@@ -24,7 +24,7 @@ public class AuthController {
 
     @Autowired
     private final AuthService authService;
-    
+
     // Đăng nhập
     // @PostMapping("/login")
     // public ResponseEntity<?> login(@RequestBody Map<String, String> payload) {
@@ -40,7 +40,7 @@ public class AuthController {
     //Dăng nhâok
     @PostMapping(value = "login")
     public AuthResponse login(@Valid @RequestBody LoginRequest request)
-    {   
+    {
         return authService.login(request);
     }
     // Đăng ký
@@ -48,5 +48,7 @@ public class AuthController {
     public AuthResponse register(@Valid @RequestBody RegisterRequest request) {
         return authService.register(request);
     }
+
+
 }
 

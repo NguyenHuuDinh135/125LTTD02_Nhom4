@@ -11,20 +11,21 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Nhom4">
+
+        <!-- LoadingPage chạy trước -->
         <activity
-            android:name=".MainActivity"
-            android:exported="true" >
+            android:name=".Loading"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity
-            android:name=".ui.page.LoginActivity"
-            android:exported="true">
-        </activity>
-        <activity android:name=".ui.page.ProfileActivity" android:exported="false" />
 
+        <!-- MainActivity chỉ mở sau khi LoadingPage finish -->
+        <activity
+            android:name=".MainActivity"
+            android:exported="true" />
 
     </application>
 
