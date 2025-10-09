@@ -3,6 +3,8 @@ package com.nhom4.moviereservation.model;
 import java.math.BigDecimal;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.nhom4.moviereservation.model.enums.MovieType;
 
 import jakarta.persistence.Column;
@@ -25,6 +27,10 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonIdentityInfo(
+    generator = ObjectIdGenerators.PropertyGenerator.class,
+    property = "id"
+)
 public class Movie {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

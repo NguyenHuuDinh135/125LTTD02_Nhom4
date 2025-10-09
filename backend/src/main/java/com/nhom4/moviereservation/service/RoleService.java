@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class RoleService {
@@ -40,5 +41,8 @@ public class RoleService {
         Role role = roleRepository.findById(id).orElse(null);;
         roleRepository.delete(role);
         return role;
+    }
+    public Optional<Role> getRoleWithMovies(Integer id) {
+        return roleRepository.findById(id);
     }
 }
