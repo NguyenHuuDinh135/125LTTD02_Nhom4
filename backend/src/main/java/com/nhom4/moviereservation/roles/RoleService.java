@@ -9,10 +9,10 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
+import com.nhom4.moviereservation.Movie.MovieRepository;
 import com.nhom4.moviereservation.model.Movie;
 import com.nhom4.moviereservation.model.MovieRole;
 import com.nhom4.moviereservation.model.Role;
-import com.nhom4.moviereservation.repository.MovieRepository;
 import com.nhom4.moviereservation.repository.MovieRoleRepository;
 
 @Service

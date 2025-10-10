@@ -12,7 +12,7 @@ import com.nhom4.moviereservation.model.Genre;
 import com.nhom4.moviereservation.model.Movie;
 import com.nhom4.moviereservation.model.MovieGenre;
 import com.nhom4.moviereservation.repository.MovieGenreRepository;
-import com.nhom4.moviereservation.repository.MovieRepository;
+import com.nhom4.moviereservation.Movie.MovieRepository;
 
 @Service
 public class GenreService {

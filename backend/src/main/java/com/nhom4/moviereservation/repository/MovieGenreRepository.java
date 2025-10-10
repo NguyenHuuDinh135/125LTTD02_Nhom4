@@ -9,4 +9,5 @@ import org.springframework.stereotype.Repository;
 public interface MovieGenreRepository extends JpaRepository<MovieGenre, Integer> {
     // Thêm phương thức để tìm danh sách MovieGenre theo genreId
     List<MovieGenre> findByGenreId(Integer genreId);
+    List<MovieGenre> findByMovieId(Integer id);
 }
