@@ -19,10 +19,10 @@ import com.nhom4.moviereservation.model.MovieGenre;
 import com.nhom4.moviereservation.model.MovieRole;
 import com.nhom4.moviereservation.model.Role;
 import com.nhom4.moviereservation.model.enums.MovieType;
-import com.nhom4.moviereservation.repository.GenreRepository;
+import com.nhom4.moviereservation.genres.GenreRepository;
 import com.nhom4.moviereservation.repository.MovieGenreRepository;
 import com.nhom4.moviereservation.repository.MovieRoleRepository;
-import com.nhom4.moviereservation.repository.RoleRepository;
+import com.nhom4.moviereservation.roles.RoleRepository;
 
 
 @Service

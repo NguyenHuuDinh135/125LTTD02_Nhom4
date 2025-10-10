@@ -22,7 +22,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.nhom4.moviereservation.Movie.RequestCommand.CreateMovieCommand;
-import com.nhom4.moviereservation.Movie.RequestCommand.UpdateMovieCommand;
 import com.nhom4.moviereservation.model.Movie;
 import com.nhom4.moviereservation.model.enums.MovieType;
 
@@ -123,14 +122,13 @@ public class MovieController {
    }
 
    @PutMapping("id/{id}")
-   public ResponseEntity<?> updateMovie(@PathVariable Integer id, @RequestBody UpdateMovieCommand requestBody) {
+   public ResponseEntity<?> updateMovie(@PathVariable Integer id, MovieType movieType) {
       
       Map<String, Object> response = new HashMap<>();
       
       try {
-         MovieType movieTypeRequest = requestBody.getMovieType();
          
-         if (movieTypeRequest == null) {
+         if (movieType == null) {
             response.put("error", "Movie type is required for update.");
             response.put("status", HttpStatus.BAD_REQUEST.value());
             return ResponseEntity.badRequest().body(response);
@@ -144,7 +142,7 @@ public class MovieController {
          }
          
          Movie movieUpdate = new Movie();
-         movieUpdate.setMovieType(movieTypeRequest);
+         movieUpdate.setMovieType(movieType);
          
          Movie resultUpdate = movieService.updateMovie(id, movieUpdate);
          

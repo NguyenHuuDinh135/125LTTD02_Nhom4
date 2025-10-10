@@ -2,6 +2,9 @@ package com.nhom4.moviereservation.Movie.RequestCommand;
 import java.math.BigDecimal;
 import java.util.List;
 
+// **********************
+// Tạm thời chữa xử lý
+// **********************
 public class CreateMovieCommand {
 
    private String title;
