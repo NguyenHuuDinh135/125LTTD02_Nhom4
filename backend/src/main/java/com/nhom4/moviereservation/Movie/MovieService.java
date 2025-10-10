@@ -10,7 +10,9 @@ import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.nhom4.moviereservation.Movie.RequestCommand.CreateMovieCommand;
 import com.nhom4.moviereservation.model.Genre;
@@ -81,9 +83,44 @@ public class MovieService {
       return response;
    }
 
-
    public Optional<Movie> findById(Integer id) {
       return movieRepository.findById(id);
+   }
+
+   public Map<String, Object> findByIdWithGenre(Integer id) {
+      Optional<Movie> movieOp = movieRepository.findById(id);
+
+      if(!movieOp.isPresent()) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Movie not found with id: " + id);
+      Movie movie = movieOp.get();
+
+      List<MovieGenre> movieGenres = movieGenreRepository.findByMovieId(id);
+
+      // Lấy danh sách thể loại (genre_id, genre)
+      List<Map<String, Object>> genres = movieGenres.stream().map(mg -> {
+            Genre genre = genreRepository.findById(mg.getId().getGenreId()).orElse(null);
+            if (genre == null) return null;
+            Map<String, Object> genreMap = new HashMap<>();
+            genreMap.put("genre_id", genre.getId());
+            genreMap.put("genre", genre.getGenre());
+            return genreMap;
+      }).filter(Objects::nonNull).collect(Collectors.toList());
+
+      // Gộp thông tin phim + thể loại
+      Map<String, Object> movieMap = new LinkedHashMap<>();
+      movieMap.put("movie_id", movie.getId());
+      movieMap.put("title", movie.getTitle());
+      movieMap.put("summary", movie.getSummary());
+      movieMap.put("year", movie.getYear());
+      movieMap.put("rating", movie.getRating());
+      movieMap.put("trailer_url", movie.getTrailerUrl());
+      movieMap.put("poster_url", movie.getPosterUrl());
+      movieMap.put("movie_type", movie.getMovieType());
+      movieMap.put("genres", genres);
+
+      // Gói tất cả vào "movie"
+      Map<String, Object> response = new HashMap<>();
+      response.put("movie", movieMap);
+      return response;
    }
 
    public Map<String, Object> findByFilter(MovieType movieRequest) {

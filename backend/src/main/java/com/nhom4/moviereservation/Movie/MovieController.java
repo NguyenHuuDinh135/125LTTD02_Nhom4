@@ -51,11 +51,24 @@ public class MovieController {
    }
 
    @GetMapping("/id/{id}")
-   public ResponseEntity<Movie> getMovieById(@PathVariable Integer id) {
-      Optional<Movie> movie = movieService.findById(id);
+   public ResponseEntity<?> getMovieById(@PathVariable Integer id) {
+      try {
+         Map<String, Object> responseBody = movieService.findByIdWithGenre(id);
 
-      return movie.map(ResponseEntity::ok)
-                  .orElseGet(() -> ResponseEntity.notFound().build());
+         if (responseBody == null || responseBody.get("movie") == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("error", "Movie not found with id: " + id));
+         }
+
+         return ResponseEntity.ok(responseBody);
+
+      } catch (Exception e) {
+         Map<String, Object> errorResponse = new LinkedHashMap<>();
+         errorResponse.put("status", HttpStatus.CONFLICT.value());
+         errorResponse.put("error", "An error occurred while fetching movies");
+         errorResponse.put("message", e.getMessage());
+         return ResponseEntity.status(500).body(errorResponse);
+      }
    }
 
    @GetMapping("/filtered")
