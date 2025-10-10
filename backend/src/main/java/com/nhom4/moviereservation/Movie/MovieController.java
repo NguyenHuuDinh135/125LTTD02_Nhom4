@@ -6,10 +6,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import org.springdoc.core.converters.models.PageableAsQueryParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.data.jpa.repository.Query;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -40,15 +38,15 @@ public class MovieController {
       try {
          Map<String, Object> responseBody = movieService.findAll();
 
-         if (responseBody != null) {
-            return ResponseEntity.ok(responseBody);
-         } else {
-            return ResponseEntity.notFound().build();
-         }
+         return Optional.ofNullable(responseBody.get("movies"))
+            .filter(m -> m instanceof List<?> && !((List<?>) m).isEmpty())
+            .map(m -> ResponseEntity.ok(responseBody))
+            .orElse(ResponseEntity.notFound().build());
+
       } catch (Exception e) {
-         Map<String, String> errorResponse = new HashMap<>();
+         Map<String, Object> errorResponse = new LinkedHashMap<>();
+         errorResponse.put("status", HttpStatus.CONFLICT.value());
          errorResponse.put("error", "An error occurred while fetching movies");
-         errorResponse.put("details", e.getMessage());
          return ResponseEntity.status(500).body(errorResponse);
       }
    }
@@ -65,14 +63,16 @@ public class MovieController {
    public ResponseEntity<?> getMovieByFiltered(@RequestParam(required = false) MovieType movieType) {
       try {
          Map<String, Object> responseBody = movieService.findByFilter(movieType);
-         if(responseBody != null)
-            return ResponseEntity.ok(responseBody);
-         else
-            return ResponseEntity.notFound().build();
+
+         return Optional.ofNullable(responseBody.get("movies"))
+            .filter(m -> m instanceof List<?> && !((List<?>) m).isEmpty())
+            .map(m -> ResponseEntity.ok(responseBody))
+            .orElse(ResponseEntity.notFound().build());
+
       } catch (Exception e) {
-         Map<String, String> errorResponse = new HashMap<>();
+         Map<String, Object> errorResponse = new LinkedHashMap<>();
+         errorResponse.put("status", HttpStatus.CONFLICT.value());
          errorResponse.put("error", "An error occurred while fetching movies");
-         errorResponse.put("details", e.getMessage());
          return ResponseEntity.status(500).body(errorResponse);
       }
    }
@@ -82,32 +82,42 @@ public class MovieController {
       try {
          Map<String, Object> responseBody = movieService.findByMovieRole(id);
 
-         if(responseBody.get("body") == null || responseBody.get("body") instanceof List<?> list && list.isEmpty())
-            return ResponseEntity.notFound().build();
-         else
-            return ResponseEntity.ok(responseBody);
+         return Optional.ofNullable(responseBody.get("movies"))
+            .filter(m -> m instanceof List<?> && !((List<?>) m).isEmpty())
+            .map(m -> ResponseEntity.ok(responseBody))
+            .orElse(ResponseEntity.notFound().build());
+
       } catch (Exception e) {
-         Map<String, String> errorResponse = new HashMap<>();
+         Map<String, Object> errorResponse = new LinkedHashMap<>();
+         errorResponse.put("status", HttpStatus.CONFLICT.value());
          errorResponse.put("error", "An error occurred while fetching movies");
-         errorResponse.put("details", e.getMessage());
          return ResponseEntity.status(500).body(errorResponse);
       }
    }
 
    @PostMapping
    public ResponseEntity<?> createMovie(@RequestBody CreateMovieCommand movie) {
+      try {
+         Movie resultMovie = movieService.create(movie);
+         Map<String, Object> response = new LinkedHashMap<>();
 
-      Movie resultMovie = movieService.create(movie);
-
-      Map<String, Object> response = new LinkedHashMap<>();
-      if(resultMovie != null) {
-         response.put("movie_id", resultMovie.getId());
-         response.put("affected_rows", 1);
-         return ResponseEntity.ok(response);
-      }else{
-         response.put("movie_id", 0);
-         response.put("affected_rows", 0); 
-         return ResponseEntity.status(500).body(response);
+         if(resultMovie != null) {
+            response.put("movie_id", resultMovie.getId());
+            response.put("affected_rows", 1);
+            return ResponseEntity.ok(response);
+         }else{
+            response.put("movie_id", 0);
+            response.put("affected_rows", 0); 
+            response.put("status", HttpStatus.BAD_REQUEST.value());
+            return ResponseEntity.badRequest().body(response);
+         }
+         
+      } catch (Exception e) {
+         Map<String, Object> errorResponse = new LinkedHashMap<>();
+         errorResponse.put("affected_rows", 0);
+         errorResponse.put("status", HttpStatus.CONFLICT.value());
+         errorResponse.put("error", "An error occurred while creating movie");
+         return ResponseEntity.status(500).body(errorResponse);
       }
 
    }
@@ -129,6 +139,7 @@ public class MovieController {
          Optional<Movie> movieById = movieService.findById(id);
          if (!movieById.isPresent()) {
             response.put("error", "Movie not found with id: " + id);
+            response.put("status", HttpStatus.BAD_REQUEST.value());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
          }
          
@@ -138,14 +149,13 @@ public class MovieController {
          Movie resultUpdate = movieService.updateMovie(id, movieUpdate);
          
          if (resultUpdate != null) {
-            response.put("Rows matched", 1);
-            response.put("Changed", 1);
-            response.put("Warnings", 0);
+            response.put("rows matched", 1);
+            response.put("changed", 1);
+            response.put("warnings", 0);
             return ResponseEntity.ok(response);
          } else {
-            response.put("Rows matched", 0);
-            response.put("Changed", 0);
-            response.put("Warnings", 1);
+            response.put("rows matched", 0);
+            response.put("changed", 0);
             response.put("error", "Update failed");
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
          }
@@ -154,7 +164,6 @@ public class MovieController {
          // Lỗi database constraint (foreign key, unique, etc.)
          response.put("error", "Database constraint violation");
          response.put("message", "Cannot update movie due to data integrity issues");
-         response.put("details", e.getMostSpecificCause().getMessage());
          response.put("status", HttpStatus.CONFLICT.value());
          return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
       }
@@ -164,15 +173,15 @@ public class MovieController {
    public ResponseEntity<?> deleteMovie(@PathVariable Integer id) {
       try {
          Optional<Movie> movieById = movieService.findById(id);
+         
          return movieById.map(ResponseEntity::ok)
                   .orElseGet(() -> ResponseEntity.notFound().build());
       } catch (Exception e) {
          Map<String, Object> response = new HashMap<>();
          response.put("Changed", 0);
          response.put("Rows matched", 1);
-         response.put("Status", "Erorr");
-         return ResponseEntity.status(500)
-            .body(response);
+         response.put("Status", HttpStatus.CONFLICT.value());
+         return ResponseEntity.status(500).body(response);
       }
    }
 }

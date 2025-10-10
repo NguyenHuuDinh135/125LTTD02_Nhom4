@@ -75,9 +75,9 @@ public class MovieService {
          return movieMap;
       }).collect(Collectors.toList());
 
-      // Gói tất cả vào "body"
+      // Gói tất cả vào "movies"
       Map<String, Object> response = new HashMap<>();
-      response.put("body", movieList);
+      response.put("movies", movieList);
       return response;
    }
 
@@ -89,9 +89,9 @@ public class MovieService {
    public Map<String, Object> findByFilter(MovieType movieRequest) {
       List<Movie> movies = movieRepository.findByMovieType(movieRequest);
 
-      // Gói tất cả vào "body"
+      // Gói tất cả vào "movies"
       Map<String, Object> response = new HashMap<>();
-      response.put("body", movies);
+      response.put("movies", movies);
 
       return response;
    }
@@ -113,9 +113,9 @@ public class MovieService {
          .filter(Objects::nonNull)
          .collect(Collectors.toList());
       
-      // Gói tất cả vào "body"
+      // Gói tất cả vào "movies"
       Map<String, Object> response = new HashMap<>();
-      response.put("body", roles);
+      response.put("movies", roles);
 
       return response;
    }
