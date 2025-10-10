@@ -1,0 +1,29 @@
+### Thêm
+POST http://localhost:8080/roles
+Content-Type: application/json
+
+{
+  "fullName": "Nguyen Van B",
+  "age": 20,
+  "pictureUrl": "avatar.png"
+}
+
+### Xem tất cả
+GET http://localhost:8080/roles
+
+### Xem 1 đối tượng
+GET http://localhost:8080/roles/12
+
+### Sửa 1 đối tượng
+PUT http://localhost:8080/roles/11
+Content-Type: application/json
+
+{
+  "fullName": "Tran Van C"
+}
+
+### Xoá 1 đối tượng
+DELETE http://localhost:8080/roles/12
+
+### Xem tất cả các phim của 1 đối tượng
+GET http://localhost:8080/roles/1/movies

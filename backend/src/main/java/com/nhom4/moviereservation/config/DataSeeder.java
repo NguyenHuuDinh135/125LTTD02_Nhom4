@@ -14,6 +14,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
 import com.nhom4.moviereservation.Movie.MovieRepository;
+import com.nhom4.moviereservation.genres.GenreRepository;
 import com.nhom4.moviereservation.model.Booking;
 import com.nhom4.moviereservation.model.Genre;
 import com.nhom4.moviereservation.model.Movie;
@@ -38,15 +39,14 @@ import com.nhom4.moviereservation.model.enums.ShowType;
 import com.nhom4.moviereservation.model.enums.TheaterType;
 import com.nhom4.moviereservation.model.enums.UserRole;
 import com.nhom4.moviereservation.repository.BookingRepository;
-import com.nhom4.moviereservation.repository.GenreRepository;
 import com.nhom4.moviereservation.repository.MovieGenreRepository;
 import com.nhom4.moviereservation.repository.MovieRoleRepository;
 import com.nhom4.moviereservation.repository.PaymentRepository;
-import com.nhom4.moviereservation.repository.RoleRepository;
 import com.nhom4.moviereservation.repository.ShowRepository;
 import com.nhom4.moviereservation.repository.TheaterRepository;
 import com.nhom4.moviereservation.repository.TheaterSeatRepository;
 import com.nhom4.moviereservation.repository.UserRepository;
+import com.nhom4.moviereservation.roles.RoleRepository;
 
 // import jakarta.persistence.EntityManager;
 // import jakarta.persistence.PersistenceContext;
