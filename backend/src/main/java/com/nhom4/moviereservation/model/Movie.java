@@ -39,7 +39,7 @@ public class Movie {
     private String trailerUrl;
     private String posterUrl;
 
-    @Enumerated(EnumType.STRING)
+    @Enumerated(EnumType.ORDINAL)
     @Column(name = "movie_type")
     private MovieType movieType;
 
