@@ -12,7 +12,7 @@ Accept: application/json
 
 ### 🟢 Lọc phim theo loại (movieType)
 # Các giá trị movieType có thể là: ACTION, COMEDY, DRAMA... (tuỳ enum của bạn)
-GET http://localhost:8080/movies/filtered?movieType=CommingSoon
+GET http://localhost:8080/movies/filtered?movieType=ComingSoon
 Accept: application/json
 
 ###
