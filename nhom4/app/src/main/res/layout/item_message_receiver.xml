@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="8dp">
+
+    <!-- Avatar người nhận -->
+    <com.google.android.material.imageview.ShapeableImageView
+        android:id="@+id/imageAvatarReceiver"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:src="@drawable/ic_sticker"
+        android:scaleType="centerCrop"
+        app:cornerRadius="20dp"
+        app:strokeColor="?attr/colorOutline"
+        app:strokeWidth="1dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!-- Bong bóng tin nhắn -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/cardMessageReceiver"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="28dp"
+        app:cardBackgroundColor="?attr/colorSurfaceContainerHighest"
+        app:cardCornerRadius="16dp"
+        app:cardElevation="2dp"
+        app:layout_constraintStart_toEndOf="@id/imageAvatarReceiver"
+        app:layout_constraintTop_toTopOf="@id/imageAvatarReceiver">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="8dp">
+
+            <TextView
+                android:id="@+id/textMessageReceiver"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Chào! Mình khoẻ nè 😄"
+                android:textColor="?attr/colorOnSurface"
+                android:textSize="15sp" />
+
+            <TextView
+                android:id="@+id/textTimeReceiver"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="12:46 PM"
+                android:textColor="?attr/colorOnSurfaceVariant"
+                android:textSize="11sp"
+                android:layout_marginTop="4dp" />
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

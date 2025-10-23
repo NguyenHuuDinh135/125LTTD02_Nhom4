@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="8dp">
+
+    <!-- Bong bóng tin nhắn người gửi (bên phải) -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/cardMessageSent"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="80dp"
+        app:cardBackgroundColor="?attr/colorPrimaryContainer"
+        app:cardCornerRadius="16dp"
+        app:cardElevation="2dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="12dp">
+
+            <!-- Nội dung tin nhắn -->
+            <TextView
+                android:id="@+id/tvMessageSent"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Xin chào, bạn khỏe không?"
+                android:textColor="?attr/colorOnPrimaryContainer"
+                android:textSize="15sp"
+                android:maxWidth="250dp" />
+
+            <!-- Thời gian gửi -->
+            <TextView
+                android:id="@+id/tvTimeSent"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="12:45"
+                android:textColor="?attr/colorOnPrimaryContainer"
+                android:textSize="11sp"
+                android:layout_gravity="end"
+                android:layout_marginTop="4dp"
+                android:alpha="0.7" />
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
