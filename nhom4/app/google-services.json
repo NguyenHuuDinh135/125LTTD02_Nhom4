@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "77330770547",
+    "project_id": "nhom4-ee90d",
+    "storage_bucket": "nhom4-ee90d.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:77330770547:android:b083145c8eb28289481806",
+        "android_client_info": {
+          "package_name": "com.example.nhom4"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyASUo-tx2tH9mq9KyLy265l9WDI61zpes4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
