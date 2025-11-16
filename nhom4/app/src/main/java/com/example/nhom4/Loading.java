@@ -22,11 +22,5 @@ public class Loading extends AppCompatActivity {
         ImageView imgLoader = findViewById(R.id.imgLoader);
         Animation rotate = AnimationUtils.loadAnimation(this, R.anim.rotate);
         imgLoader.startAnimation(rotate);
-
-        // Chờ 3s rồi chuyển qua MainActivity
-        new Handler().postDelayed(() -> {
-            startActivity(new Intent(Loading.this, MainActivity.class));
-            finish();
-        }, 3000);
     }
 }
