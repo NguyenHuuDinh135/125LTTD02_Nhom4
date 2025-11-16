@@ -1,17 +1,20 @@
 package com.example.nhom4;
 
 import android.os.Bundle;
-
-import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
-import android.content.Intent;
-import android.os.Handler;
-import android.os.Looper;
-
-import com.example.nhom4.ui.page.LoginActivity;
+import androidx.viewpager2.widget.ViewPager2;
+import com.example.nhom4.ui.page.post.PostAdapter; // Import adapter mới
 
 public class MainActivity extends AppCompatActivity {
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        ViewPager2 viewPager = findViewById(R.id.viewPagerPosts); // ID mới
+        PostAdapter adapter = new PostAdapter(this); // Adapter mới
+        viewPager.setAdapter(adapter);
+    }
 }
+    

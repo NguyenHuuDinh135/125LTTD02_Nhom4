@@ -4,50 +4,66 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="#1C1C1E">
 
+    <!-- 1. Caption (Ví dụ: "Angry - It's Ok") -->
+    <TextView
+        android:id="@+id/textCaption"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="@style/TextAppearance.Material3.HeadlineSmall"
+        android:textStyle="bold"
+        android:textColor="@android:color/white"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/postImageView"
+        app:layout_constraintVertical_bias="0.8"
+        tools:text="Angry - It's Ok" />
+
+    <!-- 2. Ảnh chính (Nội dung post) -->
     <ImageView
-        android:id="@+id/image_view_post"
+        android:id="@+id/postImageView"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:scaleType="centerCrop"
+        app:layout_constraintDimensionRatio="1:1"
+        app:layout_constraintWidth_percent="0.9"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         tools:srcCompat="@tools:sample/backgrounds/scenic" />
 
-    <TextView
-        android:id="@+id/text_username"
+    <!-- 3. Timestamp (Ví dụ: "Bạn 22 thg 9") -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/chipTimestamp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginBottom="16dp"
-        android:textColor="@android:color/white"
-        android:textSize="18sp"
-        android:textStyle="bold"
-        android:shadowColor="@android:color/black"
-        android:shadowDx="1"
-        android:shadowDy="1"
-        android:shadowRadius="2"
-        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_marginTop="16dp"
+        app:cornerRadius="16dp"
+        android:text="Bạn 22 thg 9"
+        android:textColor="#8E8E93"
+        android:backgroundTint="#3A3A3C"
+        app:layout_constraintTop_toBottomOf="@id/postImageView"
         app:layout_constraintStart_toStartOf="parent"
-        tools:text="Tên người dùng" />
+        app:layout_constraintEnd_toEndOf="parent" />
 
+    <!-- 4. Nhóm Avatar (Ví dụ: "Quangvinh12,...") -->
     <TextView
-        android:id="@+id/text_timestamp"
+        android:id="@+id/textAvatarGroup"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="48dp"
-        android:layout_marginStart="16dp"
-        android:textColor="@android:color/white"
-        android:textStyle="bold"
-        android:shadowColor="@android:color/black"
-        android:shadowDx="1"
-        android:shadowDy="1"
-        android:shadowRadius="2"
-        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginTop="12dp"
+        android:drawablePadding="8dp"
+        android:gravity="center"
+        android:textColor="#8E8E93"
+        app:drawableStartCompat="@android:drawable/ic_menu_myplaces"
+        app:drawableTint="#8E8E93"
+        app:layout_constraintTop_toBottomOf="@id/chipTimestamp"
         app:layout_constraintStart_toStartOf="parent"
-        tools:text="5 phút trước" />
+        app:layout_constraintEnd_toEndOf="parent"
+        tools:text="Quangvinh12, Tue122,..." />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
