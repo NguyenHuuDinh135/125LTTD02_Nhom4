@@ -28,16 +28,6 @@ public class LoginActivity extends AppCompatActivity {
     private FirebaseAuth mAuth;
 
     @Override
-    public void onStart() {
-        super.onStart();
-        // Kiểm tra xem người dùng đã đăng nhập từ phiên trước chưa
-        FirebaseUser currentUser = mAuth.getCurrentUser();
-        if (currentUser != null) {
-            // Nếu đã đăng nhập, ghi lại log
-            Toast.makeText(this, "Đăng nhập thành công", Toast.LENGTH_SHORT).show();
-        }
-    }
-    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
