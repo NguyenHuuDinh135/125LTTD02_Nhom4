@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.core.widget.NestedScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#141218"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center">
+
+        <!-- Thanh tiêu đề -->
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/topAppBar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            app:contentInsetStart="0dp"
+            app:contentInsetEnd="0dp">
+
+            <!-- Góc trái -->
+            <ImageView
+                android:id="@+id/ivLeft"
+                android:layout_width="50dp"
+                android:layout_height="match_parent"
+                android:layout_gravity="start|center_vertical"
+                android:padding="12dp"
+                android:src="@drawable/ic_account" />
+
+            <!-- Góc phải: nhóm image -->
+            <LinearLayout
+                android:id="@+id/llRightIcons"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:orientation="horizontal"
+                android:gravity="center_vertical|end"
+                android:layout_gravity="end">
+
+                <ImageView
+                    android:layout_width="50dp"
+                    android:layout_height="match_parent"
+                    android:padding="12dp"
+                    android:src="@drawable/ic_group" />
+
+                <ImageView
+                    android:layout_width="50dp"
+                    android:layout_height="match_parent"
+                    android:padding="12dp"
+                    android:src="@drawable/settings_24px" />
+                <ImageView
+                    android:layout_width="40dp"
+                    android:layout_height="match_parent"
+                    android:padding="15dp"
+                    android:src="@drawable/arrow_right_ic" />
+
+            </LinearLayout>
+
+        </com.google.android.material.appbar.MaterialToolbar>
+
+
+        <!-- Ô tìm kiếm -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:padding="8px">
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_calendar"/>
+            <com.google.android.material.textview.MaterialTextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Khoảng khắc đầu tiên của bạn đã được ghi nhận vào ngày 3 thg 3, 2025"
+                android:textColor="?attr/colorOnPrimarySurface"
+                android:textSize="20dp"
+                android:textAlignment="center"
+                android:layout_marginLeft="12dp"
+                android:layout_marginRight="12dp"/>
+        </LinearLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:padding="12px"
+            android:layout_marginLeft="25px"
+            android:layout_marginRight="25px"
+            >
+
+            <com.google.android.material.button.MaterialButton
+                android:layout_width="0dp"
+                android:layout_height="50dp"
+                android:layout_weight="1"
+                android:text="Streak"
+                android:textColor="?attr/colorPrimary"
+                app:backgroundTint="?attr/colorSecondaryContainer"
+                app:icon="@drawable/ic_sticker"
+                app:iconGravity="textStart"
+                app:iconPadding="8dp"
+                app:iconTint="?attr/colorPrimary"/>
+            <com.google.android.material.button.MaterialButton
+                android:layout_width="0dp"
+                android:layout_height="50dp"
+                android:layout_weight="1"
+                android:text="Habit"
+                app:backgroundTint="?attr/colorOnSecondaryContainer"
+                app:shapeAppearanceOverlay="@style/LeftRoundedButton"
+                app:icon="@drawable/ic_walk"
+                app:iconGravity="textStart"
+                app:iconPadding="8dp"
+                app:iconTint="?attr/colorOnPrimarySurface"/>
+
+        </LinearLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center">
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="25dp"
+                app:cardCornerRadius="20dp"
+                app:cardElevation="4dp"
+                app:cardBackgroundColor="#2B2930"
+                app:strokeWidth="0dp">
+
+                <CalendarView
+                    android:id="@+id/calendarView"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:theme="@style/CalendarWhiteTheme"
+                    android:padding="8dp" />
+            </com.google.android.material.card.MaterialCardView>
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="25dp"
+                app:cardCornerRadius="20dp"
+                app:cardElevation="4dp"
+                app:cardBackgroundColor="#2B2930"
+                app:strokeWidth="0dp">
+
+                <CalendarView
+                    android:id="@+id/calendarView1"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:theme="@style/CalendarWhiteTheme"
+                    android:padding="8dp" />
+            </com.google.android.material.card.MaterialCardView>
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="25dp"
+                app:cardCornerRadius="20dp"
+                app:cardElevation="4dp"
+                app:cardBackgroundColor="#2B2930"
+                app:strokeWidth="0dp">
+
+                <CalendarView
+                    android:id="@+id/calendarView2"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:theme="@style/CalendarWhiteTheme"
+                    android:padding="8dp" />
+            </com.google.android.material.card.MaterialCardView>
+        </LinearLayout>
+    </LinearLayout>
+</androidx.core.widget.NestedScrollView>

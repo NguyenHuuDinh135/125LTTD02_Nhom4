@@ -43,6 +43,7 @@ dependencies {
     implementation("io.reactivex.rxjava3:rxjava:3.1.5")
     implementation(libs.impress)
     implementation(libs.firebase.crashlytics.buildtools)
+    implementation(libs.firebase.database)
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
