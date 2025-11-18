@@ -83,7 +83,7 @@
                 app:layout_constraintStart_toEndOf="@+id/textView5"
                 app:layout_constraintTop_toTopOf="@+id/textView5"
                 app:layout_constraintVertical_bias="0.0"
-                app:srcCompat="@drawable/arrow_right_ic" />
+                app:srcCompat="@drawable/outline_arrow_forward_ios_24" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 

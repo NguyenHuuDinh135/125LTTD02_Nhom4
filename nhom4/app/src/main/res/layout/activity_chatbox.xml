@@ -21,32 +21,36 @@
         app:layout_constraintEnd_toEndOf="parent">
 
         <androidx.constraintlayout.widget.ConstraintLayout
-            xmlns:android="http://schemas.android.com/apk/res/android"
-            xmlns:app="http://schemas.android.com/apk/res-auto"
             android:layout_width="match_parent"
             android:layout_height="64dp"
-            android:background="?attr/colorSurfaceInverse"
-            android:padding="12dp">
+            android:background="?attr/colorSurfaceInverse">
 
             <!-- Back Button -->
-            <ImageView
+            <com.google.android.material.button.MaterialButton
                 android:id="@+id/back"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:src="@drawable/ic_back"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                app:tint="?attr/colorOnSurfaceInverse"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:backgroundTint="?attr/colorSurfaceInverse"
+                android:insetLeft="0dp"
+                android:insetTop="0dp"
+                android:insetRight="0dp"
+                android:insetBottom="0dp"
+                android:padding="0dp"
+                app:elevation="0dp"
+                app:icon="@drawable/outline_arrow_back_ios_24"
+                app:iconGravity="textStart"
+                app:iconPadding="0dp"
+                app:iconTint="?attr/colorOnSurfaceInverse"
+                app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintBottom_toBottomOf="parent" />
+                app:layout_constraintTop_toTopOf="parent" />
 
-            <!-- Text Container -->
             <LinearLayout
                 android:id="@+id/textContainer"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="16dp"
-                android:layout_marginEnd="16dp"
+                android:layout_marginStart="6dp"
+                android:layout_marginEnd="6dp"
                 android:orientation="vertical"
                 app:layout_constraintStart_toEndOf="@id/back"
                 app:layout_constraintEnd_toStartOf="@id/ivMore"
@@ -76,13 +80,22 @@
             </LinearLayout>
 
             <!-- More Button -->
-            <ImageView
+            <com.google.android.material.button.MaterialButton
                 android:id="@+id/ivMore"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:src="@drawable/ic_option"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                app:tint="?attr/colorOnPrimary"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:insetLeft="0dp"
+                android:insetRight="0dp"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:padding="0dp"
+                app:icon="@drawable/outline_more_vert_24"
+                app:iconTint="?attr/colorOnPrimary"
+                app:iconGravity="textStart"
+                app:iconPadding="0dp"
+                app:cornerRadius="20dp"
+                android:backgroundTint="?attr/colorSurfaceInverse"
+                app:elevation="0dp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintBottom_toBottomOf="parent" />
@@ -93,13 +106,11 @@
 
     <!-- Messages RecyclerView -->
     <!-- Input Layout -->
-
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvMessages"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:clipToPadding="false"
-        android:padding="16dp"
         app:layout_constraintBottom_toTopOf="@id/inputContainer"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
@@ -136,7 +147,7 @@
                 android:insetLeft="0dp"
                 android:insetRight="0dp"
                 android:padding="0dp"
-                app:icon="@drawable/ic_option"
+                app:icon="@drawable/baseline_add_circle_24"
                 app:iconTint="?attr/colorOnSurfaceInverse"
                 app:iconGravity="textStart"
                 app:iconPadding="0dp"
@@ -192,7 +203,7 @@
                 android:insetLeft="0dp"
                 android:insetRight="0dp"
                 android:padding="0dp"
-                app:icon="@drawable/ic_send"
+                app:icon="@drawable/outline_send_24"
                 app:iconTint="?attr/colorOnSurfaceInverse"
                 app:iconPadding="0dp"
                 app:iconGravity="textStart"
@@ -204,11 +215,6 @@
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintBottom_toBottomOf="parent" />
 
-
-
         </androidx.constraintlayout.widget.ConstraintLayout>
     </com.google.android.material.card.MaterialCardView>
-
-
-
 </androidx.constraintlayout.widget.ConstraintLayout>

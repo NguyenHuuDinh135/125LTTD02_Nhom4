@@ -62,7 +62,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:padding="10dp"
-            app:srcCompat="@drawable/arrow_right_ic" />
+            app:srcCompat="@drawable/outline_arrow_forward_ios_24" />
 
     </LinearLayout>
 </LinearLayout>
