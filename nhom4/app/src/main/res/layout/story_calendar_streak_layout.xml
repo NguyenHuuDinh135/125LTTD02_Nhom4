@@ -147,7 +147,7 @@
                 app:strokeWidth="0dp">
 
                 <CalendarView
-                    android:id="@+id/calendarView"
+                    android:id="@+id/calendarView1"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:theme="@style/CalendarWhiteTheme"
@@ -163,7 +163,7 @@
                 app:strokeWidth="0dp">
 
                 <CalendarView
-                    android:id="@+id/calendarView"
+                    android:id="@+id/calendarView2"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:theme="@style/CalendarWhiteTheme"

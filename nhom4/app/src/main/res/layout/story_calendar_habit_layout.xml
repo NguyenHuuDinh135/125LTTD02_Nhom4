@@ -146,7 +146,7 @@
                         android:paddingTop="8dp"
                         android:paddingBottom="8dp">
                         <com.google.android.material.imageview.ShapeableImageView
-                            android:id="@+id/ivLeft"
+                            android:id="@+id/ivLeft1"
                             android:layout_width="56dp"
                             android:layout_height="56dp"
                             android:layout_gravity="start|center_vertical"
@@ -217,7 +217,7 @@
                                 app:shapeAppearanceOverlay="@style/CircleImage"
                                 android:src="@drawable/lock_img" />
                             <com.google.android.material.progressindicator.CircularProgressIndicator
-                                android:id="@+id/circleProgress"
+                                android:id="@+id/circleProgress1"
                                 android:layout_width="70dp"
                                 android:layout_height="70dp"
                                 android:indeterminate="true"
@@ -257,7 +257,7 @@
                         android:paddingTop="8dp"
                         android:paddingBottom="8dp">
                         <com.google.android.material.imageview.ShapeableImageView
-                            android:id="@+id/ivLeft"
+                            android:id="@+id/ivLeft2"
                             android:layout_width="56dp"
                             android:layout_height="56dp"
                             android:layout_gravity="start|center_vertical"
@@ -328,7 +328,7 @@
                                 app:shapeAppearanceOverlay="@style/CircleImage"
                                 android:src="@drawable/lock_img" />
                             <com.google.android.material.progressindicator.CircularProgressIndicator
-                                android:id="@+id/circleProgress"
+                                android:id="@+id/circleProgress2"
                                 android:layout_width="70dp"
                                 android:layout_height="70dp"
                                 android:indeterminate="true"
@@ -368,7 +368,7 @@
                         android:paddingTop="8dp"
                         android:paddingBottom="8dp">
                         <com.google.android.material.imageview.ShapeableImageView
-                            android:id="@+id/ivLeft"
+                            android:id="@+id/ivLeft3"
                             android:layout_width="56dp"
                             android:layout_height="56dp"
                             android:layout_gravity="start|center_vertical"
