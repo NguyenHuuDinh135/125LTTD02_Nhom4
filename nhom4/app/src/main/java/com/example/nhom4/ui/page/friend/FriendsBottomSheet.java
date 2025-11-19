@@ -68,11 +68,11 @@ public class FriendsBottomSheet extends BottomSheetDialogFragment {
 
             BottomSheetBehavior<FrameLayout> behavior = BottomSheetBehavior.from(bottomSheet);
             behavior.setPeekHeight(height);
-            behavior.setSkipCollapsed(true);
             behavior.setState(BottomSheetBehavior.STATE_EXPANDED);
 
-            // Bo góc chuẩn
-            ShapeAppearanceModel shapeModel = new ShapeAppearanceModel()
+            // Tạo bo góc nhưng k được
+            // Tạo ShapeAppearanceModel
+            /*ShapeAppearanceModel shapeModel = new ShapeAppearanceModel()
                     .toBuilder()
                     .setTopLeftCornerSize(24f)
                     .setTopRightCornerSize(24f)
@@ -80,10 +80,9 @@ public class FriendsBottomSheet extends BottomSheetDialogFragment {
 
             int colorSurface = MaterialColors.getColor(requireContext(), com.google.android.material.R.attr.colorSurface, 0);
             MaterialShapeDrawable drawable = new MaterialShapeDrawable(shapeModel);
-            drawable.setTint(colorSurface);
-            drawable.setShadowCompatibilityMode(MaterialShapeDrawable.SHADOW_COMPAT_MODE_ALWAYS);
-            drawable.setElevation(8f);
+            drawable.setTint(colorSurface);   // màu nền theo theme
             bottomSheet.setBackground(drawable);
+            bottomSheet.setClipToOutline(true);*/
 
         }
     }
