@@ -6,12 +6,12 @@ import androidx.camera.core.*;
 import androidx.camera.lifecycle.ProcessCameraProvider;
 import androidx.camera.view.PreviewView;
 import androidx.core.content.ContextCompat;
-import android.os.Environment;
-import android.media.MediaScannerConnection;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
+import android.media.MediaScannerConnection;
 import android.os.Bundle;
+import android.os.Environment;
 import android.widget.ImageButton;
 import android.widget.Toast;
 
@@ -20,13 +20,15 @@ import com.google.common.util.concurrent.ListenableFuture;
 
 import java.io.File;
 import java.util.concurrent.ExecutionException;
-public class CameraActivity extends AppCompatActivity{
+
+public class CameraActivity extends AppCompatActivity {
     private PreviewView previewView;
     private ImageCapture imageCapture;
     private CameraSelector cameraSelector;
     private Camera camera;
     private ProcessCameraProvider cameraProvider;
     private boolean isFlashOn = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -37,10 +39,10 @@ public class CameraActivity extends AppCompatActivity{
         ImageButton btnSwitchCamera = findViewById(R.id.btnSwitchCamera);
         ImageButton btnFlash = findViewById(R.id.btnFlash);
 
-        // Kiểm tra permission camera
+        // Kiểm tra quyền camera
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
                 == PackageManager.PERMISSION_GRANTED) {
-            startCamera();
+            previewView.post(() -> startCamera(previewView.getWidth(), previewView.getHeight()));
         } else {
             requestPermissions(new String[]{Manifest.permission.CAMERA}, 1001);
         }
@@ -55,7 +57,7 @@ public class CameraActivity extends AppCompatActivity{
         btnFlash.setOnClickListener(v -> toggleFlash(btnFlash));
     }
 
-    private void startCamera() {
+    private void startCamera(int width, int height) {
         ListenableFuture<ProcessCameraProvider> cameraProviderFuture =
                 ProcessCameraProvider.getInstance(this);
 
@@ -67,8 +69,10 @@ public class CameraActivity extends AppCompatActivity{
                 Preview preview = new Preview.Builder().build();
                 preview.setSurfaceProvider(previewView.getSurfaceProvider());
 
+                // Thiết lập ImageCapture theo kích thước PreviewView
                 imageCapture = new ImageCapture.Builder()
                         .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
+                        .setTargetResolution(new android.util.Size(width, height))
                         .build();
 
                 cameraProvider.unbindAll();
@@ -83,7 +87,6 @@ public class CameraActivity extends AppCompatActivity{
     private void takePhoto() {
         if (imageCapture == null) return;
 
-        // Lưu ảnh vào thư mục công khai Pictures
         File photoFile = new File(Environment.getExternalStoragePublicDirectory(
                 Environment.DIRECTORY_PICTURES),
                 "IMG_" + System.currentTimeMillis() + ".jpg");
@@ -95,7 +98,7 @@ public class CameraActivity extends AppCompatActivity{
                 new ImageCapture.OnImageSavedCallback() {
                     @Override
                     public void onImageSaved(@NonNull ImageCapture.OutputFileResults outputFileResults) {
-                        // Thông báo MediaScanner để ảnh hiển thị trong Gallery
+                        // Thông báo MediaScanner
                         MediaScannerConnection.scanFile(CameraActivity.this,
                                 new String[]{photoFile.getAbsolutePath()},
                                 null,
@@ -128,7 +131,6 @@ public class CameraActivity extends AppCompatActivity{
 
             camera = cameraProvider.bindToLifecycle(this, cameraSelector, preview, imageCapture);
 
-            // Tắt flash khi đổi camera
             isFlashOn = false;
             ImageButton btnFlash = findViewById(R.id.btnFlash);
             btnFlash.setImageResource(R.drawable.ic_flash_off);
