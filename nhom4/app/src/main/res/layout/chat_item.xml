@@ -51,7 +51,7 @@
                 android:layout_height="wrap_content"
                 android:ellipsize="end"
                 android:maxLines="1"
-                android:text="Supporting line text lorem ipsum dolor sit amet, consectetur."
+                android:text="@string/supporting_line_text_lorem_ipsum_dolor_sit_amet_consectetur"
                 android:textColor="@color/cardview_light_background"
                 android:textSize="16sp"
                 app:lineHeight="24sp" />
@@ -61,6 +61,7 @@
             android:id="@+id/imageView5"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:contentDescription="@string/cometo"
             android:padding="10dp"
             app:srcCompat="@drawable/outline_arrow_forward_ios_24" />
 

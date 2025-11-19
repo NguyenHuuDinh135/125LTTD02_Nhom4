@@ -20,7 +20,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginBottom="24dp"
-            android:text="Chuỗi Streak"
+            android:text="@string/chu_i_streak"
             android:textColor="?attr/colorOnSurface"
             android:textStyle="bold" />
 
@@ -62,7 +62,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:gravity="center"
-                        android:text="Tháng 3, 2025"
+                        android:text="@string/th_ng_3_2025"
                         android:textColor="?attr/colorOnSurface"
                         android:textStyle="bold" />
 
@@ -84,13 +84,13 @@
                     android:weightSum="7">
 
                     <!-- Bạn có thể dùng include hoặc hardcode textview -->
-                    <TextView android:text="T2" style="@style/CalendarDayLabel"/>
-                    <TextView android:text="T3" style="@style/CalendarDayLabel"/>
-                    <TextView android:text="T4" style="@style/CalendarDayLabel"/>
-                    <TextView android:text="T5" style="@style/CalendarDayLabel"/>
-                    <TextView android:text="T6" style="@style/CalendarDayLabel"/>
-                    <TextView android:text="T7" style="@style/CalendarDayLabel"/>
-                    <TextView android:text="CN" style="@style/CalendarDayLabel"/>
+                    <TextView android:text="@string/t2" style="@style/CalendarDayLabel"/>
+                    <TextView android:text="@string/t3" style="@style/CalendarDayLabel"/>
+                    <TextView android:text="@string/t4" style="@style/CalendarDayLabel"/>
+                    <TextView android:text="@string/t5" style="@style/CalendarDayLabel"/>
+                    <TextView android:text="@string/t6" style="@style/CalendarDayLabel"/>
+                    <TextView android:text="@string/t7" style="@style/CalendarDayLabel"/>
+                    <TextView android:text="@string/cn" style="@style/CalendarDayLabel"/>
                 </LinearLayout>
 
                 <!-- 3. Grid Lịch (Thay thế CalendarView cũ) -->
@@ -126,7 +126,7 @@
                 android:orientation="vertical">
 
                 <TextView
-                    android:text="Thống kê"
+                    android:text="@string/th_ng_k"
                     android:textStyle="bold"
                     android:textColor="?attr/colorOnSurface"
                     android:textSize="18sp"
