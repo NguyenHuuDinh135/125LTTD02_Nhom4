@@ -26,19 +26,10 @@
         android:textColor="?attr/colorOnPrimarySurface"
         style="@style/TextAppearance.Material3.TitleMedium" />
 
-
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btn_add"
+    <ImageView
+        android:id="@+id/btn_delete"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:backgroundTint="#FFD700"
-
-        android:text="Thêm"
-
-        android:textAllCaps="false"
-        android:textColor="#121212"
-
-        app:icon="@drawable/ic_add"
-        app:iconGravity="textStart"
-        app:iconTint="#121212" />
+        android:src="@drawable/delete_ic"
+        android:backgroundTint="?attr/colorOnSurfaceInverse"/>
 </LinearLayout>
