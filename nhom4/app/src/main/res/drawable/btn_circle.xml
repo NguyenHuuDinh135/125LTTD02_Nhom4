@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="oval">
+
+    <!-- Màu nền bán trong suốt (có thể đổi theo thiết kế) -->
+    <solid android:color="#66FFFFFF" />
+
+    <!-- Viền trắng -->
+    <stroke
+        android:width="3dp"
+        android:color="@android:color/white" />
+
+    <!-- Kích thước mặc định (có thể override trong layout) -->
+    <size
+        android:width="80dp"
+        android:height="80dp" />
+
+</shape>
+
