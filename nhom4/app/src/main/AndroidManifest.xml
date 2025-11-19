@@ -38,7 +38,9 @@
         <activity android:name=".ui.page.ProfileActivity" android:exported="false" />
         <activity android:name=".ui.page.CreateUsernameActivity" android:exported="false" />
         <!-- Các activity khác... -->
-
+<!--        <activity-->
+<!--            android:name=".ui.page.CameraActivity"-->
+<!--            android:exported="false" />-->
 
     </application>
 
