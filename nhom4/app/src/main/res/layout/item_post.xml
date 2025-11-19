@@ -5,65 +5,106 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#1C1C1E">
+    android:background="?attr/colorSurface">
+    <!-- Dùng colorSurface thay vì #1C1C1E để hỗ trợ theme sáng/tối -->
 
-    <!-- 1. Caption (Ví dụ: "Angry - It's Ok") -->
-    <TextView
+    <!-- 1. Caption (Tiêu đề cảm xúc) -->
+    <com.google.android.material.textview.MaterialTextView
         android:id="@+id/textCaption"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:textAppearance="@style/TextAppearance.Material3.HeadlineSmall"
+        android:layout_marginHorizontal="32dp"
+        android:layout_marginBottom="24dp"
+        android:gravity="center"
+        android:text="Angry - It's Ok"
+        android:textColor="?attr/colorOnSurface"
         android:textStyle="bold"
-        android:textColor="@android:color/white"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
+        style="@style/TextAppearance.Material3.HeadlineSmall"
+        app:layout_constraintBottom_toTopOf="@id/card_image_container"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/postImageView"
-        app:layout_constraintVertical_bias="0.8"
-        tools:text="Angry - It's Ok" />
+        app:layout_constraintStart_toStartOf="parent" />
 
-    <!-- 2. Ảnh chính (Nội dung post) -->
-    <ImageView
-        android:id="@+id/postImageView"
+    <!-- 2. Container Ảnh (Dùng CardView để bo góc ảnh) -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/card_image_container"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:scaleType="centerCrop"
-        app:layout_constraintDimensionRatio="1:1"
-        app:layout_constraintWidth_percent="0.9"
-        app:layout_constraintTop_toTopOf="parent"
+        app:cardCornerRadius="28dp"
+        app:cardElevation="0dp"
+        app:strokeWidth="0dp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintDimensionRatio="1:1"
         app:layout_constraintEnd_toEndOf="parent"
-        tools:srcCompat="@tools:sample/backgrounds/scenic" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintWidth_percent="0.85">
 
-    <!-- 3. Timestamp (Ví dụ: "Bạn 22 thg 9") -->
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/chipTimestamp"
+        <ImageView
+            android:id="@+id/postImageView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:contentDescription="@null"
+            android:scaleType="centerCrop"
+            tools:srcCompat="@tools:sample/backgrounds/scenic" />
+
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- 3. Timestamp (Chip hiển thị thời gian) -->
+    <!-- Dùng Chip hoặc CardView thay vì Button để nhẹ hơn và đúng ngữ nghĩa -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/cardTimestamp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        app:cornerRadius="16dp"
-        android:text="Bạn 22 thg 9"
-        android:textColor="#8E8E93"
-        android:backgroundTint="#3A3A3C"
-        app:layout_constraintTop_toBottomOf="@id/postImageView"
+        android:layout_marginTop="20dp"
+        app:cardBackgroundColor="?attr/colorSurfaceContainerHigh"
+        app:cardCornerRadius="16dp"
+        app:cardElevation="0dp"
+        app:strokeWidth="0dp"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintTop_toBottomOf="@id/card_image_container">
 
-    <!-- 4. Nhóm Avatar (Ví dụ: "Quangvinh12,...") -->
-    <TextView
-        android:id="@+id/textAvatarGroup"
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/tvTimestamp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingHorizontal="16dp"
+            android:paddingVertical="8dp"
+            android:text="Bạn 22 thg 9"
+            android:textColor="?attr/colorOnSurfaceVariant"
+            style="@style/TextAppearance.Material3.LabelLarge" />
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- 4. Nhóm người xem (Reactions/Viewers) -->
+    <LinearLayout
+        android:id="@+id/layoutAvatarGroup"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="12dp"
-        android:drawablePadding="8dp"
         android:gravity="center"
-        android:textColor="#8E8E93"
-        app:drawableStartCompat="@android:drawable/ic_menu_myplaces"
-        app:drawableTint="#8E8E93"
-        app:layout_constraintTop_toBottomOf="@id/chipTimestamp"
-        app:layout_constraintStart_toStartOf="parent"
+        android:orientation="horizontal"
         app:layout_constraintEnd_toEndOf="parent"
-        tools:text="Quangvinh12, Tue122,..." />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/cardTimestamp">
+
+        <!-- Icon nhỏ -->
+        <ImageView
+            android:layout_width="16dp"
+            android:layout_height="16dp"
+            android:layout_marginEnd="6dp"
+            app:tint="?attr/colorOnSurfaceVariant"
+            tools:ignore="ContentDescription" />
+        <!-- Lưu ý: Bạn cần có icon vector ic_group_24 hoặc tương tự -->
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/textAvatarGroup"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:text="Quangvinh12, Tue122,..."
+            android:textColor="?attr/colorOnSurfaceVariant"
+            style="@style/TextAppearance.Material3.BodySmall" />
+    </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

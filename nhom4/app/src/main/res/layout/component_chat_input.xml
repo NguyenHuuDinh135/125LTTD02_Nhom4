@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/inputContainer"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="8dp"
+    app:cardBackgroundColor="?attr/colorSurfaceContainer"
+    app:cardCornerRadius="24dp"
+    app:cardElevation="0dp"
+    app:strokeColor="?attr/colorOutlineVariant"
+    app:strokeWidth="1dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="bottom"
+        android:orientation="horizontal"
+        android:padding="4dp">
+
+        <!-- Nút Option (+) -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnOption"
+            style="@style/Widget.Material3.Button.IconButton"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginBottom="2dp"
+            app:icon="@drawable/baseline_add_circle_24"
+            app:iconTint="?attr/colorOnSurfaceVariant" />
+
+        <!-- Ô nhập liệu -->
+        <!-- Dùng EditText trần bên trong Layout để dễ custom hơn là TextInputLayout full -->
+        <EditText
+            android:id="@+id/etMessage"
+            style="@style/TextAppearance.Material3.BodyLarge"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="@android:color/transparent"
+            android:hint="Nhập tin nhắn..."
+            android:inputType="textCapSentences|textMultiLine"
+            android:maxLines="5"
+            android:minHeight="48dp"
+            android:paddingHorizontal="8dp"
+            android:paddingVertical="12dp"
+            android:textColor="?attr/colorOnSurface"
+            android:textColorHint="?attr/colorOnSurfaceVariant" />
+
+        <!-- Nút gửi -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnSend"
+            style="@style/Widget.Material3.Button.IconButton.Filled"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginBottom="2dp"
+            android:layout_marginEnd="4dp"
+            app:backgroundTint="?attr/colorPrimary"
+            app:icon="@drawable/outline_send_24"
+            app:iconTint="?attr/colorOnPrimary" />
+
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>

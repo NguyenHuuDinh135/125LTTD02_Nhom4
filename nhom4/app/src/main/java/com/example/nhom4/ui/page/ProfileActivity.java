@@ -18,7 +18,7 @@ public class ProfileActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_profile);
 
-        textViewUserEmail = findViewById(R.id.textViewUserEmail);
+        textViewUserEmail = findViewById(R.id.item_email);
 
         // Nhận email từ LoginActivity
         String email = getIntent().getStringExtra("user_email");
