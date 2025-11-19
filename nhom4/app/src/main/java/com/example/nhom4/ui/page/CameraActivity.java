@@ -6,6 +6,8 @@ import androidx.camera.core.*;
 import androidx.camera.lifecycle.ProcessCameraProvider;
 import androidx.camera.view.PreviewView;
 import androidx.core.content.ContextCompat;
+import android.os.Environment;
+import android.media.MediaScannerConnection;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
@@ -81,7 +83,9 @@ public class CameraActivity extends AppCompatActivity{
     private void takePhoto() {
         if (imageCapture == null) return;
 
-        File photoFile = new File(getExternalFilesDir(null),
+        // Lưu ảnh vào thư mục công khai Pictures
+        File photoFile = new File(Environment.getExternalStoragePublicDirectory(
+                Environment.DIRECTORY_PICTURES),
                 "IMG_" + System.currentTimeMillis() + ".jpg");
 
         ImageCapture.OutputFileOptions outputOptions =
@@ -91,6 +95,12 @@ public class CameraActivity extends AppCompatActivity{
                 new ImageCapture.OnImageSavedCallback() {
                     @Override
                     public void onImageSaved(@NonNull ImageCapture.OutputFileResults outputFileResults) {
+                        // Thông báo MediaScanner để ảnh hiển thị trong Gallery
+                        MediaScannerConnection.scanFile(CameraActivity.this,
+                                new String[]{photoFile.getAbsolutePath()},
+                                null,
+                                null);
+
                         Toast.makeText(CameraActivity.this,
                                 "Đã lưu ảnh: " + photoFile.getAbsolutePath(),
                                 Toast.LENGTH_SHORT).show();
