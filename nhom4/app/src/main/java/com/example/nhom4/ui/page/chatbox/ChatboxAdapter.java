@@ -6,9 +6,12 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+
 import com.example.nhom4.R;
 import com.example.nhom4.data.model.Message;
 import com.google.android.material.imageview.ShapeableImageView;
+import com.google.firebase.Timestamp;
+
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -30,9 +33,13 @@ public class ChatboxAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         this.currentUserId = currentUserId;
     }
 
+    // ... getItemViewType(), onCreateViewHolder(), onBindViewHolder(), getItemCount(), setMessages() giữ nguyên ...
     @Override
     public int getItemViewType(int position) {
         Message message = messages.get(position);
+        if (message == null || message.getSenderId() == null) {
+            return VIEW_TYPE_RECEIVED; // Hoặc một kiểu mặc định khác để tránh crash
+        }
         return message.getSenderId().equals(currentUserId)
                 ? VIEW_TYPE_SENT
                 : VIEW_TYPE_RECEIVED;
@@ -73,6 +80,7 @@ public class ChatboxAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         notifyDataSetChanged();
     }
 
+
     // ViewHolder cho tin nhắn gửi
     static class SentMessageViewHolder extends RecyclerView.ViewHolder {
         TextView tvMessage, tvTime;
@@ -85,33 +93,45 @@ public class ChatboxAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 
         void bind(Message message) {
             tvMessage.setText(message.getContent());
-            tvTime.setText(formatTime(message.getTimestamp()));
+            // Gọi hàm formatTime đã được cập nhật
+            if (message.getCreatedAt() != null) {
+                tvTime.setText(formatTime(message.getCreatedAt()));
+            }
         }
     }
 
     // ViewHolder cho tin nhắn nhận
     static class ReceivedMessageViewHolder extends RecyclerView.ViewHolder {
         ShapeableImageView ivAvatar;
-        TextView tvMessage, tvTime, tvSenderName;
+        TextView tvMessage, tvTime;
+        // Bỏ tvSenderName vì nó không có trong model Message
+        // TextView tvSenderName;
 
         ReceivedMessageViewHolder(View itemView) {
             super(itemView);
             ivAvatar = itemView.findViewById(R.id.imageAvatarReceiver);
             tvMessage = itemView.findViewById(R.id.textMessageReceiver);
             tvTime = itemView.findViewById(R.id.textTimeReceiver);
-//            tvSenderName = itemView.findViewById(R.id.tvSenderName); //Tạm thời chưa xử lý nhóm để hiển thị tên người gửi
         }
 
         void bind(Message message) {
-            tvSenderName.setText(message.getSenderName());
+            // tvSenderName.setText(message.getSenderId()); // Dòng này sẽ gây lỗi nếu tvSenderName bị comment
             tvMessage.setText(message.getContent());
-            tvTime.setText(formatTime(message.getTimestamp()));
+            // Gọi hàm formatTime đã được cập nhật
+            if (message.getCreatedAt() != null) {
+                tvTime.setText(formatTime(message.getCreatedAt()));
+            }
             // Load avatar với Glide hoặc Picasso
         }
     }
 
-    private static String formatTime(long timestamp) {
+    private static String formatTime(Timestamp timestamp) {
+        if (timestamp == null) {
+            return ""; // Trả về chuỗi rỗng nếu timestamp là null
+        }
+        // Chuyển đổi com.google.firebase.Timestamp thành java.util.Date
+        Date date = timestamp.toDate();
         SimpleDateFormat sdf = new SimpleDateFormat("HH:mm", Locale.getDefault());
-        return sdf.format(new Date(timestamp));
+        return sdf.format(date);
     }
 }

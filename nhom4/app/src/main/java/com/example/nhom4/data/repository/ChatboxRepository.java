@@ -3,118 +3,131 @@ package com.example.nhom4.data.repository;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import com.example.nhom4.data.model.Message;
-import com.google.firebase.database.ChildEventListener;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.EventListener;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.ListenerRegistration;
+import com.google.firebase.firestore.Query;
+import com.google.firebase.firestore.QueryDocumentSnapshot; // Sửa import
+import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap; // Dùng cho listener an toàn hơn
 
 public class ChatboxRepository {
-    private DatabaseReference messagesRef;
-    private ChildEventListener messageListener;
+
+    private final FirebaseFirestore firestore;
+    // Sử dụng Map để quản lý nhiều listener cho nhiều cuộc trò chuyện khác nhau
+    private final Map<String, ListenerRegistration> listenerMap = new ConcurrentHashMap<>();
 
     public ChatboxRepository() {
-        FirebaseDatabase database = FirebaseDatabase.getInstance();
-        messagesRef = database.getReference("messages");
+        firestore = FirebaseFirestore.getInstance();
     }
 
-    // Gửi tin nhắn
-    public void sendMessage(Message message, OnMessageSentListener listener) {
-        String chatRoomId = getChatRoomId(message.getSenderId(), message.getReceiverId());
-        DatabaseReference chatRef = messagesRef.child(chatRoomId);
+    // Gửi tin nhắn vào Firestore
+    public void sendMessage(
+            String conversationId,
+            Message message,
+            OnMessageSentListener listener
+    ) {
+        CollectionReference messagesRef = firestore
+                .collection("conversations")
+                .document(conversationId)
+                .collection("messages");
 
-        String messageId = chatRef.push().getKey();
-        if (messageId != null) {
-            message.setMessageId(messageId);
-            chatRef.child(messageId).setValue(message.toMap())
-                    .addOnSuccessListener(aVoid -> {
-                        if (listener != null) listener.onSuccess();
-                    })
-                    .addOnFailureListener(e -> {
-                        if (listener != null) listener.onFailure(e.getMessage());
-                    });
+        // Tạo ID cho message
+        String messageId = messagesRef.document().getId();
+        message.setMessageId(messageId);
+
+        messagesRef.document(messageId)
+                .set(message)
+                .addOnSuccessListener(aVoid -> {
+                    // Update conversation info
+                    updateConversationLastMessage(conversationId, message);
+
+                    if (listener != null) listener.onSuccess();
+                })
+                .addOnFailureListener(e -> {
+                    if (listener != null) listener.onFailure(e.getMessage());
+                });
+    }
+
+    // Update lastMessage
+    private void updateConversationLastMessage(String conversationId, Message message) {
+
+        DocumentReference convRef = firestore
+                .collection("conversations")
+                .document(conversationId);
+
+        Map<String, Object> updates = new HashMap<>();
+        updates.put("lastMessage", message.getContent());
+        updates.put("lastSenderId", message.getSenderId());
+        updates.put("lastMessageAt", message.getCreatedAt());
+
+        convRef.update(updates);
+    }
+
+
+    // Lắng nghe tin nhắn realtime từ Firestore
+    public LiveData<List<Message>> getMessages(String conversationId) {
+        MutableLiveData<List<Message>> liveData = new MutableLiveData<>();
+        CollectionReference messagesRef = firestore
+                .collection("conversations")
+                .document(conversationId)
+                .collection("messages");
+
+        if (listenerMap.containsKey(conversationId)) {
+            listenerMap.get(conversationId).remove();
         }
-    }
 
-    // Lắng nghe tin nhắn realtime
-    public LiveData<List<Message>> getMessages(String userId, String receiverId) {
-        MutableLiveData<List<Message>> messagesLiveData = new MutableLiveData<>();
-        List<Message> messageList = new ArrayList<>();
+        ListenerRegistration registration = messagesRef
+                .orderBy("createdAt", Query.Direction.ASCENDING)
+                .addSnapshotListener((value, error) -> {
+                    if (error != null) {
+                        return;
+                    }
 
-        String chatRoomId = getChatRoomId(userId, receiverId);
-        DatabaseReference chatRef = messagesRef.child(chatRoomId);
+                    if (value == null) return;
 
-        messageListener = new ChildEventListener() {
-            @Override
-            public void onChildAdded(DataSnapshot snapshot, String previousChildName) {
-                Message message = snapshot.getValue(Message.class);
-                if (message != null) {
-                    messageList.add(message);
-                    messagesLiveData.setValue(new ArrayList<>(messageList));
-                }
-            }
-
-            @Override
-            public void onChildChanged(DataSnapshot snapshot, String previousChildName) {
-                Message updatedMessage = snapshot.getValue(Message.class);
-                if (updatedMessage != null) {
-                    for (int i = 0; i < messageList.size(); i++) {
-                        if (messageList.get(i).getMessageId().equals(updatedMessage.getMessageId())) {
-                            messageList.set(i, updatedMessage);
-                            messagesLiveData.setValue(new ArrayList<>(messageList));
-                            break;
+                    List<Message> messageList = new ArrayList<>();
+                    for (QueryDocumentSnapshot doc : value) {
+                        if (doc.exists()) {
+                            Message m = doc.toObject(Message.class);
+                            messageList.add(m);
                         }
                     }
-                }
-            }
+                    liveData.postValue(messageList); // Gửi dữ liệu qua LiveData
+                });
 
-            @Override
-            public void onChildRemoved(DataSnapshot snapshot) {
-                Message removedMessage = snapshot.getValue(Message.class);
-                if (removedMessage != null) {
-                    messageList.removeIf(msg ->
-                            msg.getMessageId().equals(removedMessage.getMessageId()));
-                    messagesLiveData.setValue(new ArrayList<>(messageList));
-                }
-            }
+        // Lưu listener mới vào map
+        listenerMap.put(conversationId, registration);
 
-            @Override
-            public void onChildMoved(DataSnapshot snapshot, String previousChildName) {}
-
-            @Override
-            public void onCancelled(DatabaseError error) {
-                // Xử lý lỗi
-            }
-        };
-
-        chatRef.orderByChild("timestamp").addChildEventListener(messageListener);
-        return messagesLiveData;
+        return liveData;
     }
 
-    // Tạo chatRoomId duy nhất cho 2 người
-    private String getChatRoomId(String userId1, String userId2) {
-        return userId1.compareTo(userId2) < 0
-                ? userId1 + "_" + userId2
-                : userId2 + "_" + userId1;
+    public void markAsRead(String conversationId, String messageId, String userId) {
+        // Cần triển khai logic đánh dấu đã đọc ở đây
+        // Ví dụ: cập nhật một trường trong document của tin nhắn
+        // firestore.collection("conversations").document(conversationId)
+        //          .collection("messages").document(messageId)
+        //          .update("readBy." + userId, true);
     }
 
-//     Đánh dấu đã đọc
-    public void markAsRead(String userId, String receiverId, String messageId) {
-        String chatRoomId = getChatRoomId(userId, receiverId);
-        messagesRef.child(chatRoomId).child(messageId).child("isRead").setValue(true);
-    }
-
-    // Xóa listener khi không dùng
-    public void removeListener(String userId, String receiverId) {
-        if (messageListener != null) {
-            String chatRoomId = getChatRoomId(userId, receiverId);
-            messagesRef.child(chatRoomId).removeEventListener(messageListener);
+    // Xóa listener khi thoát khỏi Activity
+    public void removeListener(String conversationId) {
+        if (conversationId != null && listenerMap.containsKey(conversationId)) {
+            listenerMap.get(conversationId).remove();
+            listenerMap.remove(conversationId);
         }
     }
 
-    // Interface callback
+
+    // Interface callback (Giữ nguyên)
     public interface OnMessageSentListener {
         void onSuccess();
         void onFailure(String error);

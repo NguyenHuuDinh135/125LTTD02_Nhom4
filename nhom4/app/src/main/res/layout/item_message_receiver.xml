@@ -41,7 +41,7 @@
                 android:id="@+id/textMessageReceiver"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Chào! Mình khoẻ nè 😄"
+                android:text="It's ok broo."
                 android:textColor="?attr/colorOnSurface"
                 android:textSize="15sp" />
 
