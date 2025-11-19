@@ -1,75 +1,66 @@
 package com.example.nhom4.data.model;
 
-import com.google.firebase.database.ServerValue;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import com.google.firebase.Timestamp;
+import com.google.firebase.firestore.ServerTimestamp;
+
 public class Message {
+
     private String messageId;
     private String senderId;
-    private String senderName;
-    private String senderAvatar;
-    private String receiverId;
     private String content;
-    private long timestamp;
-    private boolean isRead;
-    private String type; // text, image, file
+    private String type;            // text, image,...
+    @ServerTimestamp
+    private Timestamp createdAt;
+    private List<String> seenBy;    // danh sách userId đã đọc
 
-    public Message() {
-        // Constructor rỗng bắt buộc cho Firebase
-    }
+    public Message() {}
 
-    public Message(String senderId, String senderName, String senderAvatar,
-                   String receiverId, String content, String type) {
+    public Message(String messageId, String senderId, String content,
+                   String type, Timestamp createdAt, List<String> seenBy) {
+        this.messageId = messageId;
         this.senderId = senderId;
-        this.senderName = senderName;
-        this.senderAvatar = senderAvatar;
-        this.receiverId = receiverId;
         this.content = content;
         this.type = type;
-        this.isRead = false;
+        this.createdAt = createdAt;
+        this.seenBy = seenBy;
     }
 
-    // Chuyển sang Map để lưu vào Firebase
-    public Map<String, Object> toMap() {
-        HashMap<String, Object> result = new HashMap<>();
-        result.put("messageId", messageId);
-        result.put("senderId", senderId);
-        result.put("senderName", senderName);
-        result.put("senderAvatar", senderAvatar);
-        result.put("receiverId", receiverId);
-        result.put("content", content);
-        result.put("timestamp", ServerValue.TIMESTAMP);
-        result.put("isRead", isRead);
-        result.put("type", type);
-        return result;
+    public Message(String senderId, String content, String type) {
+        this.senderId = senderId;
+        this.content = content;
+        this.type = type;
+        // createdAt sẽ được set ngay trước khi gửi đi (thường là Server Timestamp)
+        // messageId sẽ được set bởi Repository
+        // seenBy sẽ được khởi tạo là một danh sách rỗng
+        this.seenBy = new ArrayList<>();
     }
 
-    // Getters and Setters
     public String getMessageId() { return messageId; }
-    public void setMessageId(String messageId) { this.messageId = messageId; }
-
     public String getSenderId() { return senderId; }
-    public void setSenderId(String senderId) { this.senderId = senderId; }
-
-    public String getSenderName() { return senderName; }
-    public void setSenderName(String senderName) { this.senderName = senderName; }
-
-    public String getSenderAvatar() { return senderAvatar; }
-    public void setSenderAvatar(String senderAvatar) { this.senderAvatar = senderAvatar; }
-
-    public String getReceiverId() { return receiverId; }
-    public void setReceiverId(String receiverId) { this.receiverId = receiverId; }
-
     public String getContent() { return content; }
-    public void setContent(String content) { this.content = content; }
-
-    public long getTimestamp() { return timestamp; }
-    public void setTimestamp(long timestamp) { this.timestamp = timestamp; }
-
-    public boolean isRead() { return isRead; }
-    public void setRead(boolean read) { isRead = read; }
-
     public String getType() { return type; }
+    public Timestamp getCreatedAt() { return createdAt; }
+    public List<String> getSeenBy() { return seenBy; }
+
+    public void setMessageId(String messageId) { this.messageId = messageId; }
+    public void setSenderId(String senderId) { this.senderId = senderId; }
+    public void setContent(String content) { this.content = content; }
     public void setType(String type) { this.type = type; }
+    public void setCreatedAt(Timestamp createdAt) { this.createdAt = createdAt; }
+    public void setSeenBy(List<String> seenBy) { this.seenBy = seenBy; }
+
+    public Map<String, Object> toMap() {
+        Map<String, Object> map = new HashMap<>();
+        map.put("senderId", senderId);
+        map.put("content", content);
+        map.put("createdAt", null); // createdAt sẽ được set bởi Firestore
+        map.put("seenBy", seenBy != null ? seenBy : new ArrayList<>());
+        map.put("type", type);
+        return map;
+    }
 }
