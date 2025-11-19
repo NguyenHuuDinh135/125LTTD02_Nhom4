@@ -9,12 +9,17 @@
     android:paddingHorizontal="16dp"
     android:paddingVertical="12dp">
 
+    <!-- Avatar tròn -->
     <com.google.android.material.imageview.ShapeableImageView
         android:id="@+id/iv_avatar"
         android:layout_width="50dp"
         android:layout_height="50dp"
-        android:src="@drawable/avatar_placeholder" />
+        android:scaleType="centerCrop"
+        app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.Full"
+        android:src="@drawable/avatar_placeholder"
+        android:background="?attr/colorSurfaceContainerHigh" />
 
+    <!-- Tên người dùng -->
     <com.google.android.material.textview.MaterialTextView
         android:id="@+id/tv_username"
         android:layout_width="0dp"
@@ -23,22 +28,22 @@
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
         android:text="TeaBlack"
-        android:textColor="?attr/colorSurface"
+        android:textColor="?attr/colorOnSurface"
         style="@style/TextAppearance.Material3.TitleMedium" />
 
-
+    <!-- Nút Thêm: Dùng Theme thay vì màu cứng -->
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btn_add"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:backgroundTint="#FFD700"
-
         android:text="Thêm"
-
         android:textAllCaps="false"
-        android:textColor="#121212"
 
+        style="@style/Widget.Material3.Button.TonalButton"
+
+        android:textColor="?attr/colorOnSecondaryContainer"
         app:icon="@drawable/ic_add"
         app:iconGravity="textStart"
-        app:iconTint="#121212" />
+        app:iconTint="?attr/colorOnSecondaryContainer" />
+
 </LinearLayout>

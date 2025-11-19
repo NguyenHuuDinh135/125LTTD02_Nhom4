@@ -146,10 +146,10 @@ public class RegisterActivity extends AppCompatActivity {
     }
 
     private void goToMainActivity() {
-        Intent intent = new Intent(getApplicationContext(), MainActivity.class);
-        // Xóa tất cả các activity trước đó khỏi stack
+        // Thay vì vào Main, chúng ta vào màn hình tạo Username
+        Intent intent = new Intent(getApplicationContext(), CreateUsernameActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
-        finish(); // Đóng RegisterActivity
+        finish();
     }
 }
