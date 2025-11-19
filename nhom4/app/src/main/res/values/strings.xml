@@ -91,17 +91,4 @@
     <string name="tbright_1">TopBarRight</string>
     <string name="topbarright_2">TopBarRight2</string>
     <string name="topbarright_3">TopBarRight3</string>
-    <string name="todo">TODO</string>
-    <string name="left_navigation">Left Navigation</string>
-    <string name="l_ch_s">Lịch sử</string>
-    <string name="right_navigation">Right Navigation</string>
-    <string name="g_i_tin_nh_n">Gửi tin nhắn...</string>
-    <string name="a">😍</string>
-    <string name="b">🥺</string>
-    <string name="c">💛</string>
-    <string name="_12_ng_i_b_n">12 người bạn</string>
-    <string name="caption_demo">Caption demo</string>
-    <string name="h_m_nay_12_00">Hôm nay 12:00</string>
-    <string name="g_i_tin_nh_n2">Gửi tin nhắn…</string>
-    <string name="check_in2">Check in</string>
 </resources>
