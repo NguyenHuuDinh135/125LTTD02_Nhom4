@@ -32,7 +32,11 @@
         android:layout_weight="1"
         android:orientation="vertical"
         android:layout_marginStart="16dp"
-        android:layout_marginEnd="8dp">
+        android:layout_marginEnd="8dp"
+        android:text="TeaBlack"
+        android:textColor="?attr/colorOnPrimarySurface"
+        style="@style/TextAppearance.Material3.TitleMedium" />
+
 
         <com.google.android.material.textview.MaterialTextView
             android:id="@+id/tv_username"
@@ -54,22 +58,21 @@
             android:maxLines="1"
             android:ellipsize="end"
             style="@style/TextAppearance.Material3.BodySmall" />
+
+<!--        Nút thêm-->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_add"
+            style="@style/Widget.Material3.Button.TonalButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Thêm"
+            android:minWidth="0dp"
+            android:paddingHorizontal="16dp"
+            android:textAllCaps="false"
+            android:textColor="?attr/colorOnSecondaryContainer"
+            app:icon="@drawable/outline_add_24"
+            app:iconGravity="textStart"
+            app:iconPadding="4dp"
+            app:iconTint="?attr/colorOnSecondaryContainer" />
     </LinearLayout>
 
-    <!-- Nút Thêm -->
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btn_add"
-        style="@style/Widget.Material3.Button.TonalButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Thêm"
-        android:minWidth="0dp"
-        android:paddingHorizontal="16dp"
-        android:textAllCaps="false"
-        android:textColor="?attr/colorOnSecondaryContainer"
-        app:icon="@drawable/outline_add_24"
-        app:iconGravity="textStart"
-        app:iconPadding="4dp"
-        app:iconTint="?attr/colorOnSecondaryContainer" />
-
-</LinearLayout>
