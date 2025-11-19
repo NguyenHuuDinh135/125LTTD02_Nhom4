@@ -32,7 +32,7 @@ android {
     }
 }
 
-val cameraxVersion = "1.3.3"
+val cameraxVersion = "1.3.4"
 
 dependencies {
     implementation("com.github.bumptech.glide:glide:4.16.0")
