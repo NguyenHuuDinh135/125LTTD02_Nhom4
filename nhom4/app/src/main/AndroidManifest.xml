@@ -28,7 +28,9 @@
         <activity
             android:name=".MainActivity"
             android:exported="false" />
-
+        <activity android:name=".ui.page.AddFriendActivity" android:exported="false" />
+        <activity android:name=".ui.page.ProfileActivity" android:exported="false" />
+        <activity android:name=".ui.page.CreateUsernameActivity" android:exported="false" />
         <!-- Các activity khác... -->
 
 
