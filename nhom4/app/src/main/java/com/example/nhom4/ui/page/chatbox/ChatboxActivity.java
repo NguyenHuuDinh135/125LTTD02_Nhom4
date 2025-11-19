@@ -1,16 +1,20 @@
+// D:/Documents/Projects/125LTTD02_Nhom4/nhom4/app/src/main/java/com/example/nhom4/ui/page/chatbox/ChatboxActivity.java
+
 package com.example.nhom4.ui.page.chatbox;
 
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.widget.EditText;
-import android.widget.ImageButton;
+import android.widget.Toast; // Import Toast để hiển thị lỗi
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.ViewModelProvider; // Import ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.nhom4.R;
 import com.example.nhom4.data.model.Message;
-import com.example.nhom4.utils.MockDataHelper;
 import com.google.android.material.button.MaterialButton;
 
+import java.util.ArrayList; // Import ArrayList
 import java.util.List;
 
 public class ChatboxActivity extends AppCompatActivity {
@@ -19,13 +23,25 @@ public class ChatboxActivity extends AppCompatActivity {
     private EditText etMessage;
     private MaterialButton btnSend;
 
-    private String currentUserId = "user123";
-    private List<Message> messageList;
+    private ChatboxViewModel viewModel;
+
+    // --- Giả sử các ID này được truyền từ màn hình trước ---
+    private String currentUserId = "p3J7FY4cjsZbYPBpmwCc44MfQtq2"; // ID của người dùng hiện tại
+    private String conversationId = "OpGMIA2nZ8cjCMfow41Z"; // ID của cuộc trò chuyện
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chatbox);
+
+        // Lấy dữ liệu được truyền từ Intent
+        // Các Activity khác khi chuyển tiê đến Activity này sẽ phải truyền thêm tham số sau
+        // conversationId = getIntent().getStringExtra("CONVERSATION_ID");
+        // currentUserId = getCurrentUserFromAuth(); // Lấy từ Firebase Auth
+
+        // --- Khởi tạo ViewModel ---
+        viewModel = new ViewModelProvider(this).get(ChatboxViewModel.class);
+        viewModel.init(conversationId); // Rất quan trọng: Khởi tạo conversationId cho ViewModel
 
         // Khởi tạo views
         recyclerView = findViewById(R.id.rvMessages);
@@ -33,62 +49,65 @@ public class ChatboxActivity extends AppCompatActivity {
         btnSend = findViewById(R.id.btnSend);
 
         // Setup RecyclerView
-        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
-        layoutManager.setStackFromEnd(true);
-        recyclerView.setLayoutManager(layoutManager);
+        setupRecyclerView();
 
-        // Test chat 1-1
-        adapter = new ChatboxAdapter(currentUserId, false); // false = single chat
+        // --- Bắt đầu lắng nghe dữ liệu từ ViewModel ---
+        observeMessages();
+        observeErrors();
 
-        // Test chat nhóm
-//        adapter = new ChatboxAdapter(currentUserId, true); // true = group chat
+        // --- Bắt đầu gửi tin nhắn thật ---
+        btnSend.setOnClickListener(v -> sendMessage());
+    }
 
+    private void setupRecyclerView() {
+        // false = single chat, true = group chat
+        adapter = new ChatboxAdapter(currentUserId, false);
         recyclerView.setAdapter(adapter);
 
-        // Load mock data
-        loadMockData();
-
-        // Test gửi tin nhắn
-        btnSend.setOnClickListener(v -> sendMockMessage());
+        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
+        // layoutManager.setStackFromEnd(true); // Tạm thời tắt để cuộn mượt hơn khi load
+        recyclerView.setLayoutManager(layoutManager);
     }
 
-    private void loadMockData() {
-        // Test chat 1-1
-        messageList = MockDataHelper.getMockSingleChatMessages(currentUserId);
-
-        // Hoặc test chat nhóm
-        // messageList = MockDataHelper.getMockGroupChatMessages(currentUserId);
-        // adapter = new ChatAdapter(currentUserId, true); // Nhớ set true cho group chat
-
-        adapter.setMessages(messageList);
-        recyclerView.scrollToPosition(messageList.size() - 1);
+    // --- Lắng nghe danh sách tin nhắn từ ViewModel ---
+    private void observeMessages() {
+        viewModel.getMessages().observe(this, messages -> {
+            // Khi có dữ liệu mới từ Firestore, cập nhật adapter
+            adapter.setMessages(messages);
+            // Cuộn xuống tin nhắn cuối cùng
+            if (messages != null && !messages.isEmpty()) {
+                recyclerView.smoothScrollToPosition(messages.size() - 1);
+            }
+        });
     }
 
-    private void sendMockMessage() {
+    // --- Lắng nghe các lỗi có thể xảy ra ---
+    private void observeErrors() {
+        viewModel.getErrorLiveData().observe(this, error -> {
+            if (error != null) {
+                Toast.makeText(this, "Lỗi: " + error, Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    // --- Gửi tin nhắn thông qua ViewModel ---
+    private void sendMessage() {
         String content = etMessage.getText().toString().trim();
-        if (content.isEmpty()) {
+        if (TextUtils.isEmpty(content)) {
             return;
         }
 
-        // Tạo tin nhắn mới
+        // Tạo một object Message mới
         Message newMessage = new Message(
                 currentUserId,
-                "Tôi",
-                "",
-                "user456",
                 content,
-                "text"
+                "text" // Kiểu tin nhắn là text
         );
-        newMessage.setTimestamp(System.currentTimeMillis());
 
-        // Thêm vào danh sách
-        messageList.add(newMessage);
-        adapter.setMessages(messageList);
+        // Gửi tin nhắn qua ViewModel
+        viewModel.sendMessage(newMessage);
 
-        // Scroll xuống cuối
-        recyclerView.smoothScrollToPosition(messageList.size() - 1);
-
-        // Clear input
+        // Clear ô nhập liệu
         etMessage.setText("");
     }
 }

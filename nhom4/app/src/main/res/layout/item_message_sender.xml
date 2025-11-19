@@ -12,7 +12,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="80dp"
-        app:cardBackgroundColor="?attr/colorPrimaryContainer"
+        app:cardBackgroundColor="?attr/colorTertiaryFixedDim"
         app:cardCornerRadius="16dp"
         app:cardElevation="2dp"
         app:layout_constraintEnd_toEndOf="parent"
@@ -29,8 +29,8 @@
                 android:id="@+id/tvMessageSent"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Xin chào, bạn khỏe không?"
-                android:textColor="?attr/colorOnPrimaryContainer"
+                android:text="What's up guyyy?"
+                android:textColor="?attr/colorOnSurface"
                 android:textSize="15sp"
                 android:maxWidth="250dp" />
 
