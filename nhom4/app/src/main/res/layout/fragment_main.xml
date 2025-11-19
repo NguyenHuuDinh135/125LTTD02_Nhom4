@@ -4,8 +4,15 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="?attr/colorSurface"
-    android:paddingTop="10dp">
+    android:background="?attr/colorSurface">
+
+    <!-- Thanh Top Bar (Profile, Bạn bè, Tim) -->
+    <include
+        android:id="@+id/include_top_bar"
+        layout="@layout/partial_main_top_bar"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <!-- Chữ chào "Heyy, What's up..." -->
     <com.google.android.material.textview.MaterialTextView
@@ -18,9 +25,8 @@
         android:text="@string/heyy_what_s_up_guyy"
         android:textColor="?attr/colorOnSurface"
         android:textStyle="bold"
-        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@id/include_top_bar" />
 
     <!-- 2. Main Card (Chứa Camera, Mood Image VÀ Activity List) -->
     <com.google.android.material.card.MaterialCardView
