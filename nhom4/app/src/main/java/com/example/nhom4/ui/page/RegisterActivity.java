@@ -43,7 +43,6 @@ public class RegisterActivity extends AppCompatActivity {
         etPassword = findViewById(R.id.editTextPassword);
         etConfirmPassword = findViewById(R.id.editTextConfirmPassword);
         btnRegister = findViewById(R.id.buttonRegister);
-        checkBoxShowPassword = findViewById(R.id.checkBoxShowPassword);
         tvLoginLink = findViewById(R.id.textViewLoginLink);
         progressBar = findViewById(R.id.progressBar);
 

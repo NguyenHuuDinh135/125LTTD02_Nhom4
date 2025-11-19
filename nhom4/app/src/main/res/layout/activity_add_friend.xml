@@ -8,37 +8,29 @@
     android:background="?attr/colorSurface"
     tools:context=".ui.page.AddFriendActivity">
 
-    <androidx.appcompat.widget.Toolbar
+    <!-- 1. Toolbar chuẩn M3 -->
+    <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
         app:layout_constraintTop_toTopOf="parent"
         app:navigationIcon="@drawable/back_ic"
-        app:navigationIconTint="?attr/colorOnSurfaceVariant">
+        app:navigationIconTint="?attr/colorOnSurfaceVariant"
+        app:title="Thêm bạn bè của bạn"
+        app:titleCentered="true"
+        app:titleTextAppearance="@style/TextAppearance.Material3.TitleLarge"
+        app:titleTextColor="?attr/colorOnSurface" />
 
-        <com.google.android.material.textview.MaterialTextView
-            android:id="@+id/toolbar_title"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:text="Thêm bạn bè của bạn"
-            android:textColor="?attr/colorOnSurface"
-            style="@style/TextAppearance.Material3.TitleLarge" />
-    </androidx.appcompat.widget.Toolbar>
-
+    <!-- 2. Nút Tiếp tục (Floating Button style) -->
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btn_continue"
+        style="@style/Widget.Material3.Button.TonalButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="26dp"
-        android:layout_marginEnd="26dp"
-        android:layout_marginBottom="16dp"
-        android:paddingLeft="46dp"
-        android:paddingTop="14dp"
-        android:paddingRight="46dp"
-        android:paddingBottom="14dp"
-        android:text="Tiếp tục"
-        android:textAllCaps="false"
+        android:layout_margin="26dp"
+        android:paddingHorizontal="46dp"
+        android:paddingVertical="14dp"
+        android:text="@string/ti_p_t_c"
         android:textColor="?attr/colorOnPrimary"
         android:textSize="16sp"
         app:backgroundTint="?attr/colorPrimary"
@@ -50,65 +42,64 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 
-    <ScrollView
-        android:layout_width="0dp"
+    <!-- 3. Nội dung chính -->
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_marginTop="8dp"
-        android:layout_marginBottom="16dp"
-        app:layout_constraintBottom_toTopOf="@id/btn_continue"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
+        android:clipToPadding="false"
+        android:paddingBottom="100dp"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintTop_toBottomOf="@id/toolbar">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:paddingLeft="26dp"
-            android:paddingRight="26dp">
+            android:paddingHorizontal="24dp">
 
+            <!-- 3.1 Search Input -->
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/search_input_layout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:boxBackgroundColor="?attr/colorSurfaceContainer"
-                app:boxCornerRadiusBottomEnd="25dp"
-                app:boxCornerRadiusBottomStart="25dp"
-                app:boxCornerRadiusTopEnd="25dp"
-                app:boxCornerRadiusTopStart="25dp"
+                app:boxBackgroundColor="?attr/colorSurfaceContainerHigh"
+                app:boxCornerRadiusBottomEnd="28dp"
+                app:boxCornerRadiusBottomStart="28dp"
+                app:boxCornerRadiusTopEnd="28dp"
+                app:boxCornerRadiusTopStart="28dp"
                 app:boxStrokeWidth="0dp"
-                app:boxStrokeWidthFocused="0dp"
                 app:endIconMode="clear_text"
-                app:endIconTint="?attr/colorOnSurfaceVariant"
                 app:hintEnabled="false"
                 app:startIconDrawable="@drawable/search_icon"
                 app:startIconTint="?attr/colorOnSurfaceVariant">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/et_search"
+                    style="@style/TextAppearance.Material3.BodyLarge"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="Tìm kiếm bạn mới"
+                    android:hint="@string/t_m_ki_m_b_n_m_i"
                     android:inputType="text"
                     android:maxLines="1"
                     android:textColor="?attr/colorOnSurface"
-                    android:textColorHint="?attr/colorOnSurfaceVariant"
-                    android:textSize="16sp" />
+                    android:textColorHint="?attr/colorOnSurfaceVariant" />
             </com.google.android.material.textfield.TextInputLayout>
 
+            <!-- 3.2 Tiêu đề: Tìm từ app khác -->
             <com.google.android.material.textview.MaterialTextView
-                android:id="@+id/tv_find_friends_title"
+                style="@style/TextAppearance.Material3.TitleMedium"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
-                android:paddingTop="12dp"
-                android:paddingBottom="12dp"
-                android:paddingLeft="16dp"
-                android:text="Tìm bạn bè từ các ứng dụng khác"
-                android:textStyle="bold"
+                android:layout_marginBottom="12dp"
+                android:text="@string/t_m_b_n_b_t_c_c_ng_d_ng_kh_c"
                 android:textColor="?attr/colorOnSurface"
-                style="@style/TextAppearance.Material3.TitleLarge" />
+                android:textStyle="bold" />
 
+            <!-- Hàng ngang Icon: Sử dụng layout tái sử dụng -->
+            <!-- Trong thực tế, đoạn này nên dùng RecyclerView với GridLayoutManager -->
+            <!-- Nhưng để giữ layout XML, ta dùng include và gán ID để set data sau -->
             <LinearLayout
                 android:id="@+id/icon_row_container"
                 android:layout_width="match_parent"
@@ -116,128 +107,41 @@
                 android:baselineAligned="false"
                 android:orientation="horizontal">
 
-                <LinearLayout
-                    android:id="@+id/btn_messenger"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:gravity="center_horizontal"
-                    android:orientation="vertical"
-                    android:padding="4dp">
-
-                    <ImageView
-                        android:layout_width="60dp"
-                        android:layout_height="60dp"
-                        android:contentDescription="Messenger"
-                        android:src="@drawable/ic_messenger_logo" />
-
-                    <com.google.android.material.textview.MaterialTextView
-                        android:id="@+id/tv_messenger_sub"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:text="Messenger"
-                        android:textColor="?attr/colorOnSurfaceVariant"
-                        style="@style/TextAppearance.Material3.BodyMedium" />
-                </LinearLayout>
-
-                <LinearLayout
-                    android:id="@+id/btn_instagram"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:gravity="center_horizontal"
-                    android:orientation="vertical"
-                    android:padding="4dp">
-
-                    <ImageView
-                        android:layout_width="60dp"
-                        android:layout_height="60dp"
-                        android:src="@drawable/ic_instagram_logo"
-                        android:contentDescription="Instagram" />
-
-                    <com.google.android.material.textview.MaterialTextView
-                        android:id="@+id/tv_instagram_sub"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:text="Instagram"
-                        android:textColor="?attr/colorOnSurfaceVariant"
-                        style="@style/TextAppearance.Material3.BodyMedium" />
-                </LinearLayout>
-
-                <LinearLayout
-                    android:id="@+id/btn_twitter"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:gravity="center_horizontal"
-                    android:orientation="vertical"
-                    android:padding="4dp">
-
-                    <ImageView
-                        android:layout_width="60dp"
-                        android:layout_height="60dp"
-                        android:src="@drawable/ic_twitter_logo"
-                        android:contentDescription="Twitter" />
-
-                    <com.google.android.material.textview.MaterialTextView
-                        android:id="@+id/tv_twitter_sub"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:text="Twitter"
-                        android:textColor="?attr/colorOnSurfaceVariant"
-                        style="@style/TextAppearance.Material3.BodyMedium" />
-                </LinearLayout>
-
-                <LinearLayout
-                    android:id="@+id/btn_other"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:gravity="center_horizontal"
-                    android:orientation="vertical"
-                    android:padding="4dp">
-
-                    <ImageView
-                        android:layout_width="60dp"
-                        android:layout_height="60dp"
-                        android:src="@drawable/ic_other_share_logo"
-                        android:contentDescription="Khác" />
-
-                    <com.google.android.material.textview.MaterialTextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:text="Khác"
-                        android:textColor="?attr/colorOnSurfaceVariant"
-                        style="@style/TextAppearance.Material3.BodyMedium" />
-                </LinearLayout>
+                <include
+                    android:id="@+id/item_messenger"
+                    layout="@layout/item_social_icon" />
+                <include
+                    android:id="@+id/item_instagram"
+                    layout="@layout/item_social_icon" />
+                <include
+                    android:id="@+id/item_twitter"
+                    layout="@layout/item_social_icon" />
+                <include
+                    android:id="@+id/item_other"
+                    layout="@layout/item_social_icon" />
             </LinearLayout>
 
+            <!-- 3.3 Tiêu đề: Đề xuất -->
             <com.google.android.material.textview.MaterialTextView
-                android:id="@+id/tv_suggestions_title"
+                style="@style/TextAppearance.Material3.TitleMedium"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
-                android:text="Đề xuất"
-                android:textStyle="bold"
-                android:paddingTop="12dp"
-                android:paddingBottom="12dp"
-                android:paddingRight="16dp"
-                android:paddingLeft="16dp"
+                android:layout_marginBottom="12dp"
+                android:text="@string/xu_t"
                 android:textColor="?attr/colorOnSurface"
-                style="@style/TextAppearance.Material3.TitleLarge" />
+                android:textStyle="bold" />
 
+            <!-- RecyclerView Đề xuất (Giữ nguyên) -->
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/recycler_view_suggestions"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
+                android:nestedScrollingEnabled="false"
                 tools:itemCount="3"
                 tools:listitem="@layout/item_recommend_friend" />
 
+            <!-- Nút Xem thêm -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_see_more"
                 style="@style/Widget.Material3.Button.TonalButton"
@@ -245,113 +149,41 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
                 android:layout_marginTop="16dp"
-                android:text="Xem thêm"
-                android:textAllCaps="false"
-                app:cornerRadius="12dp" />
+                android:text="@string/xem_th_m" />
 
+            <!-- 3.4 Tiêu đề: Mời bạn -->
             <com.google.android.material.textview.MaterialTextView
-                android:id="@+id/tv_invite_title"
+                style="@style/TextAppearance.Material3.TitleMedium"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
-                android:paddingTop="12dp"
-                android:paddingBottom="12dp"
-                android:paddingRight="16dp"
-                android:paddingLeft="16dp"
-                android:text="Mời từ các ứng dụng khác"
-                android:textStyle="bold"
+                android:layout_marginBottom="12dp"
+                android:text="@string/m_i_t_c_c_ng_d_ng_kh_c"
                 android:textColor="?attr/colorOnSurface"
-                style="@style/TextAppearance.Material3.TitleLarge" />
+                android:textStyle="bold" />
 
+            <!-- Danh sách mời dọc: Sử dụng layout tái sử dụng -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:layout_marginTop="8dp">
+                android:orientation="vertical">
 
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:gravity="center_vertical"
-                    android:paddingVertical="12dp">
+                <include
+                    android:id="@+id/invite_messenger"
+                    layout="@layout/item_invite_row" />
+                <include
+                    android:id="@+id/invite_facebook"
+                    layout="@layout/item_invite_row" />
+                <include
+                    android:id="@+id/invite_instagram"
+                    layout="@layout/item_invite_row" />
+                <include
+                    android:id="@+id/invite_other"
+                    layout="@layout/item_invite_row" />
 
-                    <ImageView
-                        android:layout_width="40dp"
-                        android:layout_height="40dp"
-                        android:src="@drawable/ic_messenger_logo" />
-
-                    <com.google.android.material.textview.MaterialTextView
-                        android:id="@+id/tv_messenger"
-                        style="@style/TextAppearance.Material3.BodyLarge"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="16dp"
-                        android:text="Messenger"
-                        android:textColor="?attr/colorOnSurface" />
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:gravity="center_vertical"
-                    android:paddingVertical="12dp">
-
-                    <ImageView
-                        android:layout_width="40dp"
-                        android:layout_height="40dp"
-                        android:src="@drawable/ic_facebook_logo" />
-
-                    <com.google.android.material.textview.MaterialTextView
-                        android:id="@+id/tv_facebook"
-                        style="@style/TextAppearance.Material3.BodyLarge"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="16dp"
-                        android:text="Facebook"
-                        android:textColor="?attr/colorOnSurface" />
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:gravity="center_vertical"
-                    android:paddingVertical="12dp">
-
-                    <ImageView
-                        android:layout_width="40dp"
-                        android:layout_height="40dp"
-                        android:src="@drawable/ic_instagram_logo" />
-
-                    <com.google.android.material.textview.MaterialTextView
-                        android:id="@+id/tv_instagram"
-                        style="@style/TextAppearance.Material3.BodyLarge"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="16dp"
-                        android:text="Instagram"
-                        android:textColor="?attr/colorOnSurface" />
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:gravity="center_vertical"
-                    android:paddingVertical="12dp">
-
-                    <ImageView
-                        android:layout_width="40dp"
-                        android:layout_height="40dp"
-                        android:src="@drawable/ic_share_other_logo" />
-
-                    <com.google.android.material.textview.MaterialTextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="16dp"
-                        android:text="Các ứng dụng khác"
-                        android:textColor="?attr/colorOnSurface"
-                        style="@style/TextAppearance.Material3.BodyLarge" />
-                </LinearLayout>
             </LinearLayout>
+
         </LinearLayout>
-    </ScrollView>
+    </androidx.core.widget.NestedScrollView>
+
 </androidx.constraintlayout.widget.ConstraintLayout>
