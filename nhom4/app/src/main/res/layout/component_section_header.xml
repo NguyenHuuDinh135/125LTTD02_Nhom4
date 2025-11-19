@@ -24,7 +24,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="12dp"
-        android:text="Tiêu đề mục"
+        android:text="@string/ti_u_m_c"
         android:textColor="?attr/colorOnSurfaceVariant"
         android:textStyle="bold" />
 
