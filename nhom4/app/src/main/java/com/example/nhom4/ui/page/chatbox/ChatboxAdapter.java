@@ -109,9 +109,9 @@ public class ChatboxAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 
         ReceivedMessageViewHolder(View itemView) {
             super(itemView);
-            ivAvatar = itemView.findViewById(R.id.imageAvatarReceiver);
-            tvMessage = itemView.findViewById(R.id.textMessageReceiver);
-            tvTime = itemView.findViewById(R.id.textTimeReceiver);
+            ivAvatar = itemView.findViewById(R.id.img_avatar);
+            tvMessage = itemView.findViewById(R.id.tv_message_content);
+            tvTime = itemView.findViewById(R.id.tv_timestamp);
         }
 
         void bind(Message message) {
