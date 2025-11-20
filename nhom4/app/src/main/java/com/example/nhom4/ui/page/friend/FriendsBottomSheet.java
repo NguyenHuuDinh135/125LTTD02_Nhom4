@@ -84,7 +84,7 @@ public class FriendsBottomSheet extends BottomSheetDialogFragment {
             drawable.setShadowCompatibilityMode(MaterialShapeDrawable.SHADOW_COMPAT_MODE_ALWAYS);
             drawable.setElevation(8f);
             bottomSheet.setBackground(drawable);
-        }
 
+        }
     }
 }
