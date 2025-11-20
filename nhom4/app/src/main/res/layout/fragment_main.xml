@@ -5,15 +5,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="?attr/colorSurface">
-
-    <!-- Thanh Top Bar (Profile, Bạn bè, Tim) -->
-    <include
-        android:id="@+id/include_top_bar"
-        layout="@layout/partial_main_top_bar"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+    android:background="?attr/colorSurface"
+    android:paddingTop="10dp">
 
     <!-- Chữ chào "Heyy, What's up..." -->
     <com.google.android.material.textview.MaterialTextView
@@ -21,13 +14,13 @@
         style="@style/TextAppearance.Material3.HeadlineMedium"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="24dp"
-        android:layout_marginTop="16dp"
-        android:text="@string/heyy_what_s_up_guyy"
+        android:layout_marginTop="100dp"
+        android:text="Heyy, What's up guyy?"
         android:textColor="?attr/colorOnSurface"
         android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/include_top_bar" />
+        app:layout_constraintTop_toTopOf="parent" />
 
     <!-- Thẻ Card chính -->
     <com.google.android.material.card.MaterialCardView
@@ -55,7 +48,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:checked="true"
-                android:text="@string/check_in"
+                android:text="Check in"
                 android:textColor="?attr/colorOnSurfaceVariant"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -123,16 +116,13 @@
         </androidx.constraintlayout.widget.ConstraintLayout>
     </com.google.android.material.card.MaterialCardView>
 
-    <ImageView
-        android:id="@+id/arrowDown"
-        android:layout_width="wrap_content"
+    <!-- 2. BOTTOM BAR DÙNG CHUNG (Overlay) -->
+    <!-- Mặc định visibility="gone" hoặc xử lý trong code -->
+    <include
+        android:id="@+id/bottom_bar"
+        layout="@layout/component_bottom_bar_main"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
-        android:contentDescription="@string/down"
-        android:src="@drawable/arrow_drop_down"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/mainCard"
-        app:tint="?attr/colorOnSurfaceVariant" />
+        app:layout_constraintBottom_toBottomOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -17,7 +17,7 @@
         android:layout_marginHorizontal="32dp"
         android:layout_marginTop="24dp"
         android:gravity="center"
-        android:text="@string/caption_demo"
+        android:text="Caption demo"
         android:textColor="?attr/colorOnSurface"
         android:textStyle="bold"
         app:layout_constraintTop_toTopOf="parent"
@@ -44,7 +44,6 @@
             android:id="@+id/postImageView"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:contentDescription="@string/todo"
             android:scaleType="centerCrop"
             tools:srcCompat="@tools:sample/backgrounds/scenic" />
     </com.google.android.material.card.MaterialCardView>
@@ -57,7 +56,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:text="@string/h_m_nay_12_00"
+        android:text="Hôm nay 12:00"
         android:paddingHorizontal="20dp"
         android:paddingVertical="8dp"
         android:background="?attr/colorSurfaceContainerHigh"
@@ -84,7 +83,6 @@
             android:layout_width="16dp"
             android:layout_height="16dp"
             android:layout_marginEnd="6dp"
-            android:contentDescription="@string/todo"
             android:src="@drawable/ic_launcher_foreground"
             app:tint="?attr/colorOnSurfaceVariant"/>
 
@@ -118,9 +116,8 @@
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:autofillHints=""
             android:background="@null"
-            android:hint="@string/g_i_tin_nh_n2"
+            android:hint="Gửi tin nhắn…"
             android:textColor="#FFFFFF"
             android:textColorHint="#9E9E9E"
             android:paddingStart="12dp" />
