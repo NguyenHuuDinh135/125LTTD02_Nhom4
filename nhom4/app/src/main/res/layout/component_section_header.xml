@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:paddingVertical="12dp">
+
+    <!-- Icon mục (Ví dụ: Chat, Hoạt động...) -->
+    <ImageView
+        android:id="@+id/img_section_icon"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:contentDescription="@null"
+        android:src="@drawable/outline_chat_24"
+        app:tint="?attr/colorOnSurfaceVariant" />
+    <!-- Lưu ý: Dùng ?attr/colorOnSurfaceVariant để màu icon tự động theo theme -->
+
+    <!-- Tên mục -->
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/tv_section_title"
+        style="@style/TextAppearance.Material3.TitleLarge"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="12dp"
+        android:text="Tiêu đề mục"
+        android:textColor="?attr/colorOnSurfaceVariant"
+        android:textStyle="bold" />
+
+</LinearLayout>

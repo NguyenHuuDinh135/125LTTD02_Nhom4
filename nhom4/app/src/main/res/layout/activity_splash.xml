@@ -5,89 +5,98 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="?attr/colorSurface"
     tools:context=".ui.page.SplashActivity">
 
+    <!-- 1. Hình minh họa -->
+    <!-- Sử dụng guideline để kiểm soát vị trí tốt hơn trên màn hình dài/ngắn -->
     <ImageView
         android:id="@+id/imgIllustration"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:layout_marginHorizontal="40dp"
         android:layout_marginTop="60dp"
-        android:layout_marginBottom="32dp"
+        android:layout_marginBottom="40dp"
+        android:contentDescription="@string/astronaut_illustration"
         android:src="@drawable/astronaut_space"
         app:layout_constraintBottom_toTopOf="@+id/layoutLogo"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.4" />
 
+    <!-- 2. Logo & Tên App -->
     <LinearLayout
         android:id="@+id/layoutLogo"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="12dp"
+        android:layout_marginBottom="16dp"
         android:gravity="center_vertical"
         android:orientation="horizontal"
         app:layout_constraintBottom_toTopOf="@+id/txtTagline"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent">
 
+        <!-- Nên dùng app icon chuẩn vector nếu có -->
         <ImageView
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:layout_marginEnd="8dp"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginEnd="12dp"
+            android:contentDescription="@null"
             android:src="@drawable/ic_launcher_background"
             app:tint="?attr/colorPrimary" />
 
-        <TextView
+        <com.google.android.material.textview.MaterialTextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:fontFamily="sans-serif-medium"
-            android:text="Locket"
-            android:textColor="?attr/colorOnBackground"
-            android:textSize="34sp"
-            android:textStyle="bold" />
+            android:text="@string/nhom4"
+            android:textColor="?attr/colorOnSurface"
+            android:textStyle="bold"
+            style="@style/TextAppearance.Material3.DisplaySmall" />
     </LinearLayout>
 
-    <TextView
+    <!-- 3. Tagline -->
+    <com.google.android.material.textview.MaterialTextView
         android:id="@+id/txtTagline"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="40dp"
-        android:layout_marginEnd="40dp"
-        android:layout_marginBottom="32dp"
-        android:fontFamily="sans-serif"
+        android:layout_marginHorizontal="40dp"
+        android:layout_marginBottom="48dp"
         android:gravity="center"
-        android:text="Ảnh trực tiếp từ bạn bè,\nngay trên màn hình chính"
+        android:text="@string/nh_tr_c_ti_p_t_b_n_b_nngay_tr_n_m_n_h_nh_ch_nh"
         android:textColor="?attr/colorOnSurfaceVariant"
-        android:textSize="18sp"
+        style="@style/TextAppearance.Material3.BodyLarge"
         app:layout_constraintBottom_toTopOf="@+id/btnSignUp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 
+    <!-- 4. Nút Đăng ký (Nổi bật nhất) -->
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnSignUp"
+        style="@style/Widget.Material3.Button"
         android:layout_width="0dp"
-        android:layout_height="60dp"
-        android:layout_marginStart="32dp"
-        android:layout_marginEnd="32dp"
-        android:layout_marginBottom="16dp"
-        android:text="Tạo một tài khoản"
-        android:textAllCaps="false"
-        android:textSize="18sp"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="32dp"
+        android:layout_marginBottom="12dp"
+        android:paddingVertical="14dp"
+        android:text="@string/t_o_m_t_t_i_kho_n"
+        android:textSize="16sp"
         android:textStyle="bold"
-        app:cornerRadius="30dp"
         app:layout_constraintBottom_toTopOf="@+id/txtLogin"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 
+    <!-- 5. Nút Đăng nhập (Text Button) -->
     <com.google.android.material.button.MaterialButton
         android:id="@+id/txtLogin"
         style="@style/Widget.Material3.Button.TextButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="40dp"
-        android:fontFamily="sans-serif-medium"
-        android:text="Đăng nhập"
-        android:textSize="18sp"
+        android:text="@string/ng_nh_p"
+        android:textColor="?attr/colorOnSurface"
+        android:textSize="16sp"
+        android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />

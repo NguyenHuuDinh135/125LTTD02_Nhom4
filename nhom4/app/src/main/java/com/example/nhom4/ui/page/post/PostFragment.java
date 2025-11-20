@@ -10,7 +10,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-import com.google.android.material.button.MaterialButton; // Import MaterialButton
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -20,7 +20,6 @@ import com.example.nhom4.R;
 
 public class PostFragment extends Fragment {
 
-    // Cập nhật các key
     private static final String ARG_CAPTION_START = "caption_start";
     private static final String ARG_CAPTION_END = "caption_end";
     private static final String ARG_IMAGE_URL = "image_url";
@@ -29,7 +28,6 @@ public class PostFragment extends Fragment {
 
     private String captionStart, captionEnd, imageUrl, timestamp, avatarGroup;
 
-    // Cập nhật hàm newInstance
     public static PostFragment newInstance(String captionStart, String captionEnd, String imageUrl, String timestamp, String avatarGroup) {
         PostFragment fragment = new PostFragment();
         Bundle args = new Bundle();
@@ -57,7 +55,6 @@ public class PostFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        // Dùng layout item_post mới
         return inflater.inflate(R.layout.item_post, container, false);
     }
 
@@ -65,31 +62,43 @@ public class PostFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        // Ánh xạ các View mới
+        // --- FIX LỖI Ở ĐÂY ---
         ImageView postImageView = view.findViewById(R.id.postImageView);
         TextView textCaption = view.findViewById(R.id.textCaption);
-        MaterialButton chipTimestamp = view.findViewById(R.id.chipTimestamp);
+
+        // Đã đổi từ MaterialButton sang TextView để khớp với layout mới
+        TextView chipTimestamp = view.findViewById(R.id.tvTimestamp);
+
         TextView textAvatarGroup = view.findViewById(R.id.textAvatarGroup);
 
-        // Xử lý caption 2 màu (ví dụ: "Angry" màu đỏ)
-        Spannable spannable = new SpannableString(captionStart + " - " + captionEnd);
-        spannable.setSpan(
-                new ForegroundColorSpan(Color.RED), // Màu đỏ cho phần đầu
-                0, // Bắt đầu
-                captionStart.length(), // Kết thúc
-                Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
-        );
+        // Xử lý Caption (nếu null thì gán chuỗi rỗng để tránh crash)
+        String start = (captionStart != null) ? captionStart : "";
+        String end = (captionEnd != null) ? captionEnd : "";
+
+        Spannable spannable = new SpannableString(start + " - " + end);
+        if (!start.isEmpty()) {
+            spannable.setSpan(
+                    new ForegroundColorSpan(Color.RED),
+                    0,
+                    start.length(),
+                    Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+            );
+        }
         textCaption.setText(spannable);
 
         // Gán dữ liệu
-        chipTimestamp.setText(timestamp);
-        textAvatarGroup.setText(avatarGroup);
+        if (chipTimestamp != null) {
+            chipTimestamp.setText(timestamp);
+        }
+        if (textAvatarGroup != null) {
+            textAvatarGroup.setText(avatarGroup);
+        }
 
-        // Dùng Glide để tải ảnh
-        if (getContext() != null && imageUrl != null) {
+        // Load ảnh
+        if (getContext() != null && imageUrl != null && postImageView != null) {
             Glide.with(getContext())
                     .load(imageUrl)
-                    .placeholder(R.color.md_theme_surface)
+                    .placeholder(android.R.color.darker_gray) // Sửa ID màu mặc định cho an toàn
                     .into(postImageView);
         }
     }
