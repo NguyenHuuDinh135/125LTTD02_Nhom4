@@ -6,7 +6,6 @@
     <string name="show_password">Show password</string>
     <string name="forgot_password">Forgot password? Get new</string>
     <string name="no_account_sign_up">Don\'t have an account? Sign Up</string>
-
     <string name="sign_up">Sign Up</string>
     <string name="full_name">Full Name</string>
     <string name="confirm_password">Confirm Password</string>
@@ -44,7 +43,6 @@
     <string name="nhom4">Nhom4</string>
     <string name="astronaut_illustration">Astronaut Illustration</string>
     <string name="bray">Bray</string>
-
     <string name="supporting_line_text_lorem_ipsum_dolor_sit_amet_consectetur">Supporting line text lorem ipsum dolor sit amet, consectetur.</string>
     <string name="nh_p_tin_nh_n">Nhập tin nhắn. . .</string>
     <string name="ti_u_m_c">Tiêu đề mục</string>
@@ -93,17 +91,4 @@
     <string name="tbright_1">TopBarRight</string>
     <string name="topbarright_2">TopBarRight2</string>
     <string name="topbarright_3">TopBarRight3</string>
-    <string name="todo">TODO</string>
-    <string name="left_navigation">Left Navigation</string>
-    <string name="l_ch_s">Lịch sử</string>
-    <string name="right_navigation">Right Navigation</string>
-    <string name="g_i_tin_nh_n">Gửi tin nhắn...</string>
-    <string name="a">😍</string>
-    <string name="b">🥺</string>
-    <string name="c">💛</string>
-    <string name="_12_ng_i_b_n">12 người bạn</string>
-    <string name="caption_demo">Caption demo</string>
-    <string name="h_m_nay_12_00">Hôm nay 12:00</string>
-    <string name="g_i_tin_nh_n2">Gửi tin nhắn…</string>
-    <string name="check_in2">Check in</string>
 </resources>

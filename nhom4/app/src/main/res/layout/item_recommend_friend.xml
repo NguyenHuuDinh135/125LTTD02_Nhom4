@@ -32,7 +32,7 @@
         android:layout_weight="1"
         android:orientation="vertical"
         android:layout_marginStart="16dp"
-        android:layout_marginEnd="8dp"
+        android:layout_marginEnd="16dp"
         android:text="TeaBlack"
         android:textColor="?attr/colorOnPrimarySurface"
         style="@style/TextAppearance.Material3.TitleMedium" />
@@ -53,13 +53,13 @@
             android:id="@+id/tv_subtitle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Gợi ý cho bạn"
+            android:text="@string/hint"
             android:textColor="?attr/colorOnSurfaceVariant"
             android:maxLines="1"
             android:ellipsize="end"
             style="@style/TextAppearance.Material3.BodySmall" />
 
-<!--        Nút thêm-->
+        <!-- Nút Thêm -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_add"
             style="@style/Widget.Material3.Button.TonalButton"
@@ -75,4 +75,3 @@
             app:iconPadding="4dp"
             app:iconTint="?attr/colorOnSecondaryContainer" />
     </LinearLayout>
-
