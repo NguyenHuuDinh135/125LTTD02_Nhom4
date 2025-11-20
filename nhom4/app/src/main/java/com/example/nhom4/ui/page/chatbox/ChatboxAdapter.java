@@ -8,7 +8,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.nhom4.R;
-import com.example.nhom4.data.model.Message;
+import com.example.nhom4.data.bean.Message;
 import com.google.android.material.imageview.ShapeableImageView;
 import com.google.firebase.Timestamp;
 
@@ -109,9 +109,9 @@ public class ChatboxAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 
         ReceivedMessageViewHolder(View itemView) {
             super(itemView);
-            ivAvatar = itemView.findViewById(R.id.imageAvatarReceiver);
-            tvMessage = itemView.findViewById(R.id.textMessageReceiver);
-            tvTime = itemView.findViewById(R.id.textTimeReceiver);
+            ivAvatar = itemView.findViewById(R.id.img_avatar);
+            tvMessage = itemView.findViewById(R.id.tv_message_content);
+            tvTime = itemView.findViewById(R.id.tv_timestamp);
         }
 
         void bind(Message message) {

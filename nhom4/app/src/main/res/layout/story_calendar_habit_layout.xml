@@ -114,7 +114,6 @@
                 app:icon="@drawable/ic_walk"
                 app:iconGravity="textStart"
                 app:iconPadding="8dp"
-
                 app:iconTint="?attr/colorPrimary" />
 
         </LinearLayout>

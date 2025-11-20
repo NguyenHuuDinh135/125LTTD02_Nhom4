@@ -11,7 +11,7 @@
     <!-- Include top bar nếu cần -->
     <include
         android:id="@+id/include_top_bar"
-        layout="@layout/partial_main_top_bar"
+        layout="@layout/component_top_bar"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
@@ -60,6 +60,7 @@
             android:layout_height="70dp"
             android:layout_weight="1"
             android:background="@android:color/transparent"
+            android:contentDescription="@string/todo"
             android:src="@drawable/ic_flash_off"
             android:padding="12dp"
             app:tint="@android:color/white"/>
@@ -70,6 +71,7 @@
             android:layout_width="80dp"
             android:layout_height="80dp"
             android:background="@drawable/btn_circle"
+            android:contentDescription="@string/todo"
             android:padding="12dp"
             android:src="@drawable/ic_camera"
             app:tint="@android:color/white" />
@@ -81,6 +83,7 @@
             android:layout_height="70dp"
             android:layout_weight="1"
             android:background="@android:color/transparent"
+            android:contentDescription="@string/todo"
             android:padding="12dp"
             android:src="@drawable/ic_switch_camera"
             app:tint="@android:color/white" />

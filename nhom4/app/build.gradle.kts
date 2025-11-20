@@ -60,4 +60,5 @@ dependencies {
     implementation("androidx.camera:camera-lifecycle:${cameraxVersion}")
     implementation("androidx.camera:camera-view:${cameraxVersion}")
     implementation("androidx.camera:camera-video:${cameraxVersion}")
+    implementation ("com.google.firebase:firebase-storage")
 }

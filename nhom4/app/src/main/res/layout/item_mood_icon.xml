@@ -29,7 +29,7 @@
         android:ellipsize="end"
         android:maxLines="1"
         android:textAlignment="center"
-        android:textColor="?attr/colorOnSurface"
+        android:textColor="?attr/colorSurface"
         tools:text="Hạnh phúc" />
 
 </LinearLayout>

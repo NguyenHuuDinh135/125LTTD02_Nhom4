@@ -4,7 +4,7 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
-import com.example.nhom4.data.model.Message;
+import com.example.nhom4.data.bean.Message;
 import com.example.nhom4.data.repository.ChatboxRepository;
 
 import java.util.List;

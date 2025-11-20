@@ -1,4 +1,4 @@
-package com.example.nhom4.ui.page.adapter;
+package com.example.nhom4.ui.adapter;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -7,7 +7,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.nhom4.R;
-import com.example.nhom4.data.model.User;
+import com.example.nhom4.data.bean.User;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.imageview.ShapeableImageView;
 

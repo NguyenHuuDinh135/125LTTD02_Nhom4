@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingBottom="24dp"
+    android:background="@android:color/transparent">
+
+    <!-- 1. Thanh Reaction & Comment -->
+    <LinearLayout
+        android:id="@+id/layout_reaction_bar"
+        android:layout_width="0dp"
+        android:layout_height="56dp"
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginBottom="16dp"
+        android:background="@drawable/bg_pill_dark"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingHorizontal="4dp"
+        app:layout_constraintBottom_toTopOf="@+id/btn_shutter"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <!-- Ô nhập comment -->
+        <EditText
+            android:id="@+id/edt_comment"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="@null"
+            android:hint="@string/g_i_tin_nh_n"
+            android:paddingStart="16dp"
+            android:textColor="#FFFFFF"
+            android:textColorHint="#9E9E9E"
+            android:textSize="16sp"
+            android:importantForAutofill="no"
+            android:inputType="textCapSentences" />
+
+        <!-- Các icon cảm xúc -->
+        <TextView
+            android:layout_width="40dp"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:text="@string/a"
+            android:textSize="24sp"
+            android:clickable="true"
+            android:focusable="true"
+            android:background="?attr/selectableItemBackgroundBorderless"/>
+
+        <TextView
+            android:layout_width="40dp"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:text="@string/b"
+            android:textSize="24sp"
+            android:clickable="true"
+            android:focusable="true"
+            android:background="?attr/selectableItemBackgroundBorderless"/>
+
+        <TextView
+            android:layout_width="40dp"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:text="@string/c"
+            android:textSize="24sp"
+            android:clickable="true"
+            android:focusable="true"
+            android:background="?attr/selectableItemBackgroundBorderless"/>
+
+        <!-- Nút thêm reaction -->
+        <ImageView
+            android:layout_width="40dp"
+            android:layout_height="match_parent"
+            android:padding="10dp"
+            android:src="@drawable/outline_add_reaction_24"
+            app:tint="#B0B0B0"
+            android:clickable="true"
+            android:focusable="true"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            tools:ignore="ContentDescription" />
+    </LinearLayout>
+
+    <!-- 2. Nút Grid View (Bên trái) -->
+    <ImageView
+        android:id="@+id/btn_grid_view"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_marginStart="32dp"
+        android:padding="10dp"
+        android:src="@drawable/outline_apps_24"
+        app:tint="#FFFFFF"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:clickable="true"
+        android:focusable="true"
+        app:layout_constraintBottom_toBottomOf="@+id/btn_shutter"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/btn_shutter"
+        tools:ignore="ContentDescription" />
+
+    <!-- 3. Nút Shutter giả/nhỏ (Ở giữa) -->
+    <View
+        android:id="@+id/btn_shutter"
+        android:layout_width="72dp"
+        android:layout_height="72dp"
+        android:background="@drawable/bg_shutter_fill_grey"
+        android:clickable="true"
+        android:focusable="true"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <!-- 4. Nút done (Bên phải) -->
+    <ImageView
+        android:id="@+id/btn_share"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_marginEnd="32dp"
+        android:padding="10dp"
+        android:src="@drawable/outline_done_outline_24"
+        app:tint="#FFFFFF"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:clickable="true"
+        android:focusable="true"
+        app:layout_constraintBottom_toBottomOf="@+id/btn_shutter"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/btn_shutter"
+        tools:ignore="ContentDescription" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

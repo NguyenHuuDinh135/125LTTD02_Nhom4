@@ -18,7 +18,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
-            android:name=".ui.page.CameraActivity"
+            android:name=".ui.page.SplashActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -38,9 +38,7 @@
         <activity android:name=".ui.page.ProfileActivity" android:exported="false" />
         <activity android:name=".ui.page.CreateUsernameActivity" android:exported="false" />
         <!-- Các activity khác... -->
-<!--        <activity-->
-<!--            android:name=".ui.page.CameraActivity"-->
-<!--            android:exported="false" />-->
+
 
     </application>
 
