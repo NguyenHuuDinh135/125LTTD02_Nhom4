@@ -7,8 +7,25 @@
     android:background="?attr/colorSurface"
     android:padding="16dp">
 
-    <!-- Nút Chụp Ảnh (Shutter - Ở giữa) -->
-    <!-- ĐÃ SỬA: background="@drawable/bg_shutter_fill_grey" -->
+    <!-- 1. Nút Trái (Ví dụ: Chat / Friends) -->
+    <ImageView
+        android:id="@+id/btn_nav_left"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_marginStart="24dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:clickable="true"
+        android:contentDescription="@string/left_navigation"
+        android:focusable="true"
+        android:padding="10dp"
+        android:src="@drawable/outline_apps_24"
+        app:tint="?attr/colorOnSurface"
+        app:layout_constraintBottom_toBottomOf="@+id/btn_shutter"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/btn_shutter"
+        tools:src="@drawable/outline_apps_24" />
+
+    <!-- 2. Nút Chụp Ảnh (Shutter - Ở giữa) -->
     <View
         android:id="@+id/btn_shutter"
         android:layout_width="80dp"
@@ -20,7 +37,25 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <!-- Khu vực gợi ý "Lịch sử" (History Hint) - Giữ nguyên -->
+    <!-- 3. Nút Phải (Ví dụ: Grid / Profile) -->
+    <ImageView
+        android:id="@+id/btn_nav_right"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_marginEnd="24dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:clickable="true"
+        android:contentDescription="@string/right_navigation"
+        android:focusable="true"
+        android:padding="10dp"
+        android:src="@drawable/outline_person_add_24"
+        app:tint="?attr/colorOnSurface"
+        app:layout_constraintBottom_toBottomOf="@+id/btn_shutter"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/btn_shutter"
+        tools:src="@drawable/outline_person_add_24" />
+
+    <!-- 4. Khu vực gợi ý "Lịch sử" (History Hint) -->
     <LinearLayout
         android:id="@+id/layout_history_hint"
         android:layout_width="wrap_content"
@@ -55,6 +90,7 @@
                     android:id="@+id/img_history_thumbnail"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
+                    android:contentDescription="@string/todo"
                     android:scaleType="centerCrop"
                     tools:src="@tools:sample/backgrounds/scenic" />
             </androidx.cardview.widget.CardView>
@@ -67,7 +103,7 @@
                 android:shadowDx="1"
                 android:shadowDy="1"
                 android:shadowRadius="2"
-                android:text="Lịch sử"
+                android:text="@string/l_ch_s"
                 android:textColor="?attr/colorOnSurfaceInverse"
                 android:textStyle="bold" />
         </LinearLayout>
