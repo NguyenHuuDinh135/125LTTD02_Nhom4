@@ -3,6 +3,9 @@ package com.example.nhom4;
 import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.viewpager2.widget.ViewPager2;
+
+import com.example.nhom4.ui.page.friend.FriendsBottomSheet;
+import com.example.nhom4.ui.page.post.PostAdapter; // Import adapter mới
 import com.example.nhom4.ui.page.adapter.MainPagerAdapter;
 
 public class MainActivity extends AppCompatActivity {
@@ -13,6 +16,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
 
         viewPagerMain = findViewById(R.id.viewPagerMain);
 
