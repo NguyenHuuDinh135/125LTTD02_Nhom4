@@ -58,7 +58,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
         android:gravity="center"
-        android:text="Việc này sẽ giúp bạn bè của bạn tìm thấy\nbạn trên ứng dụng!"
+        android:text="@string/hinttohelp"
         android:textColor="?attr/colorOnSurfaceVariant"
         android:textSize="14sp"
         app:layout_constraintEnd_toEndOf="parent"
