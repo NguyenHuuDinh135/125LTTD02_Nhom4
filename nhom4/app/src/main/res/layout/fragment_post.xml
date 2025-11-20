@@ -118,6 +118,7 @@
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
+            android:autofillHints=""
             android:background="@null"
             android:hint="@string/g_i_tin_nh_n2"
             android:textColor="#FFFFFF"
