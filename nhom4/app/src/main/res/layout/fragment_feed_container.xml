@@ -9,14 +9,17 @@
 
     <!-- 1. ViewPager2: Lớp dưới cùng (Background Layer) -->
     <!-- orientation="vertical" để lướt dọc giống Locket/TikTok -->
+
+    <!-- 2. Top Bar Overlay (Lớp điều hướng trên cùng) -->
+    <!-- Chứa các nút: Calendar (Trái), Profile (Giữa), Chat (Phải) -->
     <androidx.viewpager2.widget.ViewPager2
         android:id="@+id/viewPagerPosts"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical" />
+        android:orientation="vertical"
+        tools:layout_editor_absoluteX="0dp"
+        tools:layout_editor_absoluteY="0dp" />
 
-    <!-- 2. Top Bar Overlay (Lớp điều hướng trên cùng) -->
-    <!-- Chứa các nút: Calendar (Trái), Profile (Giữa), Chat (Phải) -->
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/topBarContainer"
         android:layout_width="match_parent"
@@ -83,5 +86,109 @@
         android:background="@drawable/gradient_top_shadow"
         app:layout_constraintTop_toTopOf="parent" />
     <!-- Bạn cần tạo drawable gradient nếu muốn hiệu ứng này -->
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/reacContainer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingBottom="40dp"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/inputContainer"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:cardBackgroundColor="?attr/colorSurfaceContainer"
+            app:cardCornerRadius="24dp"
+            app:cardElevation="0dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginStart="24dp"
+            android:layout_marginEnd="24dp"
+            app:strokeColor="?attr/colorOutlineVariant"
+            app:strokeWidth="1dp"
+            tools:layout_editor_absoluteX="8dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <!-- Ô nhập reaction -->
+                <EditText
+                    android:id="@+id/etMessage"
+                    style="@style/TextAppearance.Material3.BodyLarge"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:background="@android:color/transparent"
+                    android:hint="@string/nh_p_tin_nh_n"
+                    android:inputType="textCapSentences|textMultiLine"
+                    android:maxLines="5"
+                    android:minHeight="48dp"
+                    android:paddingHorizontal="16dp"
+                    android:paddingVertical="16dp"
+                    android:textColor="?attr/colorOnSurface"
+                    android:textColorHint="?attr/colorOnSurfaceVariant" />
+
+                <LinearLayout
+                    android:id="@+id/emojiContainer"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/emojiOption1"
+                        style="@style/Widget.Material3.Button.IconButton"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        app:icon="@drawable/baseline_favorite_24"
+                        app:iconSize="28dp"
+                        app:iconPadding="0dp"
+                        app:iconGravity="textStart"
+                        app:iconTint="?android:attr/colorPressedHighlight" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/emojiOption3"
+                        style="@style/Widget.Material3.Button.IconButton"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        app:icon="@drawable/baseline_add_circle_24"
+                        app:iconSize="28dp"
+                        app:iconPadding="0dp"
+                        app:iconGravity="textStart"
+                        app:iconTint="?attr/elevationOverlayColor" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnOption"
+                        style="@style/Widget.Material3.Button.IconButton"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        app:icon="@drawable/outline_add_reaction_24"
+                        app:iconSize="28dp"
+                        app:iconPadding="0dp"
+                        app:iconGravity="textStart"
+                        app:iconTint="?attr/colorOnBackground" />
+                </LinearLayout>
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnSend"
+                    style="@style/Widget.Material3.Button.IconButton"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:visibility="gone"
+                    app:icon="@drawable/outline_send_24"
+                    app:iconSize="28dp"
+                    app:iconPadding="0dp"
+                    app:iconGravity="textStart"
+                    app:iconTint="?attr/colorOnBackground"/>
+
+            </LinearLayout>
+
+        </com.google.android.material.card.MaterialCardView>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
