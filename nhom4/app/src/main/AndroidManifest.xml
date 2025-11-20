@@ -2,12 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.CAMERA" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
-        android:maxSdkVersion="28"/>
-
-    <uses-feature android:name="android.hardware.camera" android:required="false" />
-
+<!--    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />-->
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -18,7 +13,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
-            android:name=".ui.page.CameraActivity"
+            android:name=".ui.page.SplashActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -36,9 +31,7 @@
             android:exported="false" />
 
         <!-- Các activity khác... -->
-<!--        <activity-->
-<!--            android:name=".ui.page.CameraActivity"-->
-<!--            android:exported="false" />-->
+
 
     </application>
 
