@@ -52,7 +52,7 @@
                 android:id="@+id/tv_friend_count"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/_12_ng_i_b_n"
+                android:text="10 Bạn bè"
                 android:textColor="#FFFFFF"
                 android:textStyle="bold"
                 android:textSize="14sp" />
