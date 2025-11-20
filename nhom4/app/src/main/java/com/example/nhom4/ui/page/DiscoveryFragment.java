@@ -21,7 +21,6 @@ public class DiscoveryFragment extends Fragment {
 
     private RecyclerView chatRecyclerView;
     private RecyclerView operatorRecyclerView;
-    private ImageView btnBack;
 
     @Nullable
     @Override
@@ -35,17 +34,10 @@ public class DiscoveryFragment extends Fragment {
 
         chatRecyclerView = view.findViewById(R.id.chatRecyclerView);
         operatorRecyclerView = view.findViewById(R.id.OperatorRecyclerView);
-        btnBack = view.findViewById(R.id.btn_back);
 
         // Setup RecyclerViews
         // chatRecyclerView.setAdapter(new ChatAdapter(...));
         // operatorRecyclerView.setAdapter(new OperatorAdapter(...));
 
-        // Nút Back: Khi ở Discovery (Trang 2) bấm back sẽ quay về Feed (Trang 1)
-        btnBack.setOnClickListener(v -> {
-            if (getActivity() instanceof com.example.nhom4.MainActivity) {
-                ((com.example.nhom4.MainActivity) getActivity()).navigateToFeed();
-            }
-        });
     }
 }

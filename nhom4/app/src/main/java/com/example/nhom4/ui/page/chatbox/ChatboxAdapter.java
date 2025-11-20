@@ -8,7 +8,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.nhom4.R;
-import com.example.nhom4.data.model.Message;
+import com.example.nhom4.data.bean.Message;
 import com.google.android.material.imageview.ShapeableImageView;
 import com.google.firebase.Timestamp;
 

@@ -2,7 +2,6 @@ package com.example.nhom4.ui.page;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.View;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -11,8 +10,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.nhom4.MainActivity;
 import com.example.nhom4.R;
-import com.example.nhom4.data.model.User;
-import com.example.nhom4.ui.page.adapter.UserSuggestionAdapter;
+import com.example.nhom4.data.bean.User;
+import com.example.nhom4.ui.adapter.UserSuggestionAdapter;
 import com.google.android.material.button.MaterialButton;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;

@@ -1,4 +1,4 @@
-package com.example.nhom4.ui.page.main;
+package com.example.nhom4.ui.adapter;
 
 import android.view.LayoutInflater;
 import android.view.View;
