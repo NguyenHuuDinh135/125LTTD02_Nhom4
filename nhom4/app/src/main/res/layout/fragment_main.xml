@@ -2,17 +2,11 @@
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="?attr/colorSurface">
-
-    <!-- Thanh Top Bar (Profile, Bạn bè, Tim) -->
-    <include
-        android:id="@+id/include_top_bar"
-        layout="@layout/partial_main_top_bar"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+    android:background="?attr/colorSurface"
+    android:paddingTop="10dp">
 
     <!-- Chữ chào "Heyy, What's up..." -->
     <com.google.android.material.textview.MaterialTextView
@@ -20,142 +14,110 @@
         style="@style/TextAppearance.Material3.HeadlineMedium"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="24dp"
-        android:layout_marginTop="16dp"
-        android:text="@string/heyy_what_s_up_guyy"
+        android:layout_marginTop="100dp"
+        android:text="Heyy, What's up guyy?"
         android:textColor="?attr/colorOnSurface"
         android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/include_top_bar" />
+        app:layout_constraintTop_toTopOf="parent" />
 
-    <!-- 2. Main Card (Chứa Camera, Mood Image VÀ Activity List) -->
+    <!-- Thẻ Card chính -->
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/mainCard"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_marginHorizontal="24dp"
-        android:layout_marginTop="24dp"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_margin="24dp"
         app:cardBackgroundColor="?attr/colorSurfaceContainerHigh"
         app:cardCornerRadius="28dp"
-        app:cardElevation="4dp"
-        app:layout_constraintDimensionRatio="1:1"
+        app:cardElevation="0dp"
+        app:strokeWidth="0dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/textViewGreeting">
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="wrap_content"
+            android:minHeight="300dp"
+            android:padding="24dp">
 
-            <!-- A. Camera Preview -->
-            <androidx.camera.view.PreviewView
-                android:id="@+id/cameraPreviewView"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:visibility="gone" />
-
-            <!-- B. Ảnh tĩnh (Mood Icon) -->
-            <ImageView
-                android:id="@+id/imgMoodPreview"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:padding="40dp"
-                android:scaleType="fitCenter"
-                android:src="@drawable/ic_launcher_foreground"
-                app:layout_constraintBottom_toBottomOf="parent"
+            <!-- Công tắc chuyển đổi "Check in" -->
+            <com.google.android.material.switchmaterial.SwitchMaterial
+                android:id="@+id/modeSwitch"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:checked="true"
+                android:text="Check in"
+                android:textColor="?attr/colorOnSurfaceVariant"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
-            <!-- C. Activity List (Mới thêm vào đây) -->
-            <!-- Mặc định ẩn, hiện khi chọn tab Activity -->
+            <!-- CHẾ ĐỘ 1: DANH SÁCH HOẠT ĐỘNG -->
             <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/activity_recycler_view"
+                android:id="@+id/activities_list_recycler"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:background="?attr/colorSurfaceContainerHigh"
-                android:padding="16dp"
-                android:clipToPadding="false"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:nestedScrollingEnabled="false"
                 android:visibility="gone"
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
+                app:layout_constraintTop_toBottomOf="@id/modeSwitch"
+                app:layout_constraintVertical_bias="0.0"
+                tools:itemCount="5"
+                tools:listitem="@layout/item_activity_text" />
 
-            <!-- Nút X đóng camera -->
-            <ImageView
-                android:id="@+id/btnCloseCamera"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:layout_margin="16dp"
-                android:background="@drawable/bg_pill_dark"
-                android:padding="8dp"
-                android:src="@drawable/outline_close_24"
-                android:visibility="gone"
-                app:tint="@android:color/white"
+            <!-- CHẾ ĐỘ 2: CHỌN ICON (Mood) -->
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/check_in_layout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:visibility="visible"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
+                app:layout_constraintTop_toBottomOf="@id/modeSwitch">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/buttonCheckIn"
+                    style="@style/Widget.Material3.Button.IconButton.Filled"
+                    android:layout_width="80dp"
+                    android:layout_height="80dp"
+                    app:backgroundTint="?attr/colorPrimaryContainer"
+                    app:icon="@drawable/outline_add_24"
+                    app:iconSize="32dp"
+                    app:iconTint="?attr/colorOnPrimaryContainer"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.SmallComponent" />
+
+                <!-- RecyclerView cho các Moods -->
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/mood_recycler_view"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="24dp"
+                    android:orientation="horizontal"
+                    app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/buttonCheckIn"
+                    tools:itemCount="4"
+                    tools:listitem="@layout/item_mood_icon" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </com.google.android.material.card.MaterialCardView>
 
-    <!-- 3. Control Layout -->
-    <LinearLayout
-        android:id="@+id/control_layout"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:paddingHorizontal="24dp"
-        android:gravity="center_horizontal"
-        app:layout_constraintTop_toBottomOf="@id/mainCard">
-
-        <!-- Toggle Mood / Activity -->
-        <com.google.android.material.button.MaterialButtonToggleGroup
-            android:id="@+id/toggleGroupContentType"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:singleSelection="true"
-            app:selectionRequired="true"
-            app:checkedButton="@id/btnTabMood"
-            android:layout_marginBottom="8dp">
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnTabMood"
-                style="@style/Widget.Material3.Button.OutlinedButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Cảm xúc" />
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnTabActivity"
-                style="@style/Widget.Material3.Button.OutlinedButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Hoạt động" />
-        </com.google.android.material.button.MaterialButtonToggleGroup>
-
-        <!-- Switch Camera -->
-        <com.google.android.material.switchmaterial.SwitchMaterial
-            android:id="@+id/modeSwitch"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:checked="false"
-            android:text="Bật Camera"
-            android:layout_marginBottom="12dp"/>
-
-        <!-- List Mood (Vẫn ở dưới để chọn) -->
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/mood_recycler_view"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:visibility="visible"/>
-
-        <!-- Đã xóa activity_recycler_view ở đây vì chuyển lên mainCard -->
-
-    </LinearLayout>
-
-    <!-- 4. Bottom Bar -->
+    <!-- 2. BOTTOM BAR DÙNG CHUNG (Overlay) -->
+    <!-- Mặc định visibility="gone" hoặc xử lý trong code -->
     <include
         android:id="@+id/bottom_bar"
         layout="@layout/component_bottom_bar_main"
