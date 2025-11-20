@@ -22,6 +22,7 @@
             android:id="@+id/btn_back"
             android:layout_width="40dp"
             android:layout_height="40dp"
+            android:contentDescription="@string/back"
             android:padding="8dp"
             android:src="@drawable/outline_arrow_back_ios_24"
             app:tint="?attr/colorOnSurface"
@@ -46,7 +47,7 @@
                 style="@style/TextAppearance.Material3.HeadlineSmall"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Tất cả"
+                android:text="@string/t_t_c"
                 android:textColor="?attr/colorOnSurface"
                 android:textStyle="bold" />
 
@@ -55,6 +56,7 @@
                 android:layout_width="24dp"
                 android:layout_height="24dp"
                 android:layout_marginStart="4dp"
+                android:contentDescription="@string/dropdown"
                 android:src="@drawable/outline_keyboard_arrow_down_24"
                 app:tint="?attr/colorOnSurface" />
         </LinearLayout>
@@ -64,6 +66,7 @@
             android:id="@+id/btn_add"
             android:layout_width="40dp"
             android:layout_height="40dp"
+            android:contentDescription="@string/add"
             android:padding="4dp"
             android:src="@drawable/outline_add_24"
             app:tint="?attr/colorOnSurface"

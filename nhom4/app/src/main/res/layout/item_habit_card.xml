@@ -2,7 +2,6 @@
 <com.google.android.material.card.MaterialCardView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginBottom="16dp"
@@ -44,7 +43,7 @@
                 style="@style/TextAppearance.Material3.TitleLarge"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Chạy bộ"
+                android:text="@string/ch_y_b"
                 android:textColor="?attr/colorOnSurface"
                 android:textStyle="bold" />
 
@@ -54,7 +53,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="2dp"
-                android:text="Mỗi ngày 15 phút"
+                android:text="@string/m_i_ng_y_15_ph_t"
                 android:textColor="?attr/colorOnSurfaceVariant" />
         </LinearLayout>
 
@@ -97,7 +96,7 @@
                 <com.google.android.material.textview.MaterialTextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Tiếp theo"
+                    android:text="@string/ti_p_theo"
                     style="@style/TextAppearance.Material3.LabelLarge"
                     android:textColor="?attr/colorOnSurfaceVariant" />
 
@@ -114,7 +113,7 @@
                 <com.google.android.material.textview.MaterialTextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="50%"
+                    android:text="@string/_50"
                     style="@style/TextAppearance.Material3.BodySmall"
                     android:layout_marginTop="4dp"
                     android:textColor="?attr/colorPrimary" />

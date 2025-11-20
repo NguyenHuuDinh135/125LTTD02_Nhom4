@@ -70,7 +70,7 @@
             android:layout_height="wrap_content"
             android:paddingHorizontal="16dp"
             android:paddingVertical="8dp"
-            android:text="Bạn 22 thg 9"
+            android:text="@string/timeline"
             android:textColor="?attr/colorOnSurfaceVariant"
             style="@style/TextAppearance.Material3.LabelLarge" />
     </com.google.android.material.card.MaterialCardView>
@@ -102,7 +102,7 @@
             android:layout_height="wrap_content"
             android:ellipsize="end"
             android:maxLines="1"
-            android:text="Quangvinh12, Tue122,..."
+            android:text="@string/timeline_2"
             android:textColor="?attr/colorOnSurfaceVariant"
             style="@style/TextAppearance.Material3.BodySmall" />
     </LinearLayout>

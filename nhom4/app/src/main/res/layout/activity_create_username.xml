@@ -64,7 +64,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
         android:gravity="center"
-        android:text="@string/vi_c_n_y_s_gi_p_b_n_b_c_a_b_n_t_m_th_y_nb_n_tr_n_ng_d_ng"
+        android:text="@string/hinttohelp"
         android:textColor="?attr/colorOnSurfaceVariant"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
