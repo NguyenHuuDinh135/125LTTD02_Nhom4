@@ -11,6 +11,7 @@ import androidx.viewpager2.widget.ViewPager2;
 import com.example.nhom4.ui.page.friend.FriendsBottomSheet;
 import com.example.nhom4.ui.page.post.PostAdapter; // Import adapter mới
 import com.example.nhom4.ui.adapter.MainPagerAdapter;
+import com.google.android.material.card.MaterialCardView;
 
 public class MainActivity extends AppCompatActivity {
 
