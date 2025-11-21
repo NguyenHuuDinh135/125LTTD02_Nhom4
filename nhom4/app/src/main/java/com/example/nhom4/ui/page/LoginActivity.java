@@ -22,7 +22,7 @@ import com.google.firebase.auth.FirebaseUser;
 public class LoginActivity extends AppCompatActivity {
     private TextInputEditText etEmail, etPassword;
     private Button btnLogin;
-    private CheckBox checkBoxShowPassword;
+//    private CheckBox checkBoxShowPassword;
     private TextView tvGoToRegister, tvForgotPassword;
     private ProgressBar progressBar;
     private FirebaseAuth mAuth;
@@ -52,18 +52,18 @@ public class LoginActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
-        // Xử lý sự kiện cho checkbox "Show password"
-        checkBoxShowPassword.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            if (isChecked) {
-                // Hiển thị mật khẩu
-                etPassword.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD);
-            } else {
-                // Ẩn mật khẩu
-                etPassword.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
-            }
-            // Di chuyển con trỏ về cuối chuỗi
-            etPassword.setSelection(etPassword.length());
-        });
+//        // Xử lý sự kiện cho checkbox "Show password"
+//        checkBoxShowPassword.setOnCheckedChangeListener((buttonView, isChecked) -> {
+//            if (isChecked) {
+//                // Hiển thị mật khẩu
+//                etPassword.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD);
+//            } else {
+//                // Ẩn mật khẩu
+//                etPassword.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+//            }
+//            // Di chuyển con trỏ về cuối chuỗi
+//            etPassword.setSelection(etPassword.length());
+//        });
 
         // (Tùy chọn) Xử lý sự kiện cho "Forgot password"
         tvForgotPassword.setOnClickListener(v -> {
@@ -107,10 +107,23 @@ public class LoginActivity extends AppCompatActivity {
 //                    progressBar.setVisibility(com.google.ar.imp.view.View.GONE);
                     btnLogin.setEnabled(true);
 
+//                    if (task.isSuccessful()) {
+//                        // Đăng nhập thành công
+//                        Toast.makeText(LoginActivity.this, "Đăng nhập thành công.", Toast.LENGTH_SHORT).show();
+////                        goToMainActivity();
+//                    } else {
+//                        // Đăng nhập thất bại, hiển thị thông báo lỗi
+//                        Toast.makeText(LoginActivity.this, "Xác thực thất bại: " + task.getException().getMessage(),
+//                                Toast.LENGTH_LONG).show();
+//                    }
                     if (task.isSuccessful()) {
                         // Đăng nhập thành công
                         Toast.makeText(LoginActivity.this, "Đăng nhập thành công.", Toast.LENGTH_SHORT).show();
-//                        goToMainActivity();
+                        // Mở AddFriendActivity thay vì MainActivity
+                        Intent intent = new Intent(LoginActivity.this, AddFriendActivity.class);
+                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                        startActivity(intent);
+                        finish();
                     } else {
                         // Đăng nhập thất bại, hiển thị thông báo lỗi
                         Toast.makeText(LoginActivity.this, "Xác thực thất bại: " + task.getException().getMessage(),

@@ -1,22 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/bts_layot"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:orientation="vertical"
     android:paddingTop="15dp"
     android:paddingLeft="22dp"
     android:paddingRight="22dp"
     android:background="?attr/colorSurface">
-    <com.google.android.material.button.MaterialButton
-        android:layout_width="wrap_content"
-        android:layout_height="20dp"
-        android:layout_gravity="center"
-        android:clickable="false"
-        android:layout_marginBottom="20dp"
-        android:backgroundTint="?attr/colorOnSurfaceInverse"/>
+
+    <!-- Header: tổng số bạn bè -->
     <com.google.android.material.textview.MaterialTextView
         android:id="@+id/txtCount"
         android:layout_width="wrap_content"
@@ -31,6 +27,7 @@
         android:drawableTint="@color/md_theme_errorContainer_highContrast"
         android:drawablePadding="8dp"/>
 
+    <!-- Search bar -->
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/search_input_layout"
         android:layout_width="match_parent"
@@ -66,12 +63,15 @@
         android:layout_weight="1"
         android:layout_marginTop="8dp"
         android:layout_marginBottom="4dp">
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:paddingLeft="26dp"
             android:paddingRight="26dp">
+
+            <!-- Friends label -->
             <com.google.android.material.textview.MaterialTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -85,6 +85,7 @@
                 android:drawableTint="?attr/colorOnSurfaceVariant"
                 android:drawablePadding="8dp"/>
 
+            <!-- RecyclerView bạn bè -->
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rcvFriends"
                 android:layout_width="match_parent"
@@ -103,7 +104,28 @@
                 android:textAllCaps="false"
                 app:cornerRadius="12dp" />
 
-            <!-- SUGGESTIONS label -->
+            <!-- Friend Requests label -->
+            <com.google.android.material.textview.MaterialTextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Yêu cầu kết bạn"
+                android:textStyle="bold"
+                android:textSize="18dp"
+                android:textAppearance="@style/TextAppearance.Material3.BodyLarge"
+                android:textColor="?attr/colorOnSurfaceVariant"
+                android:layout_marginTop="16dp"
+                android:drawableTint="?attr/colorOnSurfaceVariant"
+                android:drawablePadding="8dp"/>
+
+            <!-- RecyclerView yêu cầu kết bạn -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rcvFriendRequests"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                tools:itemCount="3"
+                tools:listitem="@layout/item_friend_request"/>
+
+            <!-- Suggestions label -->
             <com.google.android.material.textview.MaterialTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -117,6 +139,7 @@
                 android:drawableTint="?attr/colorOnSurfaceVariant"
                 android:drawablePadding="8dp"/>
 
+            <!-- RecyclerView gợi ý bạn bè -->
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rcvSuggestions"
                 android:layout_width="match_parent"
@@ -134,7 +157,7 @@
                 android:text="Xem thêm"
                 android:textAllCaps="false"
                 app:cornerRadius="12dp" />
+
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 </LinearLayout>
-
