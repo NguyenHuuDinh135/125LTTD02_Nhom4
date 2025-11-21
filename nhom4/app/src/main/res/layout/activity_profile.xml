@@ -45,7 +45,6 @@
                 app:strokeWidth="2dp"
                 app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.Full" />
 
-            <!-- Icon máy ảnh nhỏ -->
             <ImageView
                 android:id="@+id/btn_edit_avatar_icon"
                 android:layout_width="32dp"
@@ -74,9 +73,21 @@
                 android:orientation="vertical"
                 android:padding="20dp">
 
-                <include android:id="@+id/item_email" layout="@layout/item_profile_info" />
-                <include android:id="@+id/item_name" layout="@layout/item_profile_info" />
-                <!-- Thêm các field khác nếu cần -->
+                <!-- Email -->
+                <include
+                    android:id="@+id/item_email"
+                    layout="@layout/item_profile_info" />
+
+                <!-- Name -->
+                <include
+                    android:id="@+id/item_name"
+                    layout="@layout/item_profile_info" />
+
+                <!-- Birthday -->
+                <include
+                    android:id="@+id/item_birthday"
+                    layout="@layout/item_profile_info" />
+
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
@@ -87,18 +98,18 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"
-            android:text="Lưu thay đổi"
+            android:text="@string/l_u_thay_i"
             app:layout_constraintTop_toBottomOf="@id/cardUserInfo"
             app:layout_constraintStart_toStartOf="parent" />
 
-        <!-- Nút Đăng xuất (Sửa từ nút Cài đặt cũ) -->
+        <!-- Nút Đăng xuất -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/buttonSettings"
             style="@style/Widget.Material3.Button.TonalButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:text="Đăng xuất"
+            android:text="@string/ng_xu_t"
             android:textColor="?attr/colorError"
             app:icon="@drawable/outline_logout_24"
             app:iconTint="?attr/colorError"

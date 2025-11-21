@@ -3,9 +3,7 @@ package com.example.nhom4.ui.page.calendar;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.view.View;
 import android.widget.ImageView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -14,39 +12,40 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.bumptech.glide.Glide;
 import com.example.nhom4.R;
-import com.example.nhom4.ui.page.SplashActivity; // Import SplashActivity
+import com.example.nhom4.data.bean.UserProfile;
+import com.example.nhom4.ui.page.SplashActivity;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.imageview.ShapeableImageView;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.auth.UserProfileChangeRequest;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class ProfileActivity extends AppCompatActivity {
 
-    // UI Components
     private ShapeableImageView ivProfileAvatar;
     private ImageView btnChangeAvatar;
-    private TextInputEditText etEmail; // Giả sử bạn dùng EditText trong include layout
+
+    private TextInputEditText etEmail, etName, etBirthday;
     private MaterialButton btnSave, btnLogout;
 
-    // Firebase
     private FirebaseAuth auth;
-    private FirebaseStorage storage;
     private FirebaseFirestore db;
+    private FirebaseStorage storage;
 
     private Uri selectedImageUri = null;
 
-    // Launcher chọn ảnh
     private final ActivityResultLauncher<String> pickImageLauncher = registerForActivityResult(
             new ActivityResultContracts.GetContent(),
             uri -> {
                 if (uri != null) {
                     selectedImageUri = uri;
-                    ivProfileAvatar.setImageURI(uri); // Hiển thị ảnh vừa chọn
+                    ivProfileAvatar.setImageURI(uri);
                 }
             }
     );
@@ -56,33 +55,25 @@ public class ProfileActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_profile);
 
-        // Init Firebase
         auth = FirebaseAuth.getInstance();
-        storage = FirebaseStorage.getInstance();
         db = FirebaseFirestore.getInstance();
+        storage = FirebaseStorage.getInstance();
 
         initViews();
-        loadUserData();
+        loadUserProfile();
 
-        // Sự kiện đổi avatar
+        // Sự kiện chọn avatar
         btnChangeAvatar.setOnClickListener(v -> pickImageLauncher.launch("image/*"));
-
-        // Sự kiện bấm vào chính ảnh avatar cũng cho đổi
         ivProfileAvatar.setOnClickListener(v -> pickImageLauncher.launch("image/*"));
 
-        // Sự kiện Lưu thay đổi
+        // Sự kiện Lưu
         btnSave.setOnClickListener(v -> saveProfileChanges());
 
-        // --- SỬA ĐOẠN NÀY: ĐĂNG XUẤT VỀ SPLASH ---
+        // Đăng xuất
         btnLogout.setOnClickListener(v -> {
-            auth.signOut(); // Đăng xuất khỏi Firebase
-
-            // Chuyển về SplashActivity
+            auth.signOut();
             Intent intent = new Intent(ProfileActivity.this, SplashActivity.class);
-
-            // Xóa toàn bộ Activity stack cũ để người dùng không thể bấm Back quay lại Profile
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-
             startActivity(intent);
             finish();
         });
@@ -92,15 +83,9 @@ public class ProfileActivity extends AppCompatActivity {
         ivProfileAvatar = findViewById(R.id.iv_profile_avatar);
         btnChangeAvatar = findViewById(R.id.btn_edit_avatar_icon);
 
-        // Ánh xạ các trường text
-        View includeEmail = findViewById(R.id.item_email);
-        TextView valueEmail = includeEmail.findViewById(R.id.tv_value);
-
-        View includeName = findViewById(R.id.item_name);
-        TextView valueName = includeName.findViewById(R.id.tv_value);
-
-        // Lưu reference lại để set text (nếu cần dùng sau này)
-        // Ở đây chỉ để minh họa việc tìm view
+        etEmail = findViewById(R.id.item_email).findViewById(R.id.et_value);
+        etName = findViewById(R.id.item_name).findViewById(R.id.et_value);
+        etBirthday = findViewById(R.id.item_birthday).findViewById(R.id.et_value);
 
         btnSave = findViewById(R.id.buttonSave);
         btnLogout = findViewById(R.id.buttonSettings);
@@ -108,23 +93,41 @@ public class ProfileActivity extends AppCompatActivity {
         btnLogout.setIconResource(R.drawable.outline_logout_24);
     }
 
-    private void loadUserData() {
+    private void loadUserProfile() {
         FirebaseUser user = auth.getCurrentUser();
-        if (user != null) {
-            // Load Avatar
-            if (user.getPhotoUrl() != null) {
-                Glide.with(this).load(user.getPhotoUrl()).into(ivProfileAvatar);
-            }
+        if (user == null) return;
 
-            // Load Info
-            View includeEmail = findViewById(R.id.item_email);
-            TextView valEmail = includeEmail.findViewById(R.id.tv_value);
-            valEmail.setText(user.getEmail());
+        db.collection("user_profile").document(user.getUid())
+                .get()
+                .addOnSuccessListener(doc -> {
+                    if (doc.exists()) {
+                        etName.setText(doc.getString("username") != null ? doc.getString("username") : "Chưa có tên");
+                        etEmail.setText(doc.getString("email") != null ? doc.getString("email") : user.getEmail());
+                        etBirthday.setText(doc.getString("birthday") != null ? doc.getString("birthday") : "Chưa có ngày sinh");
 
-            View includeName = findViewById(R.id.item_name);
-            TextView valName = includeName.findViewById(R.id.tv_value);
-            valName.setText(user.getDisplayName());
-        }
+                        String avatarUrl = doc.getString("profilePhotoUrl");
+                        if (avatarUrl != null && !avatarUrl.isEmpty()) {
+                            Glide.with(this).load(avatarUrl).into(ivProfileAvatar);
+                        }
+                    } else {
+                        // Tạo profile mặc định nếu chưa có
+                        UserProfile defaultProfile = new UserProfile(
+                                user.getUid(),
+                                "Chưa có tên",
+                                user.getEmail(),
+                                "Chưa có ngày sinh",
+                                null,
+                                null
+                        );
+                        db.collection("user_profile").document(user.getUid())
+                                .set(defaultProfile);
+
+                        etName.setText(defaultProfile.getUsername());
+                        etEmail.setText(defaultProfile.getEmail());
+                        etBirthday.setText(defaultProfile.getBirthday());
+                    }
+                })
+                .addOnFailureListener(e -> Toast.makeText(this, "Lỗi load profile: " + e.getMessage(), Toast.LENGTH_SHORT).show());
     }
 
     private void saveProfileChanges() {
@@ -134,48 +137,46 @@ public class ProfileActivity extends AppCompatActivity {
         btnSave.setEnabled(false);
         btnSave.setText("Đang lưu...");
 
-        if (selectedImageUri != null) {
-            // 1. Upload ảnh trước
-            String uid = user.getUid();
-            StorageReference avatarRef = storage.getReference().child("avatars/" + uid + ".jpg");
+        String newEmail = etEmail.getText().toString().trim();
+        String newName = etName.getText().toString().trim();
+        String newBirthday = etBirthday.getText().toString().trim();
 
+        Map<String, Object> updates = new HashMap<>();
+        updates.put("email", newEmail.isEmpty() ? user.getEmail() : newEmail);
+        updates.put("username", newName.isEmpty() ? "Chưa có tên" : newName);
+        updates.put("birthday", newBirthday.isEmpty() ? "Chưa có ngày sinh" : newBirthday);
+
+        if (selectedImageUri != null) {
+            StorageReference avatarRef = storage.getReference().child("avatars/" + user.getUid() + ".jpg");
             avatarRef.putFile(selectedImageUri)
-                    .addOnSuccessListener(taskSnapshot -> avatarRef.getDownloadUrl().addOnSuccessListener(uri -> {
-                        String downloadUrl = uri.toString();
-                        updateFirebaseProfile(user, downloadUrl);
-                    }))
+                    .addOnSuccessListener(taskSnapshot ->
+                            avatarRef.getDownloadUrl().addOnSuccessListener(uri -> {
+                                updates.put("profilePhotoUrl", uri.toString());
+                                updateFirestore(updates);
+                            }))
                     .addOnFailureListener(e -> {
                         Toast.makeText(this, "Lỗi upload ảnh: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                         btnSave.setEnabled(true);
                         btnSave.setText("Lưu thay đổi");
                     });
         } else {
-            // Chỉ update thông tin text (nếu có sửa tên)
-            updateFirebaseProfile(user, null);
+            updateFirestore(updates);
         }
     }
 
-    private void updateFirebaseProfile(FirebaseUser user, String photoUrl) {
-        UserProfileChangeRequest.Builder requestBuilder = new UserProfileChangeRequest.Builder();
+    private void updateFirestore(Map<String, Object> updates) {
+        FirebaseUser user = auth.getCurrentUser();
+        if (user == null) return;
 
-        if (photoUrl != null) {
-            requestBuilder.setPhotoUri(Uri.parse(photoUrl));
-        }
-        // Nếu có sửa tên: requestBuilder.setDisplayName(newName);
-
-        user.updateProfile(requestBuilder.build())
-                .addOnCompleteListener(task -> {
-                    if (task.isSuccessful()) {
-                        // Đồng bộ sang Firestore "users" collection
-                        if (photoUrl != null) {
-                            db.collection("users").document(user.getUid())
-                                    .update("profilePhotoUrl", photoUrl);
-                        }
-
-                        Toast.makeText(ProfileActivity.this, "Cập nhật thành công!", Toast.LENGTH_SHORT).show();
-                    } else {
-                        Toast.makeText(ProfileActivity.this, "Lỗi cập nhật profile", Toast.LENGTH_SHORT).show();
-                    }
+        db.collection("user_profile").document(user.getUid())
+                .update(updates)
+                .addOnSuccessListener(aVoid -> {
+                    Toast.makeText(this, "Cập nhật thành công!", Toast.LENGTH_SHORT).show();
+                    btnSave.setEnabled(true);
+                    btnSave.setText("Lưu thay đổi");
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(this, "Lỗi cập nhật: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                     btnSave.setEnabled(true);
                     btnSave.setText("Lưu thay đổi");
                 });

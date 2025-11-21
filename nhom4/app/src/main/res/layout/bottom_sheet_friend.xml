@@ -34,7 +34,7 @@
         android:drawableStart="@drawable/baseline_favorite_24"
         android:drawablePadding="8dp"
         android:drawableTint="@color/md_theme_errorContainer_highContrast"
-        android:text="Bạn bè"
+        android:text="@string/b_n_b"
         android:textAppearance="@style/TextAppearance.Material3.TitleLarge"
         android:textColor="?attr/colorOnSurface"
         android:textStyle="bold" />
@@ -61,7 +61,7 @@
             android:id="@+id/et_search"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Tìm kiếm bạn mới"
+            android:hint="@string/t_m_ki_m_b_n_m_is"
             android:inputType="text"
             android:maxLines="1"
             android:textColor="?attr/colorOnSurface"
@@ -92,7 +92,7 @@
                 android:drawableStart="@drawable/friend_ic"
                 android:drawablePadding="8dp"
                 android:drawableTint="?attr/colorOnSurfaceVariant"
-                android:text="Lời mời kết bạn"
+                android:text="@string/l_i_m_i_k_t_b_n"
                 android:textAppearance="@style/TextAppearance.Material3.BodyLarge"
                 android:textColor="?attr/colorOnSurfaceVariant"
                 android:textSize="18sp"
@@ -113,7 +113,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
                 android:layout_marginTop="8dp"
-                android:text="Xem tất cả"
+                android:text="@string/xem_t_t_c"
                 android:textAllCaps="false"
                 app:cornerRadius="12dp" />
 
@@ -126,7 +126,7 @@
                 android:drawableStart="@drawable/star_shine_ic"
                 android:drawablePadding="8dp"
                 android:drawableTint="?attr/colorOnSurfaceVariant"
-                android:text="Gợi ý cho bạn"
+                android:text="@string/g_i_cho_b_n"
                 android:textAppearance="@style/TextAppearance.Material3.BodyLarge"
                 android:textColor="?attr/colorOnSurfaceVariant"
                 android:textSize="18sp"
@@ -148,9 +148,10 @@
                 android:layout_gravity="center_horizontal"
                 android:layout_marginTop="8dp"
                 android:layout_marginBottom="24dp"
-                android:text="Xem thêm"
+                android:text="@string/sxem_th_m"
                 android:textAllCaps="false"
-                app:cornerRadius="12dp" />
+                app:cornerRadius="12dp"
+                tools:ignore="HardcodedText" />
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 </LinearLayout>

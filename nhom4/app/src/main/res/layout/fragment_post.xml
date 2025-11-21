@@ -17,7 +17,7 @@
         android:layout_marginHorizontal="24dp"
         android:layout_marginTop="32dp"
         android:gravity="center"
-        android:text="Caption"
+        android:text="@string/caption"
         android:textColor="?attr/colorOnSurface"
         android:textSize="24sp"
         android:textStyle="bold"
@@ -56,7 +56,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:text="12:00"
+        android:text="@string/_12_00"
         android:paddingHorizontal="20dp"
         android:paddingVertical="8dp"
         android:background="?attr/colorSurfaceContainerHigh"
@@ -88,7 +88,7 @@
             android:id="@+id/textAvatarGroup"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="User1, User2…"
+            android:text="@string/user1_user2"
             android:textColor="?attr/colorOnSurfaceVariant"/>
     </LinearLayout>
 

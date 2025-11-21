@@ -4,78 +4,105 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.bumptech.glide.Glide;
 import com.example.nhom4.R;
+import com.example.nhom4.data.bean.FriendRequest;
 import com.example.nhom4.data.bean.User;
+import com.bumptech.glide.Glide;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.imageview.ShapeableImageView;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.List;
 
 public class FriendRequestAdapter extends RecyclerView.Adapter<FriendRequestAdapter.RequestViewHolder> {
 
-    private List<User> requestList;
+    private List<FriendRequest> requestList;
     private OnRequestActionListener listener;
+    private FirebaseFirestore db;
 
-    // Interface để Fragment xử lý sự kiện
     public interface OnRequestActionListener {
-        void onAccept(User user);
-        // void onDecline(User user); // Có thể thêm từ chối sau này
+        void onAccept(FriendRequest request);
+        void onDecline(FriendRequest request);
     }
 
-    public FriendRequestAdapter(List<User> requestList, OnRequestActionListener listener) {
+    public FriendRequestAdapter(List<FriendRequest> requestList, OnRequestActionListener listener) {
         this.requestList = requestList;
         this.listener = listener;
+        db = FirebaseFirestore.getInstance();
+    }
+
+    public void setRequests(List<FriendRequest> requests) {
+        this.requestList = requests;
+        notifyDataSetChanged();
     }
 
     @NonNull
     @Override
     public RequestViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        // Sử dụng layout item_friend (giả sử bạn đã có layout này giống item_recommend_friend)
-        // Nếu chưa có, bạn có thể dùng tạm item_recommend_friend
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_recommend_friend, parent, false);
+        View view = LayoutInflater.from(parent.getContext())
+                .inflate(R.layout.item_friend_request, parent, false);
         return new RequestViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(@NonNull RequestViewHolder holder, int position) {
-        User user = requestList.get(position);
-        holder.tvName.setText(user.getUsername());
+        FriendRequest request = requestList.get(position);
 
-        // Đổi text nút thành "Chấp nhận"
-        holder.btnAdd.setText("Chấp nhận");
+        // Load thông tin User theo requesterId
+        db.collection("users").document(request.getRequesterId())
+                .get()
+                .addOnSuccessListener(doc -> {
+                    if (doc.exists()) {
+                        User user = doc.toObject(User.class);
+                        if (user != null) {
+                            holder.tvName.setText(user.getUsername());
+                            Glide.with(holder.itemView.getContext())
+                                    .load(user.getProfilePhotoUrl())
+                                    .placeholder(R.drawable.avatar_placeholder)
+                                    .error(R.drawable.avatar_placeholder)
+                                    .into(holder.ivAvatar);
+                        }
+                    }
+                })
+                .addOnFailureListener(e -> Toast.makeText(holder.itemView.getContext(),
+                        "Lỗi load user: " + e.getMessage(),
+                        Toast.LENGTH_SHORT).show());
 
-        Glide.with(holder.itemView.getContext())
-                .load(user.getProfilePhotoUrl())
-                .placeholder(R.drawable.avatar_placeholder)
-                .error(R.drawable.avatar_placeholder)
-                .into(holder.ivAvatar);
+        holder.btnAccept.setOnClickListener(v -> {
+            if (listener != null) listener.onAccept(request);
+            holder.btnAccept.setText("Đã chấp nhận");
+            holder.btnAccept.setEnabled(false);
+            holder.btnDecline.setEnabled(false);
+        });
 
-        holder.btnAdd.setOnClickListener(v -> {
-            listener.onAccept(user);
-            holder.btnAdd.setText("Bạn bè");
-            holder.btnAdd.setEnabled(false);
+        holder.btnDecline.setOnClickListener(v -> {
+            if (listener != null) listener.onDecline(request);
+            holder.btnDecline.setText("Đã từ chối");
+            holder.btnDecline.setEnabled(false);
+            holder.btnAccept.setEnabled(false);
         });
     }
 
     @Override
     public int getItemCount() {
-        return requestList.size();
+        return requestList != null ? requestList.size() : 0;
     }
 
-    static class RequestViewHolder extends RecyclerView.ViewHolder {
+    public static class RequestViewHolder extends RecyclerView.ViewHolder {
         TextView tvName;
-        MaterialButton btnAdd;
+        MaterialButton btnAccept, btnDecline;
         ShapeableImageView ivAvatar;
 
         public RequestViewHolder(@NonNull View itemView) {
             super(itemView);
             tvName = itemView.findViewById(R.id.tv_username);
-            btnAdd = itemView.findViewById(R.id.btn_add);
+            btnAccept = itemView.findViewById(R.id.btnAccept);
+            btnDecline = itemView.findViewById(R.id.btnReject);
             ivAvatar = itemView.findViewById(R.id.iv_avatar);
         }
     }
