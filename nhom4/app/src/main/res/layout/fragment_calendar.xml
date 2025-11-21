@@ -4,19 +4,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="?attr/colorSurface">
-
-    <!-- 1. AppBar trong suốt để chứa TopBar chung -->
-    <com.google.android.material.appbar.AppBarLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@android:color/transparent"
-        app:elevation="0dp">
-
-        <!-- Giả sử file này chứa nút Menu hoặc Avatar -->
-        <include layout="@layout/partial_main_top_bar" />
-
-    </com.google.android.material.appbar.AppBarLayout>
+    android:background="?attr/colorSurface"
+    android:paddingTop="100dp">
 
     <!-- Container chính có hành vi cuộn -->
     <LinearLayout
@@ -50,7 +39,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:textAlignment="center"
-                android:text="Khoảnh khắc đầu tiên của bạn đã được ghi nhận vào ngày 3 thg 3, 2025"
+                android:text="@string/kho_nh_kh_c_u_ti_n_c_a_b_n_c_ghi_nh_n_v_o_ng_y_3_thg_3_2025"
                 android:textColor="?attr/colorOnSurfaceVariant" />
         </LinearLayout>
 

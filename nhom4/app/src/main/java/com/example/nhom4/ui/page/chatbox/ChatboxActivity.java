@@ -11,11 +11,9 @@ import androidx.lifecycle.ViewModelProvider; // Import ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.nhom4.R;
-import com.example.nhom4.data.model.Message;
+import com.example.nhom4.data.bean.Message;
 import com.google.android.material.button.MaterialButton;
 
-import java.util.ArrayList; // Import ArrayList
-import java.util.List;
 
 public class ChatboxActivity extends AppCompatActivity {
     private ChatboxAdapter adapter;

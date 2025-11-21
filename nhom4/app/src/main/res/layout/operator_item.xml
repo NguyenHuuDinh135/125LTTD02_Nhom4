@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -12,7 +13,8 @@
         android:gravity="center_vertical"
         android:orientation="horizontal"
         android:paddingTop="16dp"
-        android:paddingBottom="16dp">
+        android:paddingBottom="16dp"
+        tools:ignore="UselessParent">
 
         <com.google.android.material.imageview.ShapeableImageView
             android:id="@+id/myImageView"
@@ -34,14 +36,14 @@
                 android:id="@+id/textView2"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Hoạt động"
+                android:text="@string/activity"
                 android:textSize="12sp" />
 
             <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/textView3"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Karaoke"
+                android:text="@string/att1"
                 android:textColor="@color/cardview_light_background"
                 android:textSize="16sp"
                 android:textStyle="bold"
@@ -52,7 +54,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:lines="3"
-                android:text="Supporting line text lorem ipsum dolor sit amet, consectetur."
+                android:text="@string/detail"
                 android:textColor="@color/cardview_light_background"
                 android:textSize="14sp"
                 app:lineHeight="24sp" />
@@ -67,7 +69,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="4dp"
-                android:text="Active"
+                android:text="@string/active"
                 android:textColor="@color/cardview_light_background"
                 android:textSize="12sp"
                 app:layout_constraintStart_toStartOf="parent"
@@ -77,6 +79,7 @@
                 android:id="@+id/imageView6"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:contentDescription="@string/cometo"
                 android:paddingLeft="10dp"
                 android:paddingRight="10dp"
                 app:layout_constraintBottom_toBottomOf="@+id/textView5"

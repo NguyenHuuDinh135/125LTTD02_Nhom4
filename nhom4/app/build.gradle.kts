@@ -32,6 +32,8 @@ android {
     }
 }
 
+val cameraxVersion = "1.3.4"
+
 dependencies {
     implementation("com.github.bumptech.glide:glide:4.16.0")
     implementation(libs.appcompat)
@@ -51,4 +53,12 @@ dependencies {
     implementation("com.google.firebase:firebase-analytics")
     implementation("com.google.firebase:firebase-auth")
     implementation("com.google.firebase:firebase-firestore")
+
+    // CameraX
+    implementation("androidx.camera:camera-core:${cameraxVersion}")
+    implementation("androidx.camera:camera-camera2:${cameraxVersion}")
+    implementation("androidx.camera:camera-lifecycle:${cameraxVersion}")
+    implementation("androidx.camera:camera-view:${cameraxVersion}")
+    implementation("androidx.camera:camera-video:${cameraxVersion}")
+    implementation ("com.google.firebase:firebase-storage")
 }

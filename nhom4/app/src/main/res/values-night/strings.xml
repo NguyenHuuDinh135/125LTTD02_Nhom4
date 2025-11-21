@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="todo">todo\n</string>
+    <string name="left_navigation">todo</string>
+    <string name="g_i_tin_nh_n">Gửi tin nhắn</string>
+</resources>

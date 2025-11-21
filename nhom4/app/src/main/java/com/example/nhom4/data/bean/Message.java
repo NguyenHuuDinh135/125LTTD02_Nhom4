@@ -1,4 +1,4 @@
-package com.example.nhom4.data.model;
+package com.example.nhom4.data.bean;
 
 import java.util.ArrayList;
 import java.util.HashMap;

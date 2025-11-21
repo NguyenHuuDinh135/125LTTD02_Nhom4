@@ -9,21 +9,19 @@
     android:padding="24dp"
     tools:context=".ui.page.CreateUsernameActivity">
 
-    <!-- 1. Tiêu đề: Dùng HeadlineMedium của M3 -->
-    <com.google.android.material.textview.MaterialTextView
+    <TextView
         android:id="@+id/textViewTitle"
-        style="@style/TextAppearance.Material3.HeadlineMedium"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="120dp"
-        android:text="@string/ch_n_m_t_t_n_ng_i_d_ng"
+        android:text="Chọn một tên người dùng"
         android:textColor="?attr/colorOnSurface"
+        android:textSize="24sp"
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <!-- 2. Input Container -->
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/cardInput"
         android:layout_width="0dp"
@@ -36,53 +34,49 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textViewTitle">
 
-        <!-- Dùng Style TitleMedium để chữ nhập vào to, rõ ràng -->
         <EditText
             android:id="@+id/editTextUsername"
-            style="@style/TextAppearance.Material3.TitleMedium"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:autofillHints=""
             android:background="@null"
-            android:gravity="center"
-            android:hint="@string/t_n_ng_i_d_ng"
-            android:inputType="textPersonName|textNoSuggestions"
-            android:paddingHorizontal="16dp"
-            android:paddingVertical="16dp"
-            android:textCursorDrawable="@null"
-            android:textColor="?attr/colorPrimary"
+            android:hint="tên người dùng"
             android:textColorHint="?attr/colorOnSurfaceVariant"
-            android:textStyle="bold" />
+            android:gravity="center"
+            android:inputType="textNoSuggestions"
+            android:paddingVertical="16dp"
+            android:paddingHorizontal="16dp"
+            android:textColor="?attr/colorPrimary"
+            android:textStyle="bold"
+            android:textSize="18sp"
+            android:textCursorDrawable="@null" />
 
     </com.google.android.material.card.MaterialCardView>
 
-    <!-- 3. Mô tả: Dùng BodyMedium -->
-    <com.google.android.material.textview.MaterialTextView
+    <TextView
         android:id="@+id/textViewDescription"
-        style="@style/TextAppearance.Material3.BodyMedium"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
         android:gravity="center"
-        android:text="@string/vi_c_n_y_s_gi_p_b_n_b_c_a_b_n_t_m_th_y_nb_n_tr_n_ng_d_ng"
+        android:text="@string/hinttohelp"
         android:textColor="?attr/colorOnSurfaceVariant"
+        android:textSize="14sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/cardInput" />
 
-    <!-- 4. Button: Dùng icon mũi tên thay vì icon Play cũ -->
+    <!-- Nút này sẽ tự động dùng màu Primary của theme -->
     <com.google.android.material.button.MaterialButton
         android:id="@+id/buttonContinue"
-        style="@style/Widget.Material3.Button"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="48dp"
-        android:paddingVertical="14dp"
-        android:text="@string/ti_p_t_c"
-        android:textAllCaps="false"
+        android:text="Tiếp tục"
         android:textSize="16sp"
+        android:textStyle="bold"
+        android:paddingVertical="16dp"
         app:cornerRadius="32dp"
-        app:icon="@drawable/ic_arrow_forward"
+        app:icon="@android:drawable/ic_media_play"
         app:iconGravity="textEnd"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
