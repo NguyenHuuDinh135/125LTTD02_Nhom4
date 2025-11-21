@@ -16,7 +16,7 @@
         android:layout_marginHorizontal="32dp"
         android:layout_marginBottom="24dp"
         android:gravity="center"
-        android:text="Angry - It's Ok"
+        android:text="@string/angry_it_s_ok"
         android:textColor="?attr/colorOnSurface"
         android:textStyle="bold"
         style="@style/TextAppearance.Material3.HeadlineSmall"

@@ -18,7 +18,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
-            android:name=".ui.page.SplashActivity"
+            android:name=".ui.page.LoginActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -28,7 +28,7 @@
 
         <!-- LoginActivity không còn là Activity khởi chạy -->
         <activity
-            android:name=".ui.page.LoginActivity"
+            android:name=".ui.page.CameraActivity"
             android:exported="false" />
 
         <activity
@@ -38,7 +38,9 @@
         <activity android:name=".ui.page.ProfileActivity" android:exported="false" />
         <activity android:name=".ui.page.CreateUsernameActivity" android:exported="false" />
         <!-- Các activity khác... -->
-
+<!--        <activity-->
+<!--            android:name=".ui.page.CameraActivity"-->
+<!--            android:exported="false" />-->
 
     </application>
 

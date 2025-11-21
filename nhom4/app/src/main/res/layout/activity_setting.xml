@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <!-- ScrollView chính -->
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#FFFFFF">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <!-- Header: nút back -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="end">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnBack"
+                    style="?attr/materialIconButtonStyle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:contentDescription="@string/quay_l_i"
+                    app:icon="@drawable/arrow_right_ic"
+                    app:iconTint="?attr/colorOnSurface" />
+            </LinearLayout>
+
+            <!-- Profile Section -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:layout_marginTop="24dp"
+                android:layout_marginBottom="24dp">
+
+                <ImageView
+                    android:id="@+id/imgAvatar"
+                    android:layout_width="100dp"
+                    android:layout_height="100dp"
+                    android:contentDescription="@string/todo2"
+                    android:src="@drawable/avatar"
+                    android:scaleType="centerCrop"
+                    android:padding="2dp" />
+
+                <TextView
+                    android:id="@+id/tvUserName"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/t_n_ng_i_d_n"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:layout_marginTop="8dp" />
+
+                <TextView
+                    android:id="@+id/tvEmail"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/email_example_com"
+                    android:textSize="14sp"
+                    android:layout_marginTop="4dp"
+                    android:textColor="@android:color/darker_gray"/>
+
+                <TextView
+                    android:id="@+id/tvBirthday"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/ch_a_c_ng_y_sinh"
+                    android:textSize="14sp"
+                    android:layout_marginTop="2dp"
+                    android:textColor="@android:color/darker_gray"/>
+
+                <Button
+                    android:id="@+id/btnChangePhoto"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/ch_nh_nh"
+                    android:layout_marginTop="6dp"
+                    android:backgroundTint="#EEEEEE"
+                    android:textColor="@android:color/black" />
+            </LinearLayout>
+
+            <!-- Section: Tổng quát -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/t_ng_qu_t"
+                android:textStyle="bold"
+                android:textColor="@android:color/black"
+                android:textSize="16sp"
+                android:layout_marginBottom="8dp" />
+
+            <!-- RecyclerView thay cho row cứng -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recyclerViewSettings"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="8dp"/>
+
+            <!-- Section: Vùng nguy hiểm -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/v_ng_nguy_hi_m"
+                android:textStyle="bold"
+                android:textColor="#D32F2F"
+                android:textSize="16sp"
+                android:layout_marginBottom="8dp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:background="#FFF5F5"
+                android:padding="8dp"
+                android:elevation="1dp">
+
+                <!-- Row xóa tài khoản -->
+                <LinearLayout
+                    android:id="@+id/rowDeleteAccount"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:gravity="center_vertical"
+                    android:paddingHorizontal="8dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:background="?attr/selectableItemBackground">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/x_a_t_i_kho_n"
+                        android:textSize="15sp"
+                        android:textColor="#D32F2F" />
+
+                    <ImageView
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:contentDescription="@string/todoq"
+                        app:tint="#D32F2F" />
+                </LinearLayout>
+
+                <!-- Row đăng xuất -->
+                <LinearLayout
+                    android:id="@+id/rowLogout"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:gravity="center_vertical"
+                    android:paddingHorizontal="8dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:background="?attr/selectableItemBackground">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/ng_xu_t"
+                        android:textSize="15sp"
+                        android:textColor="#D32F2F" />
+
+                    <ImageView
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:contentDescription="@string/todo11"
+                        app:tint="#D32F2F" />
+                </LinearLayout>
+            </LinearLayout>
+
+        </LinearLayout>
+    </ScrollView>
+
+    <!-- ProgressBar overlay -->
+    <ProgressBar
+        android:id="@+id/progressBar"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_gravity="center"
+        android:visibility="gone"/>
+</FrameLayout>

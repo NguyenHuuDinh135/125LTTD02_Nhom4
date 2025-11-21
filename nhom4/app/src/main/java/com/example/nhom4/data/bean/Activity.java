@@ -1,7 +1,7 @@
 package com.example.nhom4.data.bean;
 
 public class Activity {
-    private String title;
+    private final String title;
 
     public Activity(String title) {
         this.title = title;

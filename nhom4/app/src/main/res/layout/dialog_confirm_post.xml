@@ -26,7 +26,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:text="Feeling..."
+            android:text="@string/feeling3"
             android:textSize="18sp"
             android:textStyle="bold"
             android:textColor="?attr/colorOnSurface" />
@@ -36,7 +36,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:hint="Thêm vài dòng tâm sự..."
+            android:hint="@string/th_m_v_i_d_ng_t_m_s3"
             android:background="@null"
             android:minHeight="48dp" />
 
@@ -45,7 +45,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"
-            android:text="Gửi ngay"
+            android:text="@string/g_i_ngay3"
             app:cornerRadius="50dp" />
 
     </LinearLayout>

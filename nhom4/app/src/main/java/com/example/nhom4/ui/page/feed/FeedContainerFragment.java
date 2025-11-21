@@ -14,7 +14,7 @@ import androidx.fragment.app.Fragment;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.example.nhom4.R;
-import com.example.nhom4.data.model.Message;
+import com.example.nhom4.data.bean.Message;
 import com.example.nhom4.ui.page.chatbox.ChatboxViewModel;
 import com.example.nhom4.ui.page.post.PostAdapter;
 import com.google.android.material.button.MaterialButton;
