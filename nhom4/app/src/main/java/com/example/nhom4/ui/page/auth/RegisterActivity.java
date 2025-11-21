@@ -1,4 +1,4 @@
-package com.example.nhom4.ui.page;
+package com.example.nhom4.ui.page.auth;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -12,14 +12,11 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.example.nhom4.MainActivity; // Màn hình chính sau khi đăng ký/đăng nhập
 import com.example.nhom4.R;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 
 public class RegisterActivity extends AppCompatActivity {
 
@@ -46,34 +43,47 @@ public class RegisterActivity extends AppCompatActivity {
         tvLoginLink = findViewById(R.id.textViewLoginLink);
         progressBar = findViewById(R.id.progressBar);
 
+        // QUAN TRỌNG: Ánh xạ CheckBox (Đảm bảo ID trong XML đúng là checkboxShowPassword)
+
+
         // Xử lý sự kiện cho nút "Create Account"
         btnRegister.setOnClickListener(v -> registerUser());
 
         // Xử lý sự kiện cho text "Login" để quay về màn hình đăng nhập
         tvLoginLink.setOnClickListener(v -> {
-            // Kết thúc Activity hiện tại để quay lại màn hình Login
-            finish();
+            finish(); // Đóng màn hình đăng ký để quay lại màn hình trước đó (Login)
         });
 
         // Xử lý sự kiện cho checkbox "Show password"
-        checkBoxShowPassword.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            int inputType = isChecked
-                    ? InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
-                    : InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD;
+        if (checkBoxShowPassword != null) {
+            checkBoxShowPassword.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                int inputType = isChecked
+                        ? InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
+                        : InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD;
 
-            etPassword.setInputType(inputType);
-            etConfirmPassword.setInputType(inputType);
+                etPassword.setInputType(inputType);
+                etConfirmPassword.setInputType(inputType);
 
-            // Di chuyển con trỏ về cuối chuỗi
-            etPassword.setSelection(etPassword.length());
-            etConfirmPassword.setSelection(etConfirmPassword.length());
-        });
+                // Di chuyển con trỏ về cuối chuỗi
+                if (etPassword.getText() != null) {
+                    etPassword.setSelection(etPassword.getText().length());
+                }
+                if (etConfirmPassword.getText() != null) {
+                    etConfirmPassword.setSelection(etConfirmPassword.getText().length());
+                }
+            });
+        }
     }
 
     private void registerUser() {
-        String email = etEmail.getText().toString().trim();
-        String password = etPassword.getText().toString().trim();
-        String confirmPassword = etConfirmPassword.getText().toString().trim();
+        String email = "";
+        if (etEmail.getText() != null) email = etEmail.getText().toString().trim();
+
+        String password = "";
+        if (etPassword.getText() != null) password = etPassword.getText().toString().trim();
+
+        String confirmPassword = "";
+        if (etConfirmPassword.getText() != null) confirmPassword = etConfirmPassword.getText().toString().trim();
 
         // --- VALIDATE INPUT ---
         if (TextUtils.isEmpty(email)) {
@@ -113,39 +123,28 @@ public class RegisterActivity extends AppCompatActivity {
         }
 
         // Hiển thị ProgressBar và vô hiệu hóa nút bấm
-        progressBar.setVisibility(View.VISIBLE);
+        if (progressBar != null) progressBar.setVisibility(View.VISIBLE);
         btnRegister.setEnabled(false);
 
         // --- FIREBASE REGISTRATION ---
         mAuth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this, task -> {
                     // Ẩn ProgressBar và kích hoạt lại nút bấm
-                    progressBar.setVisibility(View.GONE);
+                    if (progressBar != null) progressBar.setVisibility(View.GONE);
                     btnRegister.setEnabled(true);
 
                     if (task.isSuccessful()) {
-                        // Đăng ký thành công, tự động đăng nhập và chuyển màn hình
-                        Toast.makeText(RegisterActivity.this, "Đăng ký tài khoản thành công.", Toast.LENGTH_SHORT).show();
-
-                        // (Tùy chọn) Gửi email xác thực
-                        // FirebaseUser user = mAuth.getCurrentUser();
-                        // if (user != null) {
-                        //     user.sendEmailVerification();
-                        // }
-
-                        goToMainActivity();
-
+                        Toast.makeText(RegisterActivity.this, "Đăng ký thành công.", Toast.LENGTH_SHORT).show();
+                        goToNextStep();
                     } else {
-                        // Nếu đăng ký thất bại, hiển thị thông báo lỗi
-                        // Thường là do email đã tồn tại
-                        Toast.makeText(RegisterActivity.this, "Đăng ký thất bại: " + task.getException().getMessage(),
-                                Toast.LENGTH_LONG).show();
+                        String error = task.getException() != null ? task.getException().getMessage() : "Lỗi không xác định";
+                        Toast.makeText(RegisterActivity.this, "Đăng ký thất bại: " + error, Toast.LENGTH_LONG).show();
                     }
                 });
     }
 
-    private void goToMainActivity() {
-        // Thay vì vào Main, chúng ta vào màn hình tạo Username
+    private void goToNextStep() {
+        // Chuyển sang màn hình tạo Username
         Intent intent = new Intent(getApplicationContext(), CreateUsernameActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);

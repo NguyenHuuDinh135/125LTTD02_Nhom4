@@ -31,13 +31,16 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.viewpager2.widget.ViewPager2;
 
 import com.bumptech.glide.Glide;
 import com.example.nhom4.R;
 import com.example.nhom4.data.bean.Activity;
 import com.example.nhom4.data.bean.Mood;
+import com.example.nhom4.data.bean.Post;
 import com.example.nhom4.ui.adapter.ActivityAdapter;
 import com.example.nhom4.ui.adapter.MoodAdapter;
+import com.example.nhom4.ui.adapter.PostAdapter;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.button.MaterialButtonToggleGroup;
@@ -48,6 +51,8 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.ListenerRegistration;
+import com.google.firebase.firestore.Query;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
@@ -56,7 +61,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
 
 public class MainFragment extends Fragment {
 
@@ -73,6 +77,10 @@ public class MainFragment extends Fragment {
     private ImageView btnNavRight;
     private View bottomBarLayout;
     private View btnBottomAction; // Nút Shutter ở Bottom Bar
+
+    // --- POST LIST COMPONENTS ---
+    private ViewPager2 viewPagerPosts;
+    private PostAdapter postAdapter;
 
     // --- DATA ---
     private MoodAdapter moodAdapter;
@@ -92,6 +100,9 @@ public class MainFragment extends Fragment {
     private FirebaseAuth auth;
     private FirebaseStorage storage;
 
+    // Listener để hủy lắng nghe khi thoát
+    private ListenerRegistration postListener;
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -104,6 +115,7 @@ public class MainFragment extends Fragment {
 
         initViews(view);
         setupRecyclers();
+        setupPostViewPager(); // Cấu hình hiển thị bài viết
 
         // 1. Logic Toggle (Chuyển Tab Mood <-> Activity)
         toggleGroupContentType.addOnButtonCheckedListener((group, checkedId, isChecked) -> {
@@ -131,11 +143,23 @@ public class MainFragment extends Fragment {
 
         fetchMoodsFromFirestore();
 
+        // --- BẮT ĐẦU LẮNG NGHE BÀI VIẾT (REAL-TIME) ---
+        loadPostsFromFirebase();
+
         // Mặc định ban đầu
         toggleCameraMode(false);
         toggleGroupContentType.check(R.id.btnTabMood);
 
         return view;
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        // Ngắt lắng nghe Firestore khi thoát màn hình này để tránh rò rỉ bộ nhớ
+        if (postListener != null) {
+            postListener.remove();
+        }
     }
 
     private void initViews(View view) {
@@ -148,12 +172,52 @@ public class MainFragment extends Fragment {
         imgMoodPreview = view.findViewById(R.id.imgMoodPreview);
         btnCloseCamera = view.findViewById(R.id.btnCloseCamera);
 
+        // ViewPager hiển thị bài viết
+        viewPagerPosts = view.findViewById(R.id.viewPagerPosts);
+
         bottomBarLayout = view.findViewById(R.id.bottom_bar);
         if (bottomBarLayout != null) {
             btnBottomAction = bottomBarLayout.findViewById(R.id.btn_shutter);
             // Ánh xạ nút phải
             btnNavRight = bottomBarLayout.findViewById(R.id.btn_nav_right);
         }
+    }
+
+    private void setupPostViewPager() {
+        if (viewPagerPosts != null) {
+            postAdapter = new PostAdapter(requireActivity());
+            viewPagerPosts.setAdapter(postAdapter);
+            viewPagerPosts.setOrientation(ViewPager2.ORIENTATION_VERTICAL); // Lướt dọc
+        }
+    }
+
+    // --- HÀM LOAD POST TỪ FIREBASE (REAL-TIME) ---
+    private void loadPostsFromFirebase() {
+        // Sử dụng addSnapshotListener thay vì get() để cập nhật thời gian thực
+        postListener = db.collection("posts")
+                .orderBy("createdAt", Query.Direction.DESCENDING) // Bài mới nhất lên đầu
+                .addSnapshotListener((snapshots, e) -> {
+                    if (e != null) {
+                        Log.e("MainFragment", "Lỗi lắng nghe: ", e);
+                        return;
+                    }
+
+                    if (snapshots != null) {
+                        List<Post> newPostList = new ArrayList<>();
+                        for (DocumentSnapshot doc : snapshots) {
+                            Post post = doc.toObject(Post.class);
+                            if (post != null) {
+                                post.setPostId(doc.getId());
+                                newPostList.add(post);
+                            }
+                        }
+
+                        // Cập nhật Adapter ngay lập tức
+                        if (postAdapter != null) {
+                            postAdapter.setPostList(newPostList);
+                        }
+                    }
+                });
     }
 
     // --- LOGIC CHUYỂN TAB ---
@@ -375,6 +439,11 @@ public class MainFragment extends Fragment {
                     // Reset trạng thái app về ban đầu
                     modeSwitch.setChecked(false);
                     toggleGroupContentType.check(R.id.btnTabMood);
+
+                    // Tự động cuộn về bài mới nhất
+                    if (viewPagerPosts != null) {
+                        viewPagerPosts.setCurrentItem(0, true);
+                    }
                 })
                 .addOnFailureListener(e -> {
                     Toast.makeText(getContext(), "Lỗi lưu bài viết: " + e.getMessage(), Toast.LENGTH_SHORT).show();

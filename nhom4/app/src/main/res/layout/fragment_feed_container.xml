@@ -79,14 +79,6 @@
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <!-- Gradient Shadow ở trên cùng để icon trắng luôn nổi bật trên ảnh sáng -->
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="120dp"
-        android:background="@drawable/gradient_top_shadow"
-        app:layout_constraintTop_toTopOf="parent" />
-    <!-- Bạn cần tạo drawable gradient nếu muốn hiệu ứng này -->
-
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/reacContainer"
         android:layout_width="match_parent"

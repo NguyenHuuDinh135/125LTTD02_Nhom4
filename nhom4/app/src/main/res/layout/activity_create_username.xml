@@ -7,7 +7,7 @@
     android:layout_height="match_parent"
     android:background="?attr/colorSurface"
     android:padding="24dp"
-    tools:context=".ui.page.CreateUsernameActivity">
+    tools:context=".ui.page.auth.CreateUsernameActivity">
 
     <TextView
         android:id="@+id/textViewTitle"

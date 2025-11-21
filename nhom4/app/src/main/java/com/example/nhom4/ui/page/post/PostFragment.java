@@ -16,7 +16,9 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.example.nhom4.R;
+import com.example.nhom4.ui.page.main.CenterFragment;
 
 public class PostFragment extends Fragment {
 
@@ -55,28 +57,26 @@ public class PostFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.item_post, container, false);
+        return inflater.inflate(R.layout.fragment_post, container, false);
     }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        // --- FIX LỖI Ở ĐÂY ---
         ImageView postImageView = view.findViewById(R.id.postImageView);
         TextView textCaption = view.findViewById(R.id.textCaption);
-
-        // Đã đổi từ MaterialButton sang TextView để khớp với layout mới
-        TextView chipTimestamp = view.findViewById(R.id.tvTimestamp);
-
+        TextView tvTimestamp = view.findViewById(R.id.tvTimestamp);
         TextView textAvatarGroup = view.findViewById(R.id.textAvatarGroup);
 
-        // Xử lý Caption (nếu null thì gán chuỗi rỗng để tránh crash)
+        // --- 1. Xử lý Caption ---
         String start = (captionStart != null) ? captionStart : "";
         String end = (captionEnd != null) ? captionEnd : "";
+        String fullText = start + " - " + end;
 
-        Spannable spannable = new SpannableString(start + " - " + end);
+        Spannable spannable = new SpannableString(fullText);
         if (!start.isEmpty()) {
+            // Tô đỏ phần Mood/Title
             spannable.setSpan(
                     new ForegroundColorSpan(Color.RED),
                     0,
@@ -86,20 +86,36 @@ public class PostFragment extends Fragment {
         }
         textCaption.setText(spannable);
 
-        // Gán dữ liệu
-        if (chipTimestamp != null) {
-            chipTimestamp.setText(timestamp);
-        }
-        if (textAvatarGroup != null) {
-            textAvatarGroup.setText(avatarGroup);
+        // --- 2. Gán dữ liệu khác ---
+        if (tvTimestamp != null) tvTimestamp.setText(timestamp);
+        if (textAvatarGroup != null) textAvatarGroup.setText(avatarGroup);
+
+        // --- 3. LOAD ẢNH BẰNG GLIDE (QUAN TRỌNG) ---
+        if (postImageView != null) {
+            if (imageUrl != null && !imageUrl.isEmpty()) {
+                // Có URL -> Load ảnh
+                Glide.with(this)
+                        .load(imageUrl)
+                        // Dùng DiskCacheStrategy.ALL để cache tốt hơn
+                        .diskCacheStrategy(DiskCacheStrategy.ALL)
+                        .placeholder(R.drawable.ic_launcher_foreground) // Ảnh hiển thị khi đang tải
+                        .error(android.R.color.darker_gray) // Ảnh hiển thị khi lỗi
+                        .into(postImageView);
+            } else {
+                // Không có URL -> Hiển thị ảnh mặc định hoặc ẩn đi
+                postImageView.setImageResource(R.drawable.ic_launcher_foreground);
+            }
         }
 
-        // Load ảnh
-        if (getContext() != null && imageUrl != null && postImageView != null) {
-            Glide.with(getContext())
-                    .load(imageUrl)
-                    .placeholder(android.R.color.darker_gray) // Sửa ID màu mặc định cho an toàn
-                    .into(postImageView);
+        // --- 4. XỬ LÝ NÚT SHUTTER (QUAY VỀ CAMERA) ---
+        View btnShutter = view.findViewById(R.id.btn_shutter);
+        if (btnShutter != null) {
+            btnShutter.setOnClickListener(v -> {
+                Fragment parentFragment = getParentFragment();
+                if (parentFragment instanceof CenterFragment) {
+                    ((CenterFragment) parentFragment).navigateToCamera();
+                }
+            });
         }
     }
 }

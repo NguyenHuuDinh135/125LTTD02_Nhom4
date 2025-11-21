@@ -6,75 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="?attr/colorSurface"
-    tools:context=".ui.page.DiscoveryFragment">
-
-    <!-- 1. Custom Top Bar Container -->
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/top_bar_container"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:paddingHorizontal="16dp"
-        android:paddingVertical="8dp"
-        app:layout_constraintTop_toTopOf="parent">
-
-        <!-- Nút Back -->
-        <ImageView
-            android:id="@+id/btn_back"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:contentDescription="@string/back"
-            android:padding="8dp"
-            android:src="@drawable/outline_arrow_back_ios_24"
-            app:tint="?attr/colorOnSurface"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <!-- Tiêu đề trung tâm & Dropdown -->
-        <LinearLayout
-            android:id="@+id/title_container"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:gravity="center_vertical"
-            android:orientation="horizontal"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
-
-            <com.google.android.material.textview.MaterialTextView
-                android:id="@+id/tv_screen_title"
-                style="@style/TextAppearance.Material3.HeadlineSmall"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/t_t_c"
-                android:textColor="?attr/colorOnSurface"
-                android:textStyle="bold" />
-
-            <ImageView
-                android:id="@+id/icon_dropdown"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:layout_marginStart="4dp"
-                android:contentDescription="@string/dropdown"
-                android:src="@drawable/outline_keyboard_arrow_down_24"
-                app:tint="?attr/colorOnSurface" />
-        </LinearLayout>
-
-        <!-- Nút Add -->
-        <ImageView
-            android:id="@+id/btn_add"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:contentDescription="@string/add"
-            android:padding="4dp"
-            android:src="@drawable/outline_add_24"
-            app:tint="?attr/colorOnSurface"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
-    </androidx.constraintlayout.widget.ConstraintLayout>
+    tools:context=".ui.page.main.DiscoveryFragment">
 
     <!-- 2. Nội dung chính (Dùng NestedScrollView thay ScrollView để mượt hơn) -->
     <androidx.core.widget.NestedScrollView
@@ -83,7 +15,7 @@
         android:clipToPadding="false"
         android:paddingBottom="24dp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/top_bar_container">
+        app:layout_constraintTop_toTopOf="parent">
 
         <LinearLayout
             android:layout_width="match_parent"

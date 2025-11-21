@@ -7,7 +7,7 @@
     android:layout_height="match_parent"
     android:background="?attr/colorSurface"
     android:padding="24dp"
-    tools:context=".ui.page.RegisterActivity">
+    tools:context=".ui.page.auth.RegisterActivity">
 
     <!-- 1. Tiêu đề -->
     <com.google.android.material.textview.MaterialTextView

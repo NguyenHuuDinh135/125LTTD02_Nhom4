@@ -4,73 +4,91 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 
+import com.example.nhom4.data.bean.Post;
 import com.example.nhom4.ui.page.main.MainFragment;
 import com.example.nhom4.ui.page.post.PostFragment;
 
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+
 public class VerticalPagerAdapter extends FragmentStateAdapter {
 
-    // Giả sử mình muốn hiển thị 20 bài post mẫu
-    private static final int NUM_POSTS = 20;
+    // Danh sách chứa bài viết thật
+    private List<Post> postList = new ArrayList<>();
 
     public VerticalPagerAdapter(@NonNull Fragment fragment) {
         super(fragment);
+    }
+
+    // Hàm này để CenterFragment gọi khi tải xong dữ liệu từ Firebase
+    public void setPostList(List<Post> posts) {
+        this.postList.clear();
+        this.postList.addAll(posts);
+        notifyDataSetChanged();
     }
 
     @NonNull
     @Override
     public Fragment createFragment(int position) {
         if (position == 0) {
-            //
-            // Vị trí đầu tiên luôn là Màn hình chính (Camera/Check-in)
+            // Vị trí đầu tiên luôn là Camera (MainFragment)
             return new MainFragment();
         } else {
-            // Các vị trí còn lại (1, 2, 3...) là Post
-            // Vì position 0 là MainFragment, nên index của Post sẽ là (position - 1)
+            // Các vị trí sau là Post
+            // Vì vị trí 0 là Camera, nên bài viết thứ nhất nằm ở index 0 của list (tức là position - 1)
             int postIndex = position - 1;
 
-            return createFakePostFragment(postIndex);
+            // Kiểm tra an toàn để tránh crash nếu index vượt quá size
+            if (postIndex >= postList.size()) {
+                return new Fragment(); // Trả về fragment rỗng hoặc xử lý lỗi
+            }
+
+            Post post = postList.get(postIndex);
+            return createRealPostFragment(post);
         }
     }
 
     @Override
     public int getItemCount() {
-        // Tổng số trang = 1 (MainFragment) + Số lượng bài Post
-        return 1 + NUM_POSTS;
+        // Tổng số trang = 1 (Camera) + Số lượng bài viết thật
+        return 1 + postList.size();
     }
 
-    // Hàm tạo dữ liệu giả (Logic lấy từ PostAdapter cũ của bạn)
-    private Fragment createFakePostFragment(int index) {
-        String imageUrl = "https://picsum.photos/seed/" + (index + 100) + "/800/1200"; // +100 để đổi seed khác
-        String captionStart, captionEnd, timestamp, avatarGroup;
+    // Hàm map dữ liệu thật từ Model Post sang PostFragment
+    private Fragment createRealPostFragment(Post post) {
+        // 1. Xử lý Title (Mood hoặc Activity)
+        String title = "";
+        String imageUrl = "";
 
-        // Logic switch case để tạo dữ liệu đa dạng
-        switch (index % 4) {
-            case 0:
-                captionStart = "Angry";
-                captionEnd = "It's Ok";
-                timestamp = "Bạn 22 thg 9";
-                avatarGroup = "Quangvinh12, Tue122,...";
-                break;
-            case 1:
-                captionStart = "Happy";
-                captionEnd = "Feeling Good";
-                timestamp = "Lisa 21 thg 9";
-                avatarGroup = "Lisa, Jisoo,...";
-                break;
-            case 2:
-                captionStart = "Sad";
-                captionEnd = "Rainy Day";
-                timestamp = "Bạn 20 thg 9";
-                avatarGroup = "Jennie,...";
-                break;
-            default:
-                captionStart = "Excited";
-                captionEnd = "New Project";
-                timestamp = "Rose 19 thg 9";
-                avatarGroup = "Rose, Quangvinh12,...";
-                break;
+        if ("mood".equals(post.getType())) {
+            title = post.getMoodName();
+            // Nếu là mood, ưu tiên ảnh chụp, nếu không có thì lấy icon mood
+            if (post.getPhotoUrl() != null && !post.getPhotoUrl().isEmpty()) {
+                imageUrl = post.getPhotoUrl();
+            } else {
+                imageUrl = post.getMoodIconUrl();
+            }
+        } else {
+            title = post.getActivityTitle();
+            imageUrl = post.getPhotoUrl();
         }
 
-        return PostFragment.newInstance(captionStart, captionEnd, imageUrl, timestamp, avatarGroup);
+        // 2. Xử lý thời gian
+        String timeStr = "Vừa xong";
+        if (post.getCreatedAt() != null) {
+            SimpleDateFormat sdf = new SimpleDateFormat("dd/MM HH:mm", Locale.getDefault());
+            timeStr = sdf.format(post.getCreatedAt().toDate());
+        }
+
+        // 3. Trả về Fragment với dữ liệu thật
+        return PostFragment.newInstance(
+                title,                  // Caption đỏ
+                post.getCaption(),      // Caption thường
+                imageUrl,               // Link ảnh
+                timeStr,                // Thời gian
+                "Người dùng ẩn danh"    // Tên người dùng (tạm thời)
+        );
     }
 }

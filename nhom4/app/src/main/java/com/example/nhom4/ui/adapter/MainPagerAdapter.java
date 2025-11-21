@@ -5,7 +5,7 @@
     import androidx.fragment.app.FragmentActivity;
     import androidx.viewpager2.adapter.FragmentStateAdapter;
 
-    import com.example.nhom4.ui.page.DiscoveryFragment;
+    import com.example.nhom4.ui.page.main.DiscoveryFragment;
     import com.example.nhom4.ui.page.main.CenterFragment;
     import com.example.nhom4.ui.page.calendar.CalendarFragment; // Ví dụ trang bên phải
 
