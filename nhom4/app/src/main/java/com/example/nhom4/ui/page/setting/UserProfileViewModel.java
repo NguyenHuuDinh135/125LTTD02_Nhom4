@@ -4,7 +4,7 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
-import com.example.nhom4.data.model.UserProfile;
+import com.example.nhom4.data.bean.UserProfile;
 import com.example.nhom4.data.repository.UserProfileRepository;
 
 public class UserProfileViewModel extends ViewModel {

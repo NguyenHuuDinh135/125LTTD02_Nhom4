@@ -52,7 +52,7 @@
                 android:id="@+id/tv_friend_count"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="10 Bạn bè"
+                android:text="@string/_10_b_n_b3"
                 android:textColor="#FFFFFF"
                 android:textStyle="bold"
                 android:textSize="14sp" />
@@ -85,7 +85,7 @@
         android:id="@+id/tv_screen_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Lịch sử"
+        android:text="@string/l_ch_s3"
         android:textSize="18sp"
         android:textStyle="bold"
         android:textColor="?attr/colorOnSurface"

@@ -3,7 +3,7 @@ package com.example.nhom4.data.repository;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
-import com.example.nhom4.data.model.FriendRequest;
+import com.example.nhom4.data.bean.FriendRequest;
 import com.example.nhom4.data.model.Relationship;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;

@@ -11,7 +11,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.nhom4.R;
-import com.example.nhom4.data.model.FriendRequest;
+import com.example.nhom4.data.bean.FriendRequest;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.List;

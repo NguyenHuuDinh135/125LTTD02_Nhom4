@@ -23,7 +23,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:layout_marginBottom="20dp"
-        android:text="20 Friends"
+        android:text="@string/_20_friends1"
         android:textStyle="bold"
         android:textAppearance="@style/TextAppearance.Material3.TitleLarge"
         android:textColor="?attr/colorOnSurface"
@@ -52,7 +52,7 @@
             android:id="@+id/et_search"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Tìm kiếm bạn mới"
+            android:hint="@string/t_m_ki_m_b_n_m_i2"
             android:inputType="text"
             android:maxLines="1"
             android:textColor="?attr/colorOnSurface"
@@ -75,7 +75,7 @@
             <com.google.android.material.textview.MaterialTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Your Friends"
+                android:text="@string/your_friends2"
                 android:textStyle="bold"
                 android:textSize="18dp"
                 android:textAppearance="@style/TextAppearance.Material3.BodyLarge"
@@ -99,7 +99,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
                 android:layout_marginTop="16dp"
-                android:text="Xem thêm bạn"
+                android:text="@string/xem_th_m_b_n2"
                 android:textAllCaps="false"
                 app:cornerRadius="12dp" />
 
@@ -107,7 +107,7 @@
             <com.google.android.material.textview.MaterialTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Suggestions"
+                android:text="@string/suggestions2"
                 android:textStyle="bold"
                 android:textSize="18dp"
                 android:textAppearance="@style/TextAppearance.Material3.BodyLarge"
@@ -131,7 +131,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
                 android:layout_marginTop="16dp"
-                android:text="Xem thêm"
+                android:text="@string/xem_th_m23"
                 android:textAllCaps="false"
                 app:cornerRadius="12dp" />
         </LinearLayout>

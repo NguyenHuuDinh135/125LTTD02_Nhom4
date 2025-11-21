@@ -16,7 +16,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.example.nhom4.R;
-import com.example.nhom4.data.model.UserProfile;
+import com.example.nhom4.data.bean.UserProfile;
 import com.example.nhom4.ui.page.LoginActivity;
 import com.google.android.material.button.MaterialButton;
 import com.google.firebase.auth.FirebaseAuth;

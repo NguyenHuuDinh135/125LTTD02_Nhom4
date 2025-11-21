@@ -2,7 +2,7 @@ package com.example.nhom4.data.repository;
 
 import androidx.annotation.NonNull;
 
-import com.example.nhom4.data.model.UserProfile;
+import com.example.nhom4.data.bean.UserProfile;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;

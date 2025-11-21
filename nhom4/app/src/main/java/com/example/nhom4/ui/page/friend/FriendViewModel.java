@@ -4,7 +4,7 @@ package com.example.nhom4.ui.page.friend;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.ViewModel;
 
-import com.example.nhom4.data.model.FriendRequest;
+import com.example.nhom4.data.bean.FriendRequest;
 import com.example.nhom4.data.model.Relationship;
 import com.example.nhom4.data.repository.FriendRepository;
 

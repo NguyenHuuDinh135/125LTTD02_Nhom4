@@ -13,14 +13,14 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:text="Label"
+        android:text="@string/label"
         android:textSize="15sp" />
 
     <TextView
         android:id="@+id/tvValue"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Value"
+        android:text="@string/value"
         android:textSize="15sp"
         android:textColor="@android:color/darker_gray"/>
 </LinearLayout>

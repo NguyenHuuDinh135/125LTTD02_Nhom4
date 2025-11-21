@@ -17,7 +17,7 @@
         android:layout_marginHorizontal="32dp"
         android:layout_marginTop="24dp"
         android:gravity="center"
-        android:text="Caption"
+        android:text="@string/caption1"
         android:textColor="?attr/colorOnSurface"
         android:textStyle="bold"
         app:layout_constraintTop_toTopOf="parent"
@@ -57,7 +57,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:text="12:00"
+        android:text="@string/_12_001"
         android:paddingHorizontal="20dp"
         android:paddingVertical="8dp"
         android:background="?attr/colorSurfaceContainerHigh"
@@ -92,7 +92,7 @@
             android:id="@+id/textAvatarGroup"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="User1, User2…"
+            android:text="@string/user1_user21"
             android:textColor="?attr/colorOnSurfaceVariant"/>
     </LinearLayout>
 
@@ -120,7 +120,7 @@
             android:layout_weight="1"
             android:autofillHints=""
             android:background="@null"
-            android:hint="Gửi tin nhắn"
+            android:hint="@string/g_i_tin_nh_n1"
             android:textColor="#FFFFFF"
             android:textColorHint="#9E9E9E"
             android:paddingStart="12dp" />
@@ -129,14 +129,14 @@
             android:layout_width="40dp"
             android:layout_height="match_parent"
             android:gravity="center"
-            android:text="😍"
+            android:text="@string/ff"
             android:textSize="24sp" />
 
         <TextView
             android:layout_width="40dp"
             android:layout_height="match_parent"
             android:gravity="center"
-            android:text="🥺"
+            android:text="@string/ee"
             android:textSize="24sp" />
 
         <TextView

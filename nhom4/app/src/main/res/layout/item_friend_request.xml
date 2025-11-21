@@ -27,7 +27,7 @@
             android:scaleType="centerCrop"
             android:backgroundTint="?attr/colorSurfaceVariant"
             android:layout_marginEnd="12dp"
-            android:contentDescription="Avatar"
+            android:contentDescription="@string/avatar"
             android:clipToOutline="true" />
 
         <!-- Tên người gửi -->
@@ -36,7 +36,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Username"
+            android:text="@string/username"
             android:textColor="?attr/colorOnSurface"
             android:textSize="16sp"
             android:maxLines="1"
@@ -47,7 +47,7 @@
             android:id="@+id/btn_accept"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Accept"
+            android:text="@string/accept"
             style="?attr/materialButtonOutlinedStyle"
             android:backgroundTint="?attr/colorPrimary"
             android:textColor="?attr/colorOnPrimary"
@@ -58,7 +58,7 @@
             android:id="@+id/btn_decline"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Decline"
+            android:text="@string/decline"
             style="?attr/materialButtonOutlinedStyle"
             android:backgroundTint="?attr/colorError"
             android:textColor="?attr/colorOnError"/>

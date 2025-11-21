@@ -75,7 +75,7 @@
             <com.google.android.material.textview.MaterialTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Khoảng khắc đầu tiên của bạn đã được ghi nhận vào ngày 3 thg 3, 2025"
+                android:text="@string/kho_ng_kh_c_u_ti_n_c_a_b_n_c_ghi_nh_n_v_o_ng_y_3_thg_3_2025"
                 android:textColor="?attr/colorOnPrimarySurface"
                 android:textSize="20dp"
                 android:textAlignment="center"
@@ -96,7 +96,7 @@
                 android:layout_width="0dp"
                 android:layout_height="50dp"
                 android:layout_weight="1"
-                android:text="Streak"
+                android:text="@string/streak"
                 android:textColor="?attr/colorOnPrimary"
                 app:backgroundTint="?attr/colorOnSecondaryContainer"
                 app:icon="@drawable/ic_sticker"
@@ -108,7 +108,7 @@
                 android:layout_width="0dp"
                 android:layout_height="50dp"
                 android:layout_weight="1"
-                android:text="Habit"
+                android:text="@string/habit"
                 android:textColor="?attr/colorPrimary"
                 app:backgroundTint="?attr/colorSecondaryContainer"
                 app:icon="@drawable/ic_walk"
@@ -161,14 +161,14 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Chạy bộ"
+                                android:text="@string/ch_y_bg"
                                 android:textSize="22dp"
                                 android:textColor="?attr/colorOnPrimarySurface"
                                 android:textStyle="bold"/>
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Mỗi ngày 15 phút"
+                                android:text="@string/m_i_ng_y_15_ph_tg"
                                 android:textSize="14dp"
                                 android:textColor="?attr/colorSecondaryContainer"/>
                         </LinearLayout>
@@ -194,7 +194,7 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Tiếp theo"
+                                android:text="@string/ti_p_theog"
                                 android:textSize="14dp"
                                 android:textColor="?attr/colorOnPrimarySurface"
                                 android:layout_gravity="center"/>
