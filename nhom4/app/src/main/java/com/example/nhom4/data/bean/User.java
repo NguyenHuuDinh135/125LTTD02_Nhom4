@@ -16,4 +16,8 @@ public class User {
     public String getUid() { return uid; }
     public String getUsername() { return username; }
     public String getProfilePhotoUrl() { return profilePhotoUrl; }
+    public String setUid(String uid) { return this.uid = uid; }
+    public String setUsername(String username) { return this.username = username; }
+    public String setProfilePhotoUrl(String profilePhotoUrl) { return this.profilePhotoUrl = profilePhotoUrl;
+}
 }

@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.nhom4.R;
 import com.example.nhom4.data.bean.Message;
+import com.example.nhom4.ui.adapter.ChatboxAdapter;
 import com.google.android.material.button.MaterialButton;
 
 

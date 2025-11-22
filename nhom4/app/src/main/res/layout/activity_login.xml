@@ -7,7 +7,7 @@
     android:layout_height="match_parent"
     android:background="?attr/colorSurface"
     android:padding="24dp"
-    tools:context=".ui.page.LoginActivity">
+    tools:context=".ui.page.auth.LoginActivity">
 
     <!-- 1. Tiêu đề: Dùng Headline hoặc Display của M3 -->
     <com.google.android.material.textview.MaterialTextView
@@ -95,7 +95,6 @@
             android:maxLines="1" />
     </com.google.android.material.textfield.TextInputLayout>
 
-    <!-- BỎ CheckBox ở đây vì đã dùng endIconMode="password_toggle" ở trên -->
 
     <!-- 4. Quên mật khẩu: Căn phải cho thuận tay -->
     <com.google.android.material.textview.MaterialTextView

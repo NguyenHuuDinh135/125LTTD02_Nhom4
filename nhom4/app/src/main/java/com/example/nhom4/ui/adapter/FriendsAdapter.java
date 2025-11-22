@@ -1,9 +1,8 @@
-package com.example.nhom4.ui.page.friend;
+package com.example.nhom4.ui.adapter;
 
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 

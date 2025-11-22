@@ -8,24 +8,25 @@
     android:background="?attr/colorSurface">
 
     <!-- ===================================================== -->
-    <!-- CAPTION -->
+    <!-- CAPTION (Đã tăng size chữ) -->
     <!-- ===================================================== -->
     <com.google.android.material.textview.MaterialTextView
         android:id="@+id/textCaption"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginHorizontal="32dp"
-        android:layout_marginTop="24dp"
+        android:layout_marginHorizontal="24dp"
+        android:layout_marginTop="32dp"
         android:gravity="center"
-        android:text="Caption"
+        android:text="@string/caption"
         android:textColor="?attr/colorOnSurface"
+        android:textSize="24sp"
         android:textStyle="bold"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
     <!-- ===================================================== -->
-    <!-- IMAGE CARD -->
+    <!-- IMAGE CARD (Giữ nguyên) -->
     <!-- ===================================================== -->
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/card_image_container"
@@ -49,15 +50,13 @@
             tools:srcCompat="@tools:sample/backgrounds/scenic" />
     </com.google.android.material.card.MaterialCardView>
 
-    <!-- ===================================================== -->
-    <!-- TIMESTAMP -->
-    <!-- ===================================================== -->
+    <!-- (Các phần Timestamp, Avatar Group, Comment Bar... GIỮ NGUYÊN như code cũ của bạn) -->
     <com.google.android.material.textview.MaterialTextView
         android:id="@+id/tvTimestamp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:text="12:00"
+        android:text="@string/_12_00"
         android:paddingHorizontal="20dp"
         android:paddingVertical="8dp"
         android:background="?attr/colorSurfaceContainerHigh"
@@ -66,9 +65,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <!-- ===================================================== -->
-    <!-- AVATAR GROUP -->
-    <!-- ===================================================== -->
     <LinearLayout
         android:id="@+id/layoutAvatarGroup"
         android:layout_width="wrap_content"
@@ -92,13 +88,11 @@
             android:id="@+id/textAvatarGroup"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="User1, User2…"
+            android:text="@string/user1_user2"
             android:textColor="?attr/colorOnSurfaceVariant"/>
     </LinearLayout>
 
-    <!-- ===================================================== -->
-    <!-- COMMENT BAR -->
-    <!-- ===================================================== -->
+    <!-- Comment Bar & Shutter Button (Copy lại y hệt file cũ của bạn) -->
     <LinearLayout
         android:id="@+id/layout_reaction_bar"
         android:layout_width="0dp"
@@ -112,85 +106,16 @@
         app:layout_constraintBottom_toTopOf="@id/btn_shutter"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
-
-        <EditText
-            android:id="@+id/edt_comment"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:autofillHints=""
-            android:background="@null"
-            android:hint="Gửi tin nhắn"
-            android:textColor="#FFFFFF"
-            android:textColorHint="#9E9E9E"
-            android:paddingStart="12dp" />
-
-        <TextView
-            android:layout_width="40dp"
-            android:layout_height="match_parent"
-            android:gravity="center"
-            android:text="😍"
-            android:textSize="24sp" />
-
-        <TextView
-            android:layout_width="40dp"
-            android:layout_height="match_parent"
-            android:gravity="center"
-            android:text="🥺"
-            android:textSize="24sp" />
-
-        <TextView
-            android:layout_width="40dp"
-            android:layout_height="match_parent"
-            android:gravity="center"
-            android:text="💛"
-            android:textSize="24sp" />
-
-        <ImageView
-            android:layout_width="40dp"
-            android:layout_height="match_parent"
-            android:padding="10dp"
-            android:src="@drawable/outline_add_reaction_24"
-            app:tint="#B0B0B0" />
+        <!-- (Nội dung bên trong giữ nguyên) -->
+        <EditText android:id="@+id/edt_comment" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:background="@null" android:hint="Gửi tin nhắn" android:textColor="#FFFFFF" android:textColorHint="#9E9E9E" android:paddingStart="12dp" />
+        <TextView android:layout_width="40dp" android:layout_height="match_parent" android:gravity="center" android:text="😍" android:textSize="24sp" />
+        <TextView android:layout_width="40dp" android:layout_height="match_parent" android:gravity="center" android:text="🥺" android:textSize="24sp" />
+        <TextView android:layout_width="40dp" android:layout_height="match_parent" android:gravity="center" android:text="💛" android:textSize="24sp" />
+        <ImageView android:layout_width="40dp" android:layout_height="match_parent" android:padding="10dp" android:src="@drawable/outline_add_reaction_24" app:tint="#B0B0B0" />
     </LinearLayout>
 
-    <!-- ===================================================== -->
-    <!-- SHUTTER BUTTON -->
-    <!-- ===================================================== -->
-    <View
-        android:id="@+id/btn_shutter"
-        android:layout_width="72dp"
-        android:layout_height="72dp"
-        android:layout_marginBottom="24dp"
-        android:background="@drawable/bg_shutter_fill_grey"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
-
-    <!-- LEFT -->
-    <ImageView
-        android:id="@+id/btn_grid_view"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:layout_marginStart="32dp"
-        android:padding="10dp"
-        android:src="@drawable/outline_apps_24"
-        app:tint="?attr/colorOnSurface"
-        app:layout_constraintTop_toTopOf="@id/btn_shutter"
-        app:layout_constraintBottom_toBottomOf="@id/btn_shutter"
-        app:layout_constraintStart_toStartOf="parent" />
-
-    <!-- RIGHT -->
-    <ImageView
-        android:id="@+id/btn_share"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:layout_marginEnd="32dp"
-        android:padding="10dp"
-        android:src="@drawable/outline_done_outline_24"
-        app:tint="?attr/colorOnSurface"
-        app:layout_constraintTop_toTopOf="@id/btn_shutter"
-        app:layout_constraintBottom_toBottomOf="@id/btn_shutter"
-        app:layout_constraintEnd_toEndOf="parent" />
+    <View android:id="@+id/btn_shutter" android:layout_width="72dp" android:layout_height="72dp" android:layout_marginBottom="24dp" android:background="@drawable/bg_shutter_fill_grey" app:layout_constraintBottom_toBottomOf="parent" app:layout_constraintStart_toStartOf="parent" app:layout_constraintEnd_toEndOf="parent"/>
+    <ImageView android:id="@+id/btn_grid_view" android:layout_width="48dp" android:layout_height="48dp" android:layout_marginStart="32dp" android:padding="10dp" android:src="@drawable/outline_apps_24" app:tint="?attr/colorOnSurface" app:layout_constraintTop_toTopOf="@id/btn_shutter" app:layout_constraintBottom_toBottomOf="@id/btn_shutter" app:layout_constraintStart_toStartOf="parent" />
+    <ImageView android:id="@+id/btn_share" android:layout_width="48dp" android:layout_height="48dp" android:layout_marginEnd="32dp" android:padding="10dp" android:src="@drawable/outline_done_outline_24" app:tint="?attr/colorOnSurface" app:layout_constraintTop_toTopOf="@id/btn_shutter" app:layout_constraintBottom_toBottomOf="@id/btn_shutter" app:layout_constraintEnd_toEndOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

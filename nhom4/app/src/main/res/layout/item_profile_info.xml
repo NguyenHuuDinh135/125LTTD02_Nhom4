@@ -1,29 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
+<com.google.android.material.textfield.TextInputLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:paddingVertical="8dp">
+    android:layout_marginBottom="12dp"
+    android:hint="Nhập thông tin"
+    style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
 
-    <!-- Label (Ví dụ: Email) -->
-    <com.google.android.material.textview.MaterialTextView
-        android:id="@+id/tv_label"
-        style="@style/TextAppearance.Material3.BodySmall"
-        android:layout_width="wrap_content"
+    <com.google.android.material.textfield.TextInputEditText
+        android:id="@+id/et_value"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textColor="?attr/colorOnSurfaceVariant"
-        tools:text="Label" />
-
-    <!-- Value (Ví dụ: nguyenhuudinh@gmail.com) -->
-    <com.google.android.material.textview.MaterialTextView
-        android:id="@+id/tv_value"
-        style="@style/TextAppearance.Material3.BodyLarge"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="2dp"
-        android:textStyle="bold"
-        android:textColor="?attr/colorOnSurface"
-        tools:text="Value Information" />
-
-</LinearLayout>
+        android:inputType="text" />
+</com.google.android.material.textfield.TextInputLayout>

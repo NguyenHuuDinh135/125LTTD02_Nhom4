@@ -12,7 +12,7 @@
         style="@style/TextAppearance.Material3.HeadlineMedium"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="60dp"
+        android:layout_marginTop="24dp"
         android:text="Heyy, What's up guyy?"
         android:textColor="?attr/colorOnSurface"
         android:textStyle="bold"
