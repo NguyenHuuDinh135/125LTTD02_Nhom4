@@ -97,38 +97,90 @@ public class ProfileActivity extends AppCompatActivity {
         FirebaseUser user = auth.getCurrentUser();
         if (user == null) return;
 
-        db.collection("user_profile").document(user.getUid())
-                .get()
-                .addOnSuccessListener(doc -> {
-                    if (doc.exists()) {
-                        etName.setText(doc.getString("username") != null ? doc.getString("username") : "Chưa có tên");
-                        etEmail.setText(doc.getString("email") != null ? doc.getString("email") : user.getEmail());
-                        etBirthday.setText(doc.getString("birthday") != null ? doc.getString("birthday") : "Chưa có ngày sinh");
+        String uid = user.getUid();
 
-                        String avatarUrl = doc.getString("profilePhotoUrl");
-                        if (avatarUrl != null && !avatarUrl.isEmpty()) {
-                            Glide.with(this).load(avatarUrl).into(ivProfileAvatar);
-                        }
-                    } else {
-                        // Tạo profile mặc định nếu chưa có
-                        UserProfile defaultProfile = new UserProfile(
-                                user.getUid(),
-                                "Chưa có tên",
-                                user.getEmail(),
-                                "Chưa có ngày sinh",
-                                null,
-                                null
-                        );
-                        db.collection("user_profile").document(user.getUid())
-                                .set(defaultProfile);
+        // ------------------------------------------------
+        // BƯỚC 1 — Lấy từ users trước
+        // ------------------------------------------------
+        db.collection("users").document(uid).get()
+                .addOnSuccessListener(userDoc -> {
+                    final String[] nameFromUsers = {null};
+                    final String[] emailFromUsers = {null};
+                    final String[] avatarFromUsers = {null};
 
-                        etName.setText(defaultProfile.getUsername());
-                        etEmail.setText(defaultProfile.getEmail());
-                        etBirthday.setText(defaultProfile.getBirthday());
+
+                    if (userDoc.exists()) {
+                        nameFromUsers[0] = userDoc.getString("username");
+                        emailFromUsers[0] = userDoc.getString("email");
+                        avatarFromUsers[0] = userDoc.getString("profilePhotoUrl");
+
                     }
-                })
-                .addOnFailureListener(e -> Toast.makeText(this, "Lỗi load profile: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+
+                    // ------------------------------------------------
+                    // BƯỚC 2 — Lấy tiếp user_profile
+                    // ------------------------------------------------
+                    db.collection("user_profile").document(uid).get()
+                            .addOnSuccessListener(profileDoc -> {
+
+                                String finalName = "Chưa có tên";
+                                String finalEmail = user.getEmail();
+                                String finalBirthday = "Chưa có ngày sinh";
+                                String finalAvatar = null;
+
+                                // nếu user_profile có dữ liệu
+                                if (profileDoc.exists()) {
+                                    if (profileDoc.getString("username") != null)
+                                        finalName = profileDoc.getString("username");
+
+                                    if (profileDoc.getString("email") != null)
+                                        finalEmail = profileDoc.getString("email");
+
+                                    if (profileDoc.getString("birthday") != null)
+                                        finalBirthday = profileDoc.getString("birthday");
+
+                                    if (profileDoc.getString("profilePhotoUrl") != null)
+                                        finalAvatar = profileDoc.getString("profilePhotoUrl");
+                                }
+
+                                // ------------------------------------------------
+                                // ƯU TIÊN DỮ LIỆU TỪ users
+                                // ------------------------------------------------
+                                if (nameFromUsers[0] != null) finalName = nameFromUsers[0];
+                                if (emailFromUsers[0] != null) finalEmail = emailFromUsers[0];
+                                if (avatarFromUsers[0] != null) finalAvatar = avatarFromUsers[0];
+
+
+                                // ------------------------------------------------
+                                // Gán lên UI
+                                // ------------------------------------------------
+                                etName.setText(finalName);
+                                etEmail.setText(finalEmail);
+                                etBirthday.setText(finalBirthday);
+
+                                if (finalAvatar != null && !finalAvatar.isEmpty()) {
+                                    Glide.with(this).load(finalAvatar).into(ivProfileAvatar);
+                                }
+
+                                // ------------------------------------------------
+                                // Nếu cả 2 collection đều chưa có -> tạo profile mặc định
+                                // ------------------------------------------------
+                                if (!profileDoc.exists()) {
+                                    Map<String, Object> defaultProfile = new HashMap<>();
+                                    defaultProfile.put("uid", uid);
+                                    defaultProfile.put("username", finalName);
+                                    defaultProfile.put("email", finalEmail);
+                                    defaultProfile.put("birthday", finalBirthday);
+                                    defaultProfile.put("profilePhotoUrl", finalAvatar);
+
+                                    db.collection("user_profile").document(uid).set(defaultProfile);
+                                }
+                            })
+                            .addOnFailureListener(e ->
+                                    Toast.makeText(this, "Lỗi load profile: " + e.getMessage(), Toast.LENGTH_SHORT).show()
+                            );
+                });
     }
+
 
     private void saveProfileChanges() {
         FirebaseUser user = auth.getCurrentUser();
