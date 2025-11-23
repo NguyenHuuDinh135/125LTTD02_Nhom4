@@ -63,4 +63,9 @@ dependencies {
     implementation("androidx.camera:camera-view:${cameraxVersion}")
     implementation("androidx.camera:camera-video:${cameraxVersion}")
     implementation ("com.google.firebase:firebase-storage")
+
+    // Widget
+    implementation("com.squareup.picasso:picasso:2.71828")
+    implementation("androidx.glance:glance-appwidget:1.1.0")
+
 }
