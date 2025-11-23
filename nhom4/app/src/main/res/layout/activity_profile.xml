@@ -12,6 +12,7 @@
         android:layout_height="wrap_content"
         android:padding="24dp">
 
+        <!-- Tiêu đề Profile -->
         <com.google.android.material.textview.MaterialTextView
             android:id="@+id/textViewProfileTitle"
             style="@style/TextAppearance.Material3.HeadlineLarge"
@@ -24,7 +25,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
-        <!-- KHU VỰC AVATAR -->
+        <!-- Khu vực Avatar -->
         <FrameLayout
             android:id="@+id/layout_avatar"
             android:layout_width="wrap_content"
@@ -56,7 +57,7 @@
                 app:tint="#FFFFFF"/>
         </FrameLayout>
 
-        <!-- Card thông tin -->
+        <!-- Card thông tin user -->
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/cardUserInfo"
             android:layout_width="match_parent"
@@ -91,6 +92,68 @@
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
+        <!-- Card tiện ích (Widget Title) -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardWidgetTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            app:cardCornerRadius="16dp"
+            app:cardBackgroundColor="?attr/colorSurfaceContainerHigh"
+            app:layout_constraintTop_toBottomOf="@id/cardUserInfo"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <!-- Tiêu đề tiện ích -->
+                <TextView
+                    android:id="@+id/tv_widget_section_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Tiện ích"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:textColor="?attr/colorOnSurface"
+                    android:layout_marginBottom="8dp"/>
+
+                <!-- Row tiện ích 1: Thêm Widget -->
+                <LinearLayout
+                    android:id="@+id/row_add_widget"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:paddingVertical="8dp">
+
+                    <TextView
+                        android:id="@+id/tv_add_widget"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Thêm Widget"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
+                        android:textColor="?attr/colorOnSurface"/>
+
+                    <ImageView
+                        android:id="@+id/iv_add_widget_icon"
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
+                        android:src="@drawable/ic_utilities"
+                        app:tint="?attr/colorPrimary"/>
+                </LinearLayout>
+
+                <!-- Row tiện ích khác có thể thêm ở đây -->
+
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+
         <!-- Nút Lưu thay đổi -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/buttonSave"
@@ -99,7 +162,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"
             android:text="@string/l_u_thay_i"
-            app:layout_constraintTop_toBottomOf="@id/cardUserInfo"
+            app:layout_constraintTop_toBottomOf="@id/cardWidgetTitle"
             app:layout_constraintStart_toStartOf="parent" />
 
         <!-- Nút Đăng xuất -->

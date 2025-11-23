@@ -1,7 +1,12 @@
 package com.example.nhom4.ui.page.calendar;
 
+import android.annotation.SuppressLint;
+import android.app.PendingIntent;
+import android.appwidget.AppWidgetManager;
+import android.content.ComponentName;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.widget.ImageView;
 import android.widget.Toast;
@@ -29,7 +34,7 @@ import java.util.Map;
 public class ProfileActivity extends AppCompatActivity {
 
     private ShapeableImageView ivProfileAvatar;
-    private ImageView btnChangeAvatar;
+    private ImageView btnChangeAvatar, ivAddWidgetIcon;
 
     private TextInputEditText etEmail, etName, etBirthday;
     private MaterialButton btnSave, btnLogout;
@@ -77,11 +82,18 @@ public class ProfileActivity extends AppCompatActivity {
             startActivity(intent);
             finish();
         });
+
+        // Click icon thêm widget
+        ivAddWidgetIcon.setOnClickListener(v -> addWidgetToHomeScreen());
     }
+
 
     private void initViews() {
         ivProfileAvatar = findViewById(R.id.iv_profile_avatar);
         btnChangeAvatar = findViewById(R.id.btn_edit_avatar_icon);
+
+        // <-- đây là icon widget mới
+        ivAddWidgetIcon = findViewById(R.id.iv_add_widget_icon);
 
         etEmail = findViewById(R.id.item_email).findViewById(R.id.et_value);
         etName = findViewById(R.id.item_name).findViewById(R.id.et_value);
@@ -91,6 +103,29 @@ public class ProfileActivity extends AppCompatActivity {
         btnLogout = findViewById(R.id.buttonSettings);
         btnLogout.setText("Đăng xuất");
         btnLogout.setIconResource(R.drawable.outline_logout_24);
+    }
+
+    // -----------------------------
+    // Thêm widget vào màn hình chính
+    // -----------------------------
+    private void addWidgetToHomeScreen() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            AppWidgetManager appWidgetManager = getSystemService(AppWidgetManager.class);
+            ComponentName myProvider = new ComponentName(this, com.example.nhom4.ui.page.widget.ActivityWidgetProvider.class);
+
+            if (appWidgetManager.isRequestPinAppWidgetSupported()) {
+                Intent pinnedWidgetCallbackIntent = new Intent(this, ProfileActivity.class);
+                PendingIntent successCallback = PendingIntent.getActivity(this, 0,
+                        pinnedWidgetCallbackIntent,
+                        PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+
+                appWidgetManager.requestPinAppWidget(myProvider, null, successCallback);
+            } else {
+                Toast.makeText(this, "Launcher không hỗ trợ thêm widget", Toast.LENGTH_SHORT).show();
+            }
+        } else {
+            Toast.makeText(this, "Yêu cầu Android 8.0 trở lên để thêm widget từ app", Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void loadUserProfile() {
