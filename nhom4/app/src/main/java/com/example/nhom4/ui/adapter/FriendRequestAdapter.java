@@ -14,7 +14,7 @@ import com.example.nhom4.data.bean.FriendRequest;
 import com.example.nhom4.data.bean.User;
 import com.bumptech.glide.Glide;
 import com.google.android.material.button.MaterialButton;
-import com.google.android.material.imageview.ShapeableImageView;
+import com.google.android.material.imageview.ShapeableImageView; // QUAN TRỌNG
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.List;
@@ -53,7 +53,7 @@ public class FriendRequestAdapter extends RecyclerView.Adapter<FriendRequestAdap
     public void onBindViewHolder(@NonNull RequestViewHolder holder, int position) {
         FriendRequest request = requestList.get(position);
 
-        // Load thông tin User theo requesterId
+        // Load thông tin User
         db.collection("users").document(request.getRequesterId())
                 .get()
                 .addOnSuccessListener(doc -> {
@@ -63,28 +63,20 @@ public class FriendRequestAdapter extends RecyclerView.Adapter<FriendRequestAdap
                             holder.tvName.setText(user.getUsername());
                             Glide.with(holder.itemView.getContext())
                                     .load(user.getProfilePhotoUrl())
-                                    .placeholder(R.drawable.avatar_placeholder)
-                                    .error(R.drawable.avatar_placeholder)
+                                    .placeholder(R.drawable.ic_launcher_foreground)
+                                    .error(R.drawable.ic_launcher_foreground)
                                     .into(holder.ivAvatar);
                         }
                     }
                 })
-                .addOnFailureListener(e -> Toast.makeText(holder.itemView.getContext(),
-                        "Lỗi load user: " + e.getMessage(),
-                        Toast.LENGTH_SHORT).show());
+                .addOnFailureListener(e -> {});
 
         holder.btnAccept.setOnClickListener(v -> {
             if (listener != null) listener.onAccept(request);
-            holder.btnAccept.setText("Đã chấp nhận");
-            holder.btnAccept.setEnabled(false);
-            holder.btnDecline.setEnabled(false);
         });
 
         holder.btnDecline.setOnClickListener(v -> {
             if (listener != null) listener.onDecline(request);
-            holder.btnDecline.setText("Đã từ chối");
-            holder.btnDecline.setEnabled(false);
-            holder.btnAccept.setEnabled(false);
         });
     }
 
@@ -96,13 +88,13 @@ public class FriendRequestAdapter extends RecyclerView.Adapter<FriendRequestAdap
     public static class RequestViewHolder extends RecyclerView.ViewHolder {
         TextView tvName;
         MaterialButton btnAccept, btnDecline;
-        ShapeableImageView ivAvatar;
+        ShapeableImageView ivAvatar; // Đã khớp với XML
 
         public RequestViewHolder(@NonNull View itemView) {
             super(itemView);
             tvName = itemView.findViewById(R.id.tv_username);
-            btnAccept = itemView.findViewById(R.id.btnAccept);
-            btnDecline = itemView.findViewById(R.id.btnReject);
+            btnAccept = itemView.findViewById(R.id.btn_accept);
+            btnDecline = itemView.findViewById(R.id.btn_decline);
             ivAvatar = itemView.findViewById(R.id.iv_avatar);
         }
     }

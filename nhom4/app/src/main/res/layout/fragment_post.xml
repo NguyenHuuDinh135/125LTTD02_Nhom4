@@ -107,7 +107,23 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
         <!-- (Nội dung bên trong giữ nguyên) -->
-        <EditText android:id="@+id/edt_comment" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:background="@null" android:hint="Gửi tin nhắn" android:textColor="#FFFFFF" android:textColorHint="#9E9E9E" android:paddingStart="12dp" />
+        <!-- Tìm đến EditText edt_comment trong file fragment_post.xml -->
+        <EditText
+            android:id="@+id/edt_comment"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="@null"
+            android:hint="@string/g_i_tin_nh_n"
+            android:paddingStart="12dp"
+            android:textColor="#FFFFFF"
+            android:textColorHint="#9E9E9E"
+
+            android:focusable="false"
+            android:clickable="true"
+            android:cursorVisible="false"
+            android:longClickable="false" />
+
         <TextView android:layout_width="40dp" android:layout_height="match_parent" android:gravity="center" android:text="😍" android:textSize="24sp" />
         <TextView android:layout_width="40dp" android:layout_height="match_parent" android:gravity="center" android:text="🥺" android:textSize="24sp" />
         <TextView android:layout_width="40dp" android:layout_height="match_parent" android:gravity="center" android:text="💛" android:textSize="24sp" />

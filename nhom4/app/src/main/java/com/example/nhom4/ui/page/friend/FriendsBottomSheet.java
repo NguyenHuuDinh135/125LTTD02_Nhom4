@@ -2,7 +2,6 @@ package com.example.nhom4.ui.page.friend;
 
 import android.content.res.Resources;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,41 +10,29 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.nhom4.R;
+import com.example.nhom4.data.Resource;
 import com.example.nhom4.data.bean.FriendRequest;
-import com.example.nhom4.data.bean.User;
 import com.example.nhom4.ui.adapter.FriendRequestAdapter;
 import com.example.nhom4.ui.adapter.UserSuggestionAdapter;
+import com.example.nhom4.ui.viewmodel.FriendsViewModel;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.google.android.material.color.MaterialColors;
 import com.google.android.material.shape.MaterialShapeDrawable;
 import com.google.android.material.shape.ShapeAppearanceModel;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.FieldValue;
-import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 public class FriendsBottomSheet extends BottomSheetDialogFragment {
 
     private RecyclerView rcvSuggestions, rcvRequests;
-
-    private FirebaseFirestore db;
-    private FirebaseAuth auth;
-    private String currentUserId;
-
-    private List<User> suggestionList = new ArrayList<>();
-    private List<FriendRequest> requestList = new ArrayList<>();
+    private FriendsViewModel viewModel;
 
     private UserSuggestionAdapter suggestionAdapter;
     private FriendRequestAdapter requestAdapter;
@@ -62,128 +49,68 @@ public class FriendsBottomSheet extends BottomSheetDialogFragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        db = FirebaseFirestore.getInstance();
-        auth = FirebaseAuth.getInstance();
-        FirebaseUser currentUser = auth.getCurrentUser();
-
-        if (currentUser == null) {
-            Toast.makeText(getContext(), "Vui lòng đăng nhập", Toast.LENGTH_SHORT).show();
-            dismiss();
-            return;
-        }
-        currentUserId = currentUser.getUid();
+        // 1. Init ViewModel
+        viewModel = new ViewModelProvider(this).get(FriendsViewModel.class);
 
         rcvSuggestions = view.findViewById(R.id.rcvSuggestions);
         rcvRequests = view.findViewById(R.id.rcvFriends);
 
         setupAdapters();
-        loadSuggestions();
-        loadFriendRequests();
+        observeViewModel();
     }
 
     private void setupAdapters() {
-        // Adapter gợi ý kết bạn
-        suggestionAdapter = new UserSuggestionAdapter(suggestionList, user -> sendFriendRequest(user));
+        // Adapter Gợi ý
+        suggestionAdapter = new UserSuggestionAdapter(new ArrayList<>(), user -> {
+            viewModel.sendFriendRequest(user);
+        });
         rcvSuggestions.setLayoutManager(new LinearLayoutManager(getContext()));
         rcvSuggestions.setAdapter(suggestionAdapter);
 
-        // Adapter lời mời kết bạn
-        requestAdapter = new FriendRequestAdapter(requestList, new FriendRequestAdapter.OnRequestActionListener() {
+        // Adapter Lời mời
+        requestAdapter = new FriendRequestAdapter(new ArrayList<>(), new FriendRequestAdapter.OnRequestActionListener() {
             @Override
             public void onAccept(FriendRequest request) {
-                db.collection("relationships").document(request.getRequestId())
-                        .update("status", "accepted")
-                        .addOnSuccessListener(aVoid -> {
-                            Toast.makeText(getContext(), "Đã chấp nhận " + request.getRequesterId(), Toast.LENGTH_SHORT).show();
-                            requestList.remove(request);
-                            requestAdapter.notifyDataSetChanged();
-                        })
-                        .addOnFailureListener(e ->
-                                Toast.makeText(getContext(), "Lỗi cập nhật: " + e.getMessage(), Toast.LENGTH_SHORT).show()
-                        );
+                viewModel.acceptRequest(request);
             }
 
             @Override
             public void onDecline(FriendRequest request) {
-                db.collection("relationships").document(request.getRequestId())
-                        .update("status", "rejected")
-                        .addOnSuccessListener(aVoid -> {
-                            Toast.makeText(getContext(), "Đã từ chối " + request.getRequesterId(), Toast.LENGTH_SHORT).show();
-                            requestList.remove(request);
-                            requestAdapter.notifyDataSetChanged();
-                        })
-                        .addOnFailureListener(e ->
-                                Toast.makeText(getContext(), "Lỗi cập nhật: " + e.getMessage(), Toast.LENGTH_SHORT).show()
-                        );
+                viewModel.declineRequest(request);
             }
         });
         rcvRequests.setLayoutManager(new LinearLayoutManager(getContext()));
         rcvRequests.setAdapter(requestAdapter);
     }
 
-    // ================= FIREBASE =================
+    private void observeViewModel() {
+        // 1. Lắng nghe danh sách gợi ý
+        viewModel.getSuggestions().observe(getViewLifecycleOwner(), resource -> {
+            if (resource.status == Resource.Status.SUCCESS && resource.data != null) {
+                // Cập nhật Adapter (Nếu adapter chưa có setList, tạo mới tạm thời hoặc thêm hàm setList vào adapter)
+                suggestionAdapter = new UserSuggestionAdapter(resource.data, user -> viewModel.sendFriendRequest(user));
+                rcvSuggestions.setAdapter(suggestionAdapter);
+            }
+        });
 
-    private void loadFriendRequests() {
-        db.collection("relationships")
-                .whereEqualTo("recipientId", currentUserId)
-                .whereEqualTo("status", "pending")
-                .get()
-                .addOnSuccessListener(query -> {
-                    requestList.clear();
-                    for (DocumentSnapshot doc : query) {
-                        FriendRequest fr = doc.toObject(FriendRequest.class);
-                        if (fr != null) {
-                            fr.setRequestId(doc.getId());
-                            requestList.add(fr);
-                        }
-                    }
-                    requestAdapter.notifyDataSetChanged(); // update RecyclerView
-                })
-                .addOnFailureListener(e ->
-                        Log.e("FriendSheet", "Load requests error", e)
-                );
+        // 2. Lắng nghe danh sách lời mời
+        viewModel.getFriendRequests().observe(getViewLifecycleOwner(), resource -> {
+            if (resource.status == Resource.Status.SUCCESS && resource.data != null) {
+                requestAdapter.setRequests(resource.data); // Đảm bảo Adapter có hàm setRequests
+            }
+        });
+
+        // 3. Lắng nghe trạng thái hành động (Toast)
+        viewModel.getActionStatus().observe(getViewLifecycleOwner(), resource -> {
+            if (resource.status == Resource.Status.SUCCESS) {
+                Toast.makeText(getContext(), resource.data, Toast.LENGTH_SHORT).show();
+            } else if (resource.status == Resource.Status.ERROR) {
+                Toast.makeText(getContext(), "Lỗi: " + resource.message, Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
-    private void loadSuggestions() {
-        db.collection("users")
-                .limit(20)
-                .get()
-                .addOnSuccessListener(query -> {
-                    suggestionList.clear();
-                    for (DocumentSnapshot doc : query) {
-                        if (!doc.getId().equals(currentUserId)) {
-                            User user = doc.toObject(User.class);
-                            if (user != null) {
-                                user.setUid(doc.getId());
-                                suggestionList.add(user);
-                            }
-                        }
-                    }
-                    suggestionAdapter.notifyDataSetChanged(); // update RecyclerView
-                })
-                .addOnFailureListener(e -> Log.e("FriendSheet", "Load suggestions error", e));
-    }
-
-
-    private void sendFriendRequest(User targetUser) {
-        Map<String, Object> relationship = new HashMap<>();
-        relationship.put("requesterId", currentUserId);
-        relationship.put("recipientId", targetUser.getUid());
-        relationship.put("status", "pending");
-        relationship.put("createdAt", FieldValue.serverTimestamp());
-        relationship.put("members", List.of(currentUserId, targetUser.getUid()));
-
-        db.collection("relationships")
-                .add(relationship)
-                .addOnSuccessListener(docRef ->
-                        Toast.makeText(getContext(), "Đã gửi lời mời đến " + targetUser.getUsername(), Toast.LENGTH_SHORT).show()
-                )
-                .addOnFailureListener(e ->
-                        Toast.makeText(getContext(), "Lỗi gửi lời mời", Toast.LENGTH_SHORT).show()
-                );
-    }
-
-    // ================= UI BOTTOM SHEET =================
+    // ================= UI BOTTOM SHEET CONFIG (Giữ nguyên) =================
 
     @Override
     public void onStart() {

@@ -1,58 +1,51 @@
 package com.example.nhom4.ui.page;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.View;
-import android.widget.Button;
-import android.view.animation.AlphaAnimation; // Để tạo hiệu ứng hiện từ từ
+import android.view.animation.AlphaAnimation;
+
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.example.nhom4.MainActivity;
 import com.example.nhom4.R;
 import com.example.nhom4.ui.page.auth.LoginActivity;
 import com.example.nhom4.ui.page.auth.RegisterActivity;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
+import com.example.nhom4.ui.viewmodel.AuthViewModel;
 
 public class SplashActivity extends AppCompatActivity {
 
-    private FirebaseAuth mAuth;
     private View btnSignUp;
     private View btnLogin;
+    private AuthViewModel authViewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash);
 
-        mAuth = FirebaseAuth.getInstance();
+        // [MVVM] Khởi tạo ViewModel
+        authViewModel = new ViewModelProvider(this).get(AuthViewModel.class);
 
-        // Ánh xạ 2 nút
+        // Ánh xạ view
         btnSignUp = findViewById(R.id.btnSignUp);
         btnLogin = findViewById(R.id.txtLogin);
 
-        // Thiết lập sự kiện click cho nút (khi nó hiện lên)
         setupButtonActions();
 
-        // Bắt đầu quy trình kiểm tra
-        // Đợi 2 giây (2000ms) để kiểm tra đăng nhập
+        // Bắt đầu quy trình kiểm tra sau 1 giây
         new Handler().postDelayed(this::checkUserStatus, 1000);
     }
 
     private void checkUserStatus() {
-        FirebaseUser currentUser = mAuth.getCurrentUser();
-
-        if (currentUser != null) {
-            // TRƯỜNG HỢP 1: Đã đăng nhập
-            // Chuyển ngay sang MainActivity
+        // [MVVM] Hỏi ViewModel xem đã đăng nhập chưa, không gọi Firebase trực tiếp
+        if (authViewModel.isLoggedIn()) {
+            // TRƯỜNG HỢP 1: Đã đăng nhập -> Vào Main ngay
             goToMainActivity();
         } else {
-            // TRƯỜNG HỢP 2: Chưa đăng nhập
-            // Người dùng ở lại màn hình Splash.
-            // Yêu cầu: Delay nút 5 giây (tính từ lúc mở app).
-            // Vì đã đợi 2 giây ở trên rồi, nên giờ đợi thêm 3 giây nữa (2 + 3 = 5).
+            // TRƯỜNG HỢP 2: Chưa đăng nhập -> Hiện nút sau 1 giây nữa
             new Handler().postDelayed(this::showButtons, 1000);
         }
     }
@@ -62,24 +55,20 @@ public class SplashActivity extends AppCompatActivity {
         btnSignUp.setVisibility(View.VISIBLE);
         btnLogin.setVisibility(View.VISIBLE);
 
-        // Thêm hiệu ứng fade-in cho mượt (tùy chọn)
+        // Hiệu ứng fade-in
         AlphaAnimation fadeIn = new AlphaAnimation(0.0f, 1.0f);
-        fadeIn.setDuration(500); // Hiện trong 0.5s
+        fadeIn.setDuration(500);
         btnSignUp.startAnimation(fadeIn);
         btnLogin.startAnimation(fadeIn);
     }
 
     private void setupButtonActions() {
-        // Nút Đăng ký -> RegisterActivity
         btnSignUp.setOnClickListener(v -> {
-            Intent intent = new Intent(SplashActivity.this, RegisterActivity.class);
-            startActivity(intent);
+            startActivity(new Intent(SplashActivity.this, RegisterActivity.class));
         });
 
-        // Nút Đăng nhập -> LoginActivity
         btnLogin.setOnClickListener(v -> {
-            Intent intent = new Intent(SplashActivity.this, LoginActivity.class);
-            startActivity(intent);
+            startActivity(new Intent(SplashActivity.this, LoginActivity.class));
         });
     }
 

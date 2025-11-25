@@ -84,11 +84,15 @@ public class VerticalPagerAdapter extends FragmentStateAdapter {
 
         // 3. Trả về Fragment với dữ liệu thật
         return PostFragment.newInstance(
-                title,                  // Caption đỏ
-                post.getCaption(),      // Caption thường
-                imageUrl,               // Link ảnh
-                timeStr,                // Thời gian
-                "Người dùng ẩn danh"    // Tên người dùng (tạm thời)
+                title,                  // 1. Caption đỏ
+                post.getCaption(),      // 2. Caption thường
+                imageUrl,               // 3. Link ảnh
+                timeStr,                // 4. Thời gian
+                "Người dùng ẩn danh",   // 5. Tên người dùng
+                "",                     // 6. Missing Param 1 (Check PostFragment for what this should be)
+                "",                     // 7. Missing Param 2 (Check PostFragment for what this should be)
+                ""                      // 8. Missing Param 3 (Check PostFragment for what this should be)
         );
+
     }
 }

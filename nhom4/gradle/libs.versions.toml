@@ -12,6 +12,8 @@ firebaseCrashlyticsBuildtools = "3.0.6"
 firebaseDatabase = "22.0.1"
 rendering = "1.17.1"
 firebaseStorage = "22.0.1"
+datastoreCore = "1.2.0"
+contentpager = "1.0.0"
 
 [libraries]
 junit = { group = "junit", name = "junit", version.ref = "junit" }
@@ -26,6 +28,8 @@ firebase-crashlytics-buildtools = { group = "com.google.firebase", name = "fireb
 firebase-database = { group = "com.google.firebase", name = "firebase-database", version.ref = "firebaseDatabase" }
 rendering = { group = "com.google.ar.sceneform", name = "rendering", version.ref = "rendering" }
 firebase-storage = { group = "com.google.firebase", name = "firebase-storage", version.ref = "firebaseStorage" }
+datastore-core = { group = "androidx.datastore", name = "datastore-core", version.ref = "datastoreCore" }
+contentpager = { group = "androidx.contentpager", name = "contentpager", version.ref = "contentpager" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

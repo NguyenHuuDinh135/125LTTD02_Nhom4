@@ -11,43 +11,62 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.example.nhom4.MainActivity;
 import com.example.nhom4.R;
+import com.example.nhom4.data.Resource;
+import com.example.nhom4.ui.viewmodel.AuthViewModel;
 import com.google.android.material.textfield.TextInputEditText;
-import com.google.firebase.auth.FirebaseAuth;
 
 public class LoginActivity extends AppCompatActivity {
+
     private TextInputEditText etEmail, etPassword;
     private Button btnLogin;
-    // Đã xóa CheckBox
     private TextView tvGoToRegister, tvForgotPassword;
     private ProgressBar progressBar;
-    private FirebaseAuth mAuth;
+
+    // [MVVM] Sử dụng ViewModel thay vì gọi trực tiếp FirebaseAuth
+    private AuthViewModel authViewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
-        mAuth = FirebaseAuth.getInstance();
+        // 1. Khởi tạo ViewModel
+        authViewModel = new ViewModelProvider(this).get(AuthViewModel.class);
 
-        // Ánh xạ view
+        // 2. Ánh xạ View
+        initViews();
+
+        // 3. Thiết lập sự kiện (Click listener)
+        setupListeners();
+
+        // 4. Lắng nghe kết quả từ ViewModel (Observer)
+        observeViewModel();
+    }
+
+    private void initViews() {
         etEmail = findViewById(R.id.editTextEmail);
         etPassword = findViewById(R.id.editTextPassword);
         btnLogin = findViewById(R.id.buttonLogin);
         tvGoToRegister = findViewById(R.id.textViewSignUp);
         tvForgotPassword = findViewById(R.id.textViewForgotPassword);
         progressBar = findViewById(R.id.progressBar);
+    }
 
-        // Xử lý sự kiện
-        btnLogin.setOnClickListener(v -> loginUser());
+    private void setupListeners() {
+        // Nút Đăng nhập
+        btnLogin.setOnClickListener(v -> handleLogin());
 
+        // Chuyển sang màn hình Đăng ký
         tvGoToRegister.setOnClickListener(v -> {
             Intent intent = new Intent(LoginActivity.this, RegisterActivity.class);
             startActivity(intent);
         });
 
+        // Quên mật khẩu (Tính năng chưa phát triển)
         if (tvForgotPassword != null) {
             tvForgotPassword.setOnClickListener(v -> {
                 Toast.makeText(this, "Chức năng đang phát triển!", Toast.LENGTH_SHORT).show();
@@ -55,13 +74,14 @@ public class LoginActivity extends AppCompatActivity {
         }
     }
 
-    private void loginUser() {
+    private void handleLogin() {
         String email = "";
         if (etEmail.getText() != null) email = etEmail.getText().toString().trim();
 
         String password = "";
         if (etPassword.getText() != null) password = etPassword.getText().toString().trim();
 
+        // Validate dữ liệu đầu vào
         if (TextUtils.isEmpty(email)) {
             etEmail.setError("Vui lòng nhập email.");
             etEmail.requestFocus();
@@ -80,22 +100,35 @@ public class LoginActivity extends AppCompatActivity {
             return;
         }
 
-        if (progressBar != null) progressBar.setVisibility(View.VISIBLE);
-        btnLogin.setEnabled(false);
+        // Gọi ViewModel để thực hiện đăng nhập
+        authViewModel.login(email, password);
+    }
 
-        mAuth.signInWithEmailAndPassword(email, password)
-                .addOnCompleteListener(this, task -> {
+    private void observeViewModel() {
+        authViewModel.getAuthResult().observe(this, resource -> {
+            switch (resource.status) {
+                case LOADING:
+                    // Hiển thị Loading
+                    if (progressBar != null) progressBar.setVisibility(View.VISIBLE);
+                    btnLogin.setEnabled(false);
+                    break;
+
+                case SUCCESS:
+                    // Đăng nhập thành công
                     if (progressBar != null) progressBar.setVisibility(View.GONE);
                     btnLogin.setEnabled(true);
+                    Toast.makeText(LoginActivity.this, "Đăng nhập thành công.", Toast.LENGTH_SHORT).show();
+                    goToMainActivity();
+                    break;
 
-                    if (task.isSuccessful()) {
-                        Toast.makeText(LoginActivity.this, "Đăng nhập thành công.", Toast.LENGTH_SHORT).show();
-                        goToMainActivity();
-                    } else {
-                        String error = task.getException() != null ? task.getException().getMessage() : "Lỗi";
-                        Toast.makeText(LoginActivity.this, "Lỗi: " + error, Toast.LENGTH_LONG).show();
-                    }
-                });
+                case ERROR:
+                    // Đăng nhập thất bại
+                    if (progressBar != null) progressBar.setVisibility(View.GONE);
+                    btnLogin.setEnabled(true);
+                    Toast.makeText(LoginActivity.this, "Lỗi: " + resource.message, Toast.LENGTH_LONG).show();
+                    break;
+            }
+        });
     }
 
     private void goToMainActivity() {

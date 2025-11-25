@@ -48,6 +48,8 @@ dependencies {
     implementation(libs.firebase.database)
     implementation(libs.rendering)
     implementation(libs.firebase.storage)
+    implementation(libs.datastore.core)
+    implementation(libs.contentpager)
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)

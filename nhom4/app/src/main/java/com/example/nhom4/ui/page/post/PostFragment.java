@@ -8,6 +8,7 @@ import android.text.style.ForegroundColorSpan;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -18,6 +19,7 @@ import androidx.fragment.app.Fragment;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.example.nhom4.R;
+import com.example.nhom4.data.bean.Post;
 import com.example.nhom4.ui.page.main.CenterFragment;
 
 public class PostFragment extends Fragment {
@@ -27,10 +29,16 @@ public class PostFragment extends Fragment {
     private static final String ARG_IMAGE_URL = "image_url";
     private static final String ARG_TIMESTAMP = "timestamp";
     private static final String ARG_AVATAR_GROUP = "avatar_group";
+    private static final String ARG_POST_ID = "arg_post_id";
+    private static final String ARG_USER_ID = "arg_user_id";
+    private static final String ARG_POST_TYPE = "arg_post_type";
 
     private String captionStart, captionEnd, imageUrl, timestamp, avatarGroup;
+    private String postId, userIdOfOwner, postType;
 
-    public static PostFragment newInstance(String captionStart, String captionEnd, String imageUrl, String timestamp, String avatarGroup) {
+    public static PostFragment newInstance(String captionStart, String captionEnd, String imageUrl,
+                                           String timestamp, String avatarGroup,
+                                           String postId, String userIdOfOwner, String type) {
         PostFragment fragment = new PostFragment();
         Bundle args = new Bundle();
         args.putString(ARG_CAPTION_START, captionStart);
@@ -38,6 +46,9 @@ public class PostFragment extends Fragment {
         args.putString(ARG_IMAGE_URL, imageUrl);
         args.putString(ARG_TIMESTAMP, timestamp);
         args.putString(ARG_AVATAR_GROUP, avatarGroup);
+        args.putString(ARG_POST_ID, postId);
+        args.putString(ARG_USER_ID, userIdOfOwner);
+        args.putString(ARG_POST_TYPE, type);
         fragment.setArguments(args);
         return fragment;
     }
@@ -51,6 +62,9 @@ public class PostFragment extends Fragment {
             imageUrl = getArguments().getString(ARG_IMAGE_URL);
             timestamp = getArguments().getString(ARG_TIMESTAMP);
             avatarGroup = getArguments().getString(ARG_AVATAR_GROUP);
+            postId = getArguments().getString(ARG_POST_ID);
+            userIdOfOwner = getArguments().getString(ARG_USER_ID);
+            postType = getArguments().getString(ARG_POST_TYPE);
         }
     }
 
@@ -68,54 +82,63 @@ public class PostFragment extends Fragment {
         TextView textCaption = view.findViewById(R.id.textCaption);
         TextView tvTimestamp = view.findViewById(R.id.tvTimestamp);
         TextView textAvatarGroup = view.findViewById(R.id.textAvatarGroup);
+        EditText edtComment = view.findViewById(R.id.edt_comment);
+        View btnShutter = view.findViewById(R.id.btn_shutter);
 
-        // --- 1. Xử lý Caption ---
+        // 1. Caption Styling
         String start = (captionStart != null) ? captionStart : "";
         String end = (captionEnd != null) ? captionEnd : "";
         String fullText = start + " - " + end;
 
         Spannable spannable = new SpannableString(fullText);
         if (!start.isEmpty()) {
-            // Tô đỏ phần Mood/Title
-            spannable.setSpan(
-                    new ForegroundColorSpan(Color.RED),
-                    0,
-                    start.length(),
-                    Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
-            );
+            spannable.setSpan(new ForegroundColorSpan(Color.RED), 0, start.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
         }
         textCaption.setText(spannable);
 
-        // --- 2. Gán dữ liệu khác ---
-        if (tvTimestamp != null) tvTimestamp.setText(timestamp);
-        if (textAvatarGroup != null) textAvatarGroup.setText(avatarGroup);
+        // 2. Bind Text
+        tvTimestamp.setText(timestamp);
+        textAvatarGroup.setText(avatarGroup);
 
-        // --- 3. LOAD ẢNH BẰNG GLIDE (QUAN TRỌNG) ---
-        if (postImageView != null) {
-            if (imageUrl != null && !imageUrl.isEmpty()) {
-                // Có URL -> Load ảnh
-                Glide.with(this)
-                        .load(imageUrl)
-                        // Dùng DiskCacheStrategy.ALL để cache tốt hơn
-                        .diskCacheStrategy(DiskCacheStrategy.ALL)
-                        .placeholder(R.drawable.ic_launcher_foreground) // Ảnh hiển thị khi đang tải
-                        .error(android.R.color.darker_gray) // Ảnh hiển thị khi lỗi
-                        .into(postImageView);
-            } else {
-                // Không có URL -> Hiển thị ảnh mặc định hoặc ẩn đi
-                postImageView.setImageResource(R.drawable.ic_launcher_foreground);
-            }
+        // 3. Load Image
+        if (imageUrl != null && !imageUrl.isEmpty()) {
+            Glide.with(this)
+                    .load(imageUrl)
+                    .diskCacheStrategy(DiskCacheStrategy.ALL)
+                    .placeholder(R.drawable.ic_launcher_foreground)
+                    .into(postImageView);
+        } else {
+            postImageView.setImageResource(R.drawable.ic_launcher_foreground);
         }
 
-        // --- 4. XỬ LÝ NÚT SHUTTER (QUAY VỀ CAMERA) ---
-        View btnShutter = view.findViewById(R.id.btn_shutter);
-        if (btnShutter != null) {
-            btnShutter.setOnClickListener(v -> {
-                Fragment parentFragment = getParentFragment();
-                if (parentFragment instanceof CenterFragment) {
-                    ((CenterFragment) parentFragment).navigateToCamera();
+        // 4. Open Reply BottomSheet
+        edtComment.setOnClickListener(v -> {
+            Post currentPost = new Post();
+            currentPost.setPostId(postId);
+            currentPost.setUserId(userIdOfOwner);
+            currentPost.setCaption(captionEnd);
+            currentPost.setPhotoUrl(imageUrl);
+            currentPost.setType(postType);
+
+            if ("mood".equals(postType)) {
+                currentPost.setMoodName(captionStart);
+                if (imageUrl != null && imageUrl.startsWith("http")) {
+                    currentPost.setMoodIconUrl(imageUrl);
                 }
-            });
-        }
+            } else {
+                currentPost.setActivityTitle(captionStart);
+            }
+
+            ReplyBottomSheet sheet = ReplyBottomSheet.newInstance(currentPost);
+            sheet.show(getParentFragmentManager(), "ReplyBottomSheet");
+        });
+
+        // 5. Back to Camera
+        btnShutter.setOnClickListener(v -> {
+            Fragment parentFragment = getParentFragment();
+            if (parentFragment instanceof CenterFragment) {
+                ((CenterFragment) parentFragment).navigateToCamera();
+            }
+        });
     }
 }

@@ -15,16 +15,18 @@ import java.util.Locale;
 
 public class PostAdapter extends FragmentStateAdapter {
 
-    private List<Post> postList = new ArrayList<>();
+    private final List<Post> postList = new ArrayList<>();
 
     public PostAdapter(@NonNull FragmentActivity fragmentActivity) {
         super(fragmentActivity);
     }
 
-    // Hàm cập nhật dữ liệu thật từ Firebase
+    // Hàm cập nhật dữ liệu từ ViewModel
     public void setPostList(List<Post> posts) {
         this.postList.clear();
-        this.postList.addAll(posts);
+        if (posts != null) {
+            this.postList.addAll(posts);
+        }
         notifyDataSetChanged();
     }
 
@@ -47,9 +49,6 @@ public class PostAdapter extends FragmentStateAdapter {
         if (post.getPhotoUrl() != null && !post.getPhotoUrl().isEmpty()) {
             displayImageUrl = post.getPhotoUrl();
         } else if ("mood".equals(post.getType())) {
-            // Nếu không có ảnh chụp thì lấy icon mood (nếu model Post có field này)
-            // Bạn cần đảm bảo model Post có phương thức getMoodIconUrl()
-            // Nếu chưa có, hãy kiểm tra lại class Post
             displayImageUrl = post.getMoodIconUrl();
         }
 
@@ -60,13 +59,16 @@ public class PostAdapter extends FragmentStateAdapter {
             timeStr = sdf.format(post.getCreatedAt().toDate());
         }
 
-        // Truyền dữ liệu thật vào Fragment
+        // Truyền dữ liệu vào Fragment
         return PostFragment.newInstance(
-                title,
-                post.getCaption(),
-                displayImageUrl,    // URL ảnh thật
-                timeStr,
-                "Người dùng ẩn danh"
+                title,                  // captionStart
+                post.getCaption(),      // captionEnd
+                displayImageUrl,        // imageUrl
+                timeStr,                // timestamp
+                "Người dùng ẩn danh",   // avatarGroup (placeholder)
+                post.getPostId(),       // postId
+                post.getUserId(),       // userIdOfOwner
+                post.getType()          // postType
         );
     }
 
