@@ -40,10 +40,28 @@ public class ChatViewModel extends ViewModel {
         }
     }
 
+    // Gửi tin nhắn thường (Text)
     public void sendMessage(String conversationId, String content) {
         if (currentUserId == null || content.trim().isEmpty()) return;
 
         Message msg = new Message(currentUserId, content.trim(), "text");
+        chatRepository.sendMessage(conversationId, msg, sendStatus);
+    }
+
+    // [MỚI] Gửi tin nhắn Reply Post (Widget)
+    public void sendReplyPost(String conversationId, String content, String postId, String postTitle, String postImage) {
+        if (currentUserId == null) return;
+
+        // Gọi Constructor đầy đủ cho Post Reply trong Message.java
+        Message msg = new Message(
+                currentUserId,
+                content.trim(),
+                "post_reply",
+                postId,
+                postImage,
+                postTitle
+        );
+
         chatRepository.sendMessage(conversationId, msg, sendStatus);
     }
 }

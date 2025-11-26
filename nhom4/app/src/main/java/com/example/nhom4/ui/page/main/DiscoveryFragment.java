@@ -16,12 +16,16 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.nhom4.R;
 import com.example.nhom4.data.Resource;
 import com.example.nhom4.ui.adapter.ChatListAdapter;
+import com.example.nhom4.ui.adapter.OperatorAdapter; // Import Adapter mới
 import com.example.nhom4.ui.viewmodel.DiscoveryViewModel;
 
 public class DiscoveryFragment extends Fragment {
 
     private RecyclerView chatRecyclerView;
+    private RecyclerView activityRecyclerView; // [MỚI] RecyclerView cho Activity
+
     private ChatListAdapter chatAdapter;
+    private OperatorAdapter activityAdapter;   // [MỚI] Adapter cho Activity
 
     private DiscoveryViewModel viewModel;
 
@@ -39,8 +43,11 @@ public class DiscoveryFragment extends Fragment {
         viewModel = new ViewModelProvider(this).get(DiscoveryViewModel.class);
 
         chatRecyclerView = view.findViewById(R.id.chatRecyclerView);
+        activityRecyclerView = view.findViewById(R.id.OperatorRecyclerView); // Ánh xạ ID trong XML
 
         setupChatRecyclerView();
+        setupActivityRecyclerView(); // [MỚI] Setup
+
         observeViewModel();
     }
 
@@ -50,31 +57,47 @@ public class DiscoveryFragment extends Fragment {
         chatRecyclerView.setAdapter(chatAdapter);
     }
 
+    // [MỚI] Setup Activity RecyclerView
+    private void setupActivityRecyclerView() {
+        activityAdapter = new OperatorAdapter(getContext());
+        activityRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        activityRecyclerView.setAdapter(activityAdapter);
+    }
+
     private void observeViewModel() {
-        // Lắng nghe danh sách hội thoại đã được xử lý logic từ ViewModel
+        // 1. Lắng nghe danh sách Chat
         viewModel.getConversations().observe(getViewLifecycleOwner(), resource -> {
             switch (resource.status) {
-                case LOADING:
-                    // Có thể hiện ProgressBar nếu muốn
-                    break;
                 case SUCCESS:
-                    if (resource.data != null) {
-                        chatAdapter.setList(resource.data);
-                    }
+                    if (resource.data != null) chatAdapter.setList(resource.data);
                     break;
                 case ERROR:
                     Toast.makeText(getContext(), resource.message, Toast.LENGTH_SHORT).show();
                     break;
+                case LOADING: break;
+            }
+        });
+
+        // 2. [MỚI] Lắng nghe danh sách Activity
+        viewModel.getActivities().observe(getViewLifecycleOwner(), resource -> {
+            switch (resource.status) {
+                case SUCCESS:
+                    if (resource.data != null) activityAdapter.setList(resource.data);
+                    break;
+                case ERROR:
+                    Toast.makeText(getContext(), "Lỗi tải hoạt động: " + resource.message, Toast.LENGTH_SHORT).show();
+                    break;
+                case LOADING: break;
             }
         });
     }
 
-    // Tự động refresh danh sách khi quay lại màn hình này
     @Override
     public void onResume() {
         super.onResume();
         if (viewModel != null) {
             viewModel.loadConversations();
+            viewModel.loadJoinedActivities(); // [MỚI] Gọi load activity
         }
     }
 }

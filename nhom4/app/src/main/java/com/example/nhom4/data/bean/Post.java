@@ -10,10 +10,14 @@ public class Post {
     private String type; // "mood" hoặc "activity"
     private String moodName;
     private String moodIconUrl;
+
+    // [CẬP NHẬT] Thêm activityId để tracking tiến độ
+    private String activityId;
     private String activityTitle;
+
     private Timestamp createdAt;
 
-    // [MỚI] Các trường hiển thị Runtime (không lưu vào collection 'posts')
+    // Các trường hiển thị Runtime (không lưu vào collection 'posts' nếu dùng @Exclude, nhưng ở đây ta cứ để public)
     private String userName;
     private String userAvatar;
 
@@ -27,7 +31,10 @@ public class Post {
     public String getType() { return type; }
     public String getMoodName() { return moodName; }
     public String getMoodIconUrl() { return moodIconUrl; }
+
+    public String getActivityId() { return activityId; } // Getter mới
     public String getActivityTitle() { return activityTitle; }
+
     public Timestamp getCreatedAt() { return createdAt; }
 
     public String getUserName() { return userName; }
@@ -41,7 +48,10 @@ public class Post {
     public void setType(String type) { this.type = type; }
     public void setMoodName(String moodName) { this.moodName = moodName; }
     public void setMoodIconUrl(String moodIconUrl) { this.moodIconUrl = moodIconUrl; }
+
+    public void setActivityId(String activityId) { this.activityId = activityId; } // Setter mới
     public void setActivityTitle(String activityTitle) { this.activityTitle = activityTitle; }
+
     public void setCreatedAt(Timestamp createdAt) { this.createdAt = createdAt; }
 
     public void setUserName(String userName) { this.userName = userName; }

@@ -56,7 +56,7 @@
                 android:nestedScrollingEnabled="false"
                 app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
                 tools:itemCount="3"
-                tools:listitem="@layout/operator_item" />
+                tools:listitem="@layout/item_activity" />
 
         </LinearLayout>
 

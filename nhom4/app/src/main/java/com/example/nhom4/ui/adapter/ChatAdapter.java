@@ -3,6 +3,7 @@ package com.example.nhom4.ui.adapter;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -41,6 +42,9 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     @Override
     public int getItemViewType(int position) {
         Message message = messages.get(position);
+        // Kiểm tra null để tránh crash
+        if (message.getSenderId() == null) return TYPE_RECEIVED;
+
         boolean isMe = message.getSenderId().equals(currentUserId);
 
         if ("post_reply".equals(message.getType())) {
@@ -68,10 +72,18 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
         Message msg = messages.get(position);
-        if (holder instanceof SentHolder) ((SentHolder) holder).bind(msg);
-        else if (holder instanceof ReceivedHolder) ((ReceivedHolder) holder).bind(msg);
-        else if (holder instanceof WidgetSenderHolder) ((WidgetSenderHolder) holder).bind(msg);
-        else if (holder instanceof WidgetReceiverHolder) ((WidgetReceiverHolder) holder).bind(msg);
+
+        if (holder instanceof SentHolder) {
+            ((SentHolder) holder).bind(msg);
+        } else if (holder instanceof ReceivedHolder) {
+            ((ReceivedHolder) holder).bind(msg);
+        }
+        // [QUAN TRỌNG] Bổ sung logic bind cho Widget
+        else if (holder instanceof WidgetSenderHolder) {
+            ((WidgetSenderHolder) holder).bind(msg);
+        } else if (holder instanceof WidgetReceiverHolder) {
+            ((WidgetReceiverHolder) holder).bind(msg);
+        }
     }
 
     @Override
@@ -90,7 +102,7 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         TextView tvMsg, tvTime;
         SentHolder(View v) {
             super(v);
-            tvMsg = v.findViewById(R.id.tvMessageSent);
+            tvMsg = v.findViewById(R.id.tvMessageSent); // Đảm bảo ID đúng trong item_message_sender.xml
             tvTime = v.findViewById(R.id.tvTimeSent);
         }
         void bind(Message m) {
@@ -104,34 +116,44 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         ShapeableImageView avatar;
         ReceivedHolder(View v) {
             super(v);
-            tvMsg = v.findViewById(R.id.tv_message_content);
+            tvMsg = v.findViewById(R.id.tv_message_content); // Đảm bảo ID đúng trong item_message_receiver.xml
             tvTime = v.findViewById(R.id.tv_timestamp);
             avatar = v.findViewById(R.id.img_avatar);
         }
         void bind(Message m) {
             tvMsg.setText(m.getContent());
             tvTime.setText(formatTime(m.getCreatedAt()));
-            // Load avatar logic here if needed
+            // TODO: Load avatar người gửi ở đây nếu cần
         }
     }
 
     static class WidgetSenderHolder extends RecyclerView.ViewHolder {
         TextView tvTitle, tvTime, tvBody;
+        // Nếu bạn muốn hiện ảnh bài post nhỏ trong widget, khai báo thêm ImageView ở đây
+        // ImageView imgPostThumb;
+
         WidgetSenderHolder(View v) {
             super(v);
             tvTitle = v.findViewById(R.id.tv_post_title);
             tvTime = v.findViewById(R.id.tv_post_time);
             tvBody = v.findViewById(R.id.tv_message_body);
+            // imgPostThumb = v.findViewById(R.id.img_post_thumb); // Ví dụ
         }
         void bind(Message m) {
-            tvTitle.setText(m.getReplyPostTitle());
+            tvTitle.setText(m.getReplyPostTitle() != null ? m.getReplyPostTitle() : "Bài viết");
             tvBody.setText(m.getContent());
             tvTime.setText(formatTime(m.getCreatedAt()));
+
+            // Nếu layout có ImageView để hiện ảnh post:
+            // if (m.getReplyPostImage() != null) {
+            //    Glide.with(itemView.getContext()).load(m.getReplyPostImage()).into(imgPostThumb);
+            // }
         }
     }
 
     static class WidgetReceiverHolder extends RecyclerView.ViewHolder {
         TextView tvTitle, tvTime, tvBody;
+
         WidgetReceiverHolder(View v) {
             super(v);
             tvTitle = v.findViewById(R.id.tv_post_title);
@@ -139,7 +161,7 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             tvBody = v.findViewById(R.id.tv_message_body);
         }
         void bind(Message m) {
-            tvTitle.setText(m.getReplyPostTitle());
+            tvTitle.setText(m.getReplyPostTitle() != null ? m.getReplyPostTitle() : "Bài viết");
             tvBody.setText(m.getContent());
             tvTime.setText(formatTime(m.getCreatedAt()));
         }
