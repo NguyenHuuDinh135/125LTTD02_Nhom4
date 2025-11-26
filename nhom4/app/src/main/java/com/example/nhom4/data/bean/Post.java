@@ -9,11 +9,14 @@ public class Post {
     private String photoUrl;
     private String type; // "mood" hoặc "activity"
     private String moodName;
+    private String moodIconUrl;
     private String activityTitle;
     private Timestamp createdAt;
-    private String moodIconUrl; // Thêm trường này
 
-    // Bắt buộc phải có constructor rỗng cho Firestore
+    // [MỚI] Các trường hiển thị Runtime (không lưu vào collection 'posts')
+    private String userName;
+    private String userAvatar;
+
     public Post() { }
 
     // Getters
@@ -23,18 +26,24 @@ public class Post {
     public String getPhotoUrl() { return photoUrl; }
     public String getType() { return type; }
     public String getMoodName() { return moodName; }
+    public String getMoodIconUrl() { return moodIconUrl; }
     public String getActivityTitle() { return activityTitle; }
     public Timestamp getCreatedAt() { return createdAt; }
 
-    // Setters (Firestore cần để map dữ liệu)
+    public String getUserName() { return userName; }
+    public String getUserAvatar() { return userAvatar; }
+
+    // Setters
     public void setPostId(String postId) { this.postId = postId; }
     public void setUserId(String userId) { this.userId = userId; }
     public void setCaption(String caption) { this.caption = caption; }
     public void setPhotoUrl(String photoUrl) { this.photoUrl = photoUrl; }
     public void setType(String type) { this.type = type; }
     public void setMoodName(String moodName) { this.moodName = moodName; }
+    public void setMoodIconUrl(String moodIconUrl) { this.moodIconUrl = moodIconUrl; }
     public void setActivityTitle(String activityTitle) { this.activityTitle = activityTitle; }
     public void setCreatedAt(Timestamp createdAt) { this.createdAt = createdAt; }
-    public String getMoodIconUrl() { return moodIconUrl; }
-    public void setMoodIconUrl(String moodIconUrl) { this.moodIconUrl = moodIconUrl; }
+
+    public void setUserName(String userName) { this.userName = userName; }
+    public void setUserAvatar(String userAvatar) { this.userAvatar = userAvatar; }
 }

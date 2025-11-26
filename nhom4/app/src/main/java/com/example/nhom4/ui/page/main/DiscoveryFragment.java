@@ -39,7 +39,6 @@ public class DiscoveryFragment extends Fragment {
         viewModel = new ViewModelProvider(this).get(DiscoveryViewModel.class);
 
         chatRecyclerView = view.findViewById(R.id.chatRecyclerView);
-        // operatorRecyclerView = view.findViewById(R.id.OperatorRecyclerView); // Nếu chưa dùng thì tạm ẩn
 
         setupChatRecyclerView();
         observeViewModel();
@@ -70,10 +69,12 @@ public class DiscoveryFragment extends Fragment {
         });
     }
 
-    // Nếu muốn refresh thủ công khi quay lại
+    // Tự động refresh danh sách khi quay lại màn hình này
     @Override
     public void onResume() {
         super.onResume();
-        // viewModel.loadConversations(); // Optional: Nếu Repository chưa dùng Realtime Listener
+        if (viewModel != null) {
+            viewModel.loadConversations();
+        }
     }
 }

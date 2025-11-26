@@ -39,14 +39,19 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
-            <!-- A. Camera Preview -->
             <androidx.camera.view.PreviewView
                 android:id="@+id/cameraPreviewView"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:visibility="gone" />
 
-            <!-- B. Ảnh tĩnh (Mood Icon) -->
+            <ImageView
+                android:id="@+id/imgCapturedDisplay"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="centerCrop"
+                android:visibility="gone"/>
+
             <ImageView
                 android:id="@+id/imgMoodPreview"
                 android:layout_width="match_parent"
@@ -59,8 +64,6 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
-            <!-- C. Activity List (Mới thêm vào đây) -->
-            <!-- Mặc định ẩn, hiện khi chọn tab Activity -->
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/activity_recycler_view"
                 android:layout_width="match_parent"
@@ -73,20 +76,26 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
-
-            <!-- Nút X đóng camera -->
-            <ImageView
-                android:id="@+id/btnCloseCamera"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
+            <EditText
+                android:id="@+id/edtCaptionOverlay"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
                 android:layout_margin="16dp"
-                android:background="@drawable/bg_pill_dark"
-                android:padding="8dp"
-                android:src="@drawable/outline_close_24"
+                android:background="@android:color/transparent"
+                android:fontFamily="sans-serif-medium"
+                android:gravity="center"
+                android:hint="Thêm một tin nhắn..."
+                android:textColorHint="#CCFFFFFF"
+                android:textColor="@android:color/white"
+                android:textSize="16sp"
                 android:visibility="gone"
-                app:tint="@android:color/white"
+                android:imeOptions="actionDone"
+                android:inputType="textCapSentences"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintVertical_bias="0.8" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </com.google.android.material.card.MaterialCardView>

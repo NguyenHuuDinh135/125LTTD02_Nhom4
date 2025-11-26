@@ -39,6 +39,12 @@ public class AddFriendActivity extends AppCompatActivity {
         viewModel = new ViewModelProvider(this).get(AddFriendViewModel.class);
 
         initViews();
+
+        // [FIX] Ban đầu disable nút (nếu muốn bắt buộc kết bạn mới được đi tiếp)
+        // Nếu muốn cho phép Skip, hãy đổi thành setEnabled(true) và setAlpha(1.0f)
+        btnContinue.setEnabled(false);
+        btnContinue.setAlpha(0.5f);
+
         setupRecyclerView();
         setupEvents();
         observeViewModel();
@@ -74,13 +80,8 @@ public class AddFriendActivity extends AppCompatActivity {
         // 1. Lắng nghe danh sách User gợi ý
         viewModel.getUsers().observe(this, resource -> {
             if (resource.status == Resource.Status.SUCCESS) {
-                // Lưu ý: Cần cập nhật UserSuggestionAdapter để có phương thức setList
-                // Trong bài trước tôi chưa thêm setList cho adapter này, bạn có thể dùng:
-                // adapter = new UserSuggestionAdapter(resource.data, ...); recyclerView.setAdapter(adapter);
-                // HOẶC TỐT NHẤT LÀ CẬP NHẬT ADAPTER CÓ HÀM setList()
-
-                // Cách tạm thời nếu Adapter chưa có setList: tạo mới adapter
                 if (resource.data != null) {
+                    // Cập nhật adapter
                     adapter = new UserSuggestionAdapter(resource.data, this::showConfirmDialog);
                     recyclerView.setAdapter(adapter);
                 }
@@ -93,13 +94,18 @@ public class AddFriendActivity extends AppCompatActivity {
         viewModel.getRequestStatus().observe(this, resource -> {
             switch (resource.status) {
                 case LOADING:
-                    // Có thể hiện loading nhỏ nếu muốn
                     break;
                 case SUCCESS:
                     Toast.makeText(this, "Đã gửi lời mời!", Toast.LENGTH_SHORT).show();
+
+                    // [QUAN TRỌNG] Kích hoạt nút Tiếp tục sau khi gửi thành công
+                    btnContinue.setEnabled(true);
+                    btnContinue.setAlpha(1.0f);
                     break;
+
                 case ERROR:
                     Toast.makeText(this, "Lỗi: " + resource.message, Toast.LENGTH_SHORT).show();
+                    // Nếu lỗi, vẫn có thể cho phép tiếp tục hoặc giữ nguyên disable tùy logic
                     break;
             }
         });
