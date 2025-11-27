@@ -21,6 +21,10 @@ import com.google.android.material.button.MaterialButton;
 
 import java.util.ArrayList;
 
+/**
+ * Màn hình gợi ý kết bạn ngay sau bước tạo tài khoản.
+ * Cho phép người dùng gửi lời mời và chỉ mở MainActivity khi đã gửi thành công ít nhất một yêu cầu.
+ */
 public class AddFriendActivity extends AppCompatActivity {
 
     private RecyclerView recyclerView;
@@ -50,12 +54,18 @@ public class AddFriendActivity extends AppCompatActivity {
         observeViewModel();
     }
 
+    /**
+     * Ánh xạ view từ layout.
+     */
     private void initViews() {
         btnContinue = findViewById(R.id.btn_continue);
         recyclerView = findViewById(R.id.recycler_view_suggestions);
         toolbar = findViewById(R.id.toolbar);
     }
 
+    /**
+     * Khởi tạo RecyclerView cùng adapter gợi ý bạn bè.
+     */
     private void setupRecyclerView() {
         // Truyền callback khi user bấm "Add Friend" trên item
         adapter = new UserSuggestionAdapter(new ArrayList<>(), this::showConfirmDialog);
@@ -63,6 +73,9 @@ public class AddFriendActivity extends AppCompatActivity {
         recyclerView.setAdapter(adapter);
     }
 
+    /**
+     * Gắn sự kiện cho toolbar và nút tiếp tục.
+     */
     private void setupEvents() {
         // Xử lý nút Back trên Toolbar
         toolbar.setNavigationOnClickListener(v -> finish());
@@ -76,6 +89,9 @@ public class AddFriendActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Đăng ký lắng nghe LiveData từ ViewModel để cập nhật UI.
+     */
     private void observeViewModel() {
         // 1. Lắng nghe danh sách User gợi ý
         viewModel.getUsers().observe(this, resource -> {
@@ -83,6 +99,7 @@ public class AddFriendActivity extends AppCompatActivity {
                 if (resource.data != null) {
                     // Cập nhật adapter
                     adapter = new UserSuggestionAdapter(resource.data, this::showConfirmDialog);
+                    // Thay toàn bộ danh sách để tránh lỗi diff khi server trả về tập mới
                     recyclerView.setAdapter(adapter);
                 }
             } else if (resource.status == Resource.Status.ERROR) {
@@ -94,6 +111,7 @@ public class AddFriendActivity extends AppCompatActivity {
         viewModel.getRequestStatus().observe(this, resource -> {
             switch (resource.status) {
                 case LOADING:
+                    // Có thể show loading nhỏ trên nút nếu muốn
                     break;
                 case SUCCESS:
                     Toast.makeText(this, "Đã gửi lời mời!", Toast.LENGTH_SHORT).show();

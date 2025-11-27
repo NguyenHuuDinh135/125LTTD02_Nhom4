@@ -11,6 +11,11 @@ import com.example.nhom4.data.repository.ChatRepository;
 
 import java.util.List;
 
+/**
+ * ViewModel trung gian giữa ChatActivity và ChatRepository:
+ * - Lắng nghe tin nhắn realtime
+ * - Gửi tin nhắn text và reply post
+ */
 public class ChatViewModel extends ViewModel {
 
     private final ChatRepository chatRepository;
@@ -36,7 +41,7 @@ public class ChatViewModel extends ViewModel {
     // Bắt đầu lắng nghe tin nhắn khi có ConversationID
     public void startListening(String conversationId) {
         if (conversationId != null && !conversationId.isEmpty()) {
-            chatRepository.getMessages(conversationId, messages);
+            chatRepository.getMessages(conversationId, messages); // Snapshot listener emit Resource
         }
     }
 
@@ -45,7 +50,7 @@ public class ChatViewModel extends ViewModel {
         if (currentUserId == null || content.trim().isEmpty()) return;
 
         Message msg = new Message(currentUserId, content.trim(), "text");
-        chatRepository.sendMessage(conversationId, msg, sendStatus);
+        chatRepository.sendMessage(conversationId, msg, sendStatus); // Đẩy trạng thái LOADING/SUCCESS/ERROR
     }
 
     // [MỚI] Gửi tin nhắn Reply Post (Widget)

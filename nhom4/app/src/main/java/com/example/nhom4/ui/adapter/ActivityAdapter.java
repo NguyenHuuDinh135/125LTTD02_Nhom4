@@ -17,36 +17,62 @@ import com.google.android.material.progressindicator.LinearProgressIndicator;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Adapter hiển thị danh sách hoạt động/habit trong màn hình streak.
+ * Chịu trách nhiệm bind dữ liệu mô hình {@link Activity} vào layout item_habit_card.
+ */
 public class ActivityAdapter extends RecyclerView.Adapter<ActivityAdapter.ActivityViewHolder> {
 
     private List<Activity> list;
     private final OnItemClickListener listener;
 
+    /**
+     * Interface thông báo ra ngoài khi người dùng bấm vào một habit.
+     */
     public interface OnItemClickListener {
         void onItemClick(Activity activity);
     }
 
+    /**
+     * @param list        dữ liệu ban đầu, có thể rỗng
+     * @param listener    callback xử lý sự kiện click
+     */
     public ActivityAdapter(List<Activity> list, OnItemClickListener listener) {
         this.list = (list != null) ? list : new ArrayList<>();
         this.listener = listener;
     }
 
+    /**
+     * Thay toàn bộ danh sách và refresh RecyclerView.
+     */
     public void setList(List<Activity> list) {
+        // Ghi đè danh sách cũ bằng dữ liệu mới từ ViewModel
         this.list = list;
         notifyDataSetChanged();
     }
 
+    /**
+     * Tạo ViewHolder cho mỗi item.
+     * @param parent
+     * @param viewType
+     * @return
+     */
     @NonNull
     @Override
     public ActivityViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        // Sử dụng item_habit_card.xml của bạn
+        // Inflate mỗi item card habit
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_habit_card, parent, false);
         return new ActivityViewHolder(view);
     }
 
+    /**
+     * Bind dữ liệu mô hình vào ViewHolder.
+     * @param holder
+     * @param position
+     */
     @Override
     public void onBindViewHolder(@NonNull ActivityViewHolder holder, int position) {
-        Activity activity = list.get(position);
+        Activity activity = list.get(position); // Lấy activity tương ứng vị trí hiện tại
 
         holder.tvTitle.setText(activity.getTitle());
         holder.tvDesc.setText(activity.getDescription() != null ? activity.getDescription() : "");
@@ -65,7 +91,7 @@ public class ActivityAdapter extends RecyclerView.Adapter<ActivityAdapter.Activi
         // Xử lý Progress Bar
         int target = activity.getTarget() > 0 ? activity.getTarget() : 10; // Tránh chia cho 0
         int progress = activity.getProgress();
-        int percent = (progress * 100) / target;
+        int percent = (progress * 100) / target; // Quy đổi sang %
         if (percent > 100) percent = 100;
 
         if (holder.progressBar != null) {
@@ -78,15 +104,21 @@ public class ActivityAdapter extends RecyclerView.Adapter<ActivityAdapter.Activi
 
         // Click
         holder.itemView.setOnClickListener(v -> {
-            if (listener != null) listener.onItemClick(activity);
+            if (listener != null) listener.onItemClick(activity); // Bắn callback ra Fragment
         });
     }
 
+    /**
+     * Trả về số lượng item trong danh sách.
+     */
     @Override
     public int getItemCount() {
         return list.size();
     }
 
+    /**
+     * ViewHolder quản lý toàn bộ view trong một thẻ habit.
+     */
     public static class ActivityViewHolder extends RecyclerView.ViewHolder {
         ShapeableImageView imgIcon; // iv_habit_icon
         TextView tvTitle;           // tv_habit_title

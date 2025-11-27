@@ -19,6 +19,9 @@ import java.util.List;
 import java.util.Random;
 import java.util.UUID;
 
+/**
+ * ViewModel phụ trách CRUD hoạt động cá nhân và logic mở khoá mood thưởng.
+ */
 public class ActivityViewModel extends ViewModel {
 
     private final FirebaseFirestore db = FirebaseFirestore.getInstance();
@@ -49,7 +52,7 @@ public class ActivityViewModel extends ViewModel {
                         return;
                     }
                     if (value != null) {
-                        List<Activity> list = value.toObjects(Activity.class);
+                        List<Activity> list = value.toObjects(Activity.class); // Firestore mapping sang model
                         myActivities.postValue(Resource.success(list));
                     }
                 });
@@ -81,6 +84,9 @@ public class ActivityViewModel extends ViewModel {
         }
     }
 
+    /**
+     * Lưu dữ liệu activity xuống Firestore sau khi đã có (hoặc không có) URL ảnh.
+     */
     private void saveActivityToFirestore(String id, String uid, String title, String desc, String imageUrl) {
         // Constructor chỉ có (creatorId, title) -> Các field khác dùng Setter
         Activity activity = new Activity(uid, title);
@@ -99,7 +105,7 @@ public class ActivityViewModel extends ViewModel {
             Activity act = doc.toObject(Activity.class);
             if (act != null && !act.isRewardClaimed()) {
                 int newProgress = act.getProgress() + 1;
-                db.collection("activities").document(activityId).update("progress", newProgress);
+                db.collection("activities").document(activityId).update("progress", newProgress); // Đồng bộ progress mới
 
                 if (newProgress >= act.getTarget()) {
                     unlockRandomPremiumMood(activityId);
@@ -108,6 +114,9 @@ public class ActivityViewModel extends ViewModel {
         });
     }
 
+    /**
+     * Khi đạt target, random một mood premium và lưu vào user.
+     */
     private void unlockRandomPremiumMood(String activityId) {
         if (auth.getCurrentUser() == null) return;
         String uid = auth.getCurrentUser().getUid();

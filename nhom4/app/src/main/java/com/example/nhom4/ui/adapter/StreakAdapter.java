@@ -21,16 +21,28 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Adapter cho lưới streak (lịch), hiển thị ảnh/bài viết đã đăng theo từng ngày trong tháng.
+ */
 public class StreakAdapter extends RecyclerView.Adapter<StreakAdapter.DayViewHolder> {
 
     private List<CalendarDay> days = new ArrayList<>();
     private final LocalDate today = LocalDate.now();
 
+    /**
+     * Update danh sách ngày và redraw.
+     */
     public void setDays(List<CalendarDay> days) {
         this.days = days;
         notifyDataSetChanged();
     }
 
+    /**
+     * Tạo ViewHolder cho một ô ngày trong lịch.
+     * @param parent
+     * @param viewType
+     * @return
+     */
     @NonNull
     @Override
     public DayViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -39,11 +51,16 @@ public class StreakAdapter extends RecyclerView.Adapter<StreakAdapter.DayViewHol
         return new DayViewHolder(view);
     }
 
+    /**
+     * Bind dữ liệu ngày vào ViewHolder, xử lý hiển thị ảnh, số ngày, hiệu ứng mờ và highlight.
+     * @param holder
+     * @param position
+     */
     @Override
     public void onBindViewHolder(@NonNull DayViewHolder holder, int position) {
         CalendarDay day = days.get(position);
 
-        // 1. Reset View
+        // 1. Reset View để tránh reuse từ item cũ
         holder.ivDayImage.setVisibility(View.GONE);
         holder.viewOverlay.setVisibility(View.GONE);
         holder.tvDayNumber.setTextColor(Color.parseColor("#000000")); // Mặc định màu đen (hoặc lấy từ attr)
@@ -97,6 +114,9 @@ public class StreakAdapter extends RecyclerView.Adapter<StreakAdapter.DayViewHol
         return days.size();
     }
 
+    /**
+     * ViewHolder giữ view cho một ô ngày trong lịch.
+     */
     static class DayViewHolder extends RecyclerView.ViewHolder {
         TextView tvDayNumber;
         ImageView ivDayImage;

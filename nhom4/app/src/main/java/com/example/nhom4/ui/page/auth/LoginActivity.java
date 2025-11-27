@@ -19,6 +19,9 @@ import com.example.nhom4.data.Resource;
 import com.example.nhom4.ui.viewmodel.AuthViewModel;
 import com.google.android.material.textfield.TextInputEditText;
 
+/**
+ * Màn hình đăng nhập chính, validate input và gọi AuthViewModel để xử lý Firebase.
+ */
 public class LoginActivity extends AppCompatActivity {
 
     private TextInputEditText etEmail, etPassword;
@@ -56,6 +59,9 @@ public class LoginActivity extends AppCompatActivity {
         progressBar = findViewById(R.id.progressBar);
     }
 
+    /**
+     * Gắn các sự kiện click cho nút login, đăng ký và quên mật khẩu.
+     */
     private void setupListeners() {
         // Nút Đăng nhập
         btnLogin.setOnClickListener(v -> handleLogin());
@@ -74,6 +80,9 @@ public class LoginActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Validate dữ liệu form và gọi ViewModel đăng nhập.
+     */
     private void handleLogin() {
         String email = "";
         if (etEmail.getText() != null) email = etEmail.getText().toString().trim();
@@ -101,16 +110,19 @@ public class LoginActivity extends AppCompatActivity {
         }
 
         // Gọi ViewModel để thực hiện đăng nhập
-        authViewModel.login(email, password);
+        authViewModel.login(email, password); // ViewModel chịu trách nhiệm gọi FirebaseAuth
     }
 
+    /**
+     * Lắng nghe trạng thái đăng nhập để cập nhật UI.
+     */
     private void observeViewModel() {
         authViewModel.getAuthResult().observe(this, resource -> {
             switch (resource.status) {
                 case LOADING:
                     // Hiển thị Loading
                     if (progressBar != null) progressBar.setVisibility(View.VISIBLE);
-                    btnLogin.setEnabled(false);
+                    btnLogin.setEnabled(false); // Khoá nút để tránh double click
                     break;
 
                 case SUCCESS:
@@ -131,6 +143,9 @@ public class LoginActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Điều hướng sang MainActivity và xoá back stack.
+     */
     private void goToMainActivity() {
         Intent intent = new Intent(getApplicationContext(), MainActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);

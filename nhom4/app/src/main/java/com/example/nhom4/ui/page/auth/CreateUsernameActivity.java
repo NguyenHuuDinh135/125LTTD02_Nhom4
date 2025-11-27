@@ -17,6 +17,9 @@ import com.example.nhom4.data.Resource;
 import com.example.nhom4.ui.viewmodel.AuthViewModel;
 import com.google.android.material.button.MaterialButton;
 
+/**
+ * Màn hình đặt tên người dùng đầu tiên sau khi đăng ký, có kiểm tra trùng tên realtime.
+ */
 public class CreateUsernameActivity extends AppCompatActivity {
 
     private EditText etUsername;
@@ -48,6 +51,7 @@ public class CreateUsernameActivity extends AppCompatActivity {
 
         btnContinue.setOnClickListener(v -> {
             String username = etUsername.getText().toString().trim();
+            // Lúc này nút chỉ enable khi username đã được xác thực unique
             viewModel.createUserProfile(username);
         });
 
@@ -55,6 +59,9 @@ public class CreateUsernameActivity extends AppCompatActivity {
         observeViewModel();
     }
 
+    /**
+     * Lắng nghe thay đổi text để debounce việc kiểm tra tên người dùng.
+     */
     private void setupTextWatcher() {
         etUsername.addTextChangedListener(new TextWatcher() {
             @Override
@@ -79,11 +86,17 @@ public class CreateUsernameActivity extends AppCompatActivity {
                     // Chờ 600ms sau khi ngừng gõ mới gọi ViewModel kiểm tra
                     checkUsernameRunnable = () -> viewModel.checkUsername(input);
                     handler.postDelayed(checkUsernameRunnable, 600);
+                } else {
+                    // Nếu rỗng thì không check và giữ nút disable
+                    setButtonEnabled(false);
                 }
             }
         });
     }
 
+    /**
+     * Theo dõi kết quả từ ViewModel cho việc kiểm tra và tạo profile.
+     */
     private void observeViewModel() {
         // 1. Quan sát kết quả kiểm tra Username
         viewModel.getUsernameCheckResult().observe(this, resource -> {
@@ -123,6 +136,9 @@ public class CreateUsernameActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Helper bật/tắt nút Tiếp tục kèm hiệu ứng mờ.
+     */
     private void setButtonEnabled(boolean enabled) {
         btnContinue.setEnabled(enabled);
         btnContinue.setAlpha(enabled ? 1.0f : 0.5f);

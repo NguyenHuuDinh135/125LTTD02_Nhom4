@@ -22,6 +22,9 @@ import com.example.nhom4.ui.viewmodel.StreakViewModel;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
 
+/**
+ * Fragment hiển thị lịch streak cùng thống kê hoạt động trong tháng hiện tại.
+ */
 public class StreakFragment extends Fragment {
 
     private StreakViewModel viewModel;
@@ -63,6 +66,9 @@ public class StreakFragment extends Fragment {
         observeViewModel();
     }
 
+    /**
+     * Ánh xạ view và chuẩn bị listener chuyển tháng + layout thống kê.
+     */
     private void initViews(View view) {
         tvCurrentMonth = view.findViewById(R.id.tv_current_month);
         btnPrevMonth = view.findViewById(R.id.btn_prev_month);
@@ -90,17 +96,23 @@ public class StreakFragment extends Fragment {
         }
     }
 
+    /**
+     * Khởi tạo RecyclerView lịch với adapter chuyên biệt.
+     */
     private void setupCalendar() {
         RecyclerView recyclerView = getView().findViewById(R.id.calendar_recycler_view);
         calendarAdapter = new StreakAdapter();
         recyclerView.setAdapter(calendarAdapter);
     }
 
+    /**
+     * Đăng ký toàn bộ LiveData từ StreakViewModel để render UI.
+     */
     private void observeViewModel() {
         // 1. Quan sát dữ liệu raw từ Firebase
         viewModel.getRawPosts().observe(getViewLifecycleOwner(), resource -> {
             if (resource.status == Resource.Status.SUCCESS) {
-                viewModel.processPosts(resource.data);
+                viewModel.processPosts(resource.data); // Build lại map ngày -> post
             } else if (resource.status == Resource.Status.ERROR) {
                 Toast.makeText(getContext(), resource.message, Toast.LENGTH_SHORT).show();
             }
@@ -127,6 +139,9 @@ public class StreakFragment extends Fragment {
         });
     }
 
+    /**
+     * Render lại khối thống kê mỗi khi số liệu thay đổi.
+     */
     private void updateStatsUI(int streak, int moods, int activities, int photos) {
         if (statsContainer == null) return;
 
@@ -145,6 +160,9 @@ public class StreakFragment extends Fragment {
     }
 
     // Helper: Tạo dòng thống kê động bằng code Java thay vì XML cứng
+    /**
+     * Helper dựng một dòng thống kê với label bên trái và value đậm bên phải.
+     */
     private void addStatRow(LinearLayout parent, String label, String value) {
         LinearLayout row = new LinearLayout(getContext());
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(

@@ -22,7 +22,6 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.nhom4.R;
 import com.example.nhom4.data.Resource;
-import com.example.nhom4.data.bean.Mood;
 import com.example.nhom4.ui.adapter.ActivityAdapter;
 import com.example.nhom4.ui.viewmodel.ActivityViewModel;
 import com.google.android.material.button.MaterialButton;
@@ -30,6 +29,9 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.util.ArrayList;
 
+/**
+ * Fragment quản lý danh sách thói quen cá nhân và tính năng tạo thêm habit mới.
+ */
 public class HabitFragment extends Fragment {
 
     private ActivityViewModel viewModel;
@@ -78,6 +80,9 @@ public class HabitFragment extends Fragment {
         viewModel.loadMyActivities();
     }
 
+    /**
+     * Cấu hình RecyclerView và callback click trên mỗi habit.
+     */
     private void setupRecyclerView() {
         adapter = new ActivityAdapter(new ArrayList<>(), activity -> {
             Toast.makeText(getContext(), "Đã chọn: " + activity.getTitle(), Toast.LENGTH_SHORT).show();
@@ -90,6 +95,9 @@ public class HabitFragment extends Fragment {
         btnAddHabit.setOnClickListener(v -> showAddActivityDialog());
     }
 
+    /**
+     * Hiển thị dialog nhập thông tin + chọn ảnh để tạo hoạt động mới.
+     */
     private void showAddActivityDialog() {
         selectedImageUri = null; // Reset ảnh
 
@@ -139,6 +147,9 @@ public class HabitFragment extends Fragment {
         builder.show();
     }
 
+    /**
+     * Đăng ký quan sát LiveData: danh sách hoạt động và sự kiện mở khoá mood.
+     */
     private void observeViewModel() {
         viewModel.getMyActivities().observe(getViewLifecycleOwner(), resource -> {
             if (resource.status == Resource.Status.SUCCESS && resource.data != null) {

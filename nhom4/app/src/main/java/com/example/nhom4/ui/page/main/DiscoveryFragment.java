@@ -19,6 +19,9 @@ import com.example.nhom4.ui.adapter.ChatListAdapter;
 import com.example.nhom4.ui.adapter.OperatorAdapter; // Import Adapter mới
 import com.example.nhom4.ui.viewmodel.DiscoveryViewModel;
 
+/**
+ * Trang khám phá: nửa trên là danh sách chat gần đây, nửa dưới là hoạt động nổi bật.
+ */
 public class DiscoveryFragment extends Fragment {
 
     private RecyclerView chatRecyclerView;
@@ -51,6 +54,9 @@ public class DiscoveryFragment extends Fragment {
         observeViewModel();
     }
 
+    /**
+     * RecyclerView hiển thị conversation lịch sử.
+     */
     private void setupChatRecyclerView() {
         chatAdapter = new ChatListAdapter(getContext());
         chatRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
@@ -64,12 +70,15 @@ public class DiscoveryFragment extends Fragment {
         activityRecyclerView.setAdapter(activityAdapter);
     }
 
+    /**
+     * Quan sát dữ liệu conversation và activity từ ViewModel.
+     */
     private void observeViewModel() {
         // 1. Lắng nghe danh sách Chat
         viewModel.getConversations().observe(getViewLifecycleOwner(), resource -> {
             switch (resource.status) {
                 case SUCCESS:
-                    if (resource.data != null) chatAdapter.setList(resource.data);
+                    if (resource.data != null) chatAdapter.setList(resource.data); // Cập nhật danh sách hội thoại
                     break;
                 case ERROR:
                     Toast.makeText(getContext(), resource.message, Toast.LENGTH_SHORT).show();

@@ -29,6 +29,9 @@ import com.google.android.material.shape.ShapeAppearanceModel;
 
 import java.util.ArrayList;
 
+/**
+ * BottomSheet hiển thị song song danh sách gợi ý kết bạn và lời mời đang chờ xử lý.
+ */
 public class FriendsBottomSheet extends BottomSheetDialogFragment {
 
     private RecyclerView rcvSuggestions, rcvRequests;
@@ -59,6 +62,9 @@ public class FriendsBottomSheet extends BottomSheetDialogFragment {
         observeViewModel();
     }
 
+    /**
+     * Khởi tạo 2 adapter cho danh sách gợi ý và lời mời.
+     */
     private void setupAdapters() {
         // Adapter Gợi ý
         suggestionAdapter = new UserSuggestionAdapter(new ArrayList<>(), user -> {
@@ -83,6 +89,9 @@ public class FriendsBottomSheet extends BottomSheetDialogFragment {
         rcvRequests.setAdapter(requestAdapter);
     }
 
+    /**
+     * Lắng nghe luồng dữ liệu từ FriendsViewModel để cập nhật UI và hiển thị toast.
+     */
     private void observeViewModel() {
         // 1. Lắng nghe danh sách gợi ý
         viewModel.getSuggestions().observe(getViewLifecycleOwner(), resource -> {

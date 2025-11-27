@@ -31,6 +31,9 @@ import com.google.firebase.storage.StorageReference;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Màn hình hồ sơ người dùng: xem/chỉnh sửa tên, email, ngày sinh và ảnh đại diện.
+ */
 public class ProfileActivity extends AppCompatActivity {
 
     private ShapeableImageView ivProfileAvatar;
@@ -87,7 +90,9 @@ public class ProfileActivity extends AppCompatActivity {
         ivAddWidgetIcon.setOnClickListener(v -> addWidgetToHomeScreen());
     }
 
-
+    /**
+     * Ánh xạ view và chuẩn bị trạng thái ban đầu cho nút đăng xuất.
+     */
     private void initViews() {
         ivProfileAvatar = findViewById(R.id.iv_profile_avatar);
         btnChangeAvatar = findViewById(R.id.btn_edit_avatar_icon);

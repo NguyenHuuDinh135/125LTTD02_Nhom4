@@ -17,6 +17,9 @@ import com.example.nhom4.R;
 import com.example.nhom4.ui.viewmodel.AuthViewModel;
 import com.google.android.material.textfield.TextInputEditText;
 
+/**
+ * Màn hình đăng ký tài khoản mới, thực hiện validate form và gọi AuthViewModel.
+ */
 public class RegisterActivity extends AppCompatActivity {
 
     private TextInputEditText etEmail, etPassword, etConfirmPassword;
@@ -54,6 +57,9 @@ public class RegisterActivity extends AppCompatActivity {
         // checkBoxShowPassword = findViewById(R.id.checkboxShowPassword);
     }
 
+    /**
+     * Thiết lập các event click và toggle hiển thị mật khẩu.
+     */
     private void setupEvents() {
         // Xử lý sự kiện đăng ký
         btnRegister.setOnClickListener(v -> handleRegister());
@@ -82,6 +88,9 @@ public class RegisterActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Validate dữ liệu đăng ký và gọi ViewModel.
+     */
     private void handleRegister() {
         String email = etEmail.getText() != null ? etEmail.getText().toString().trim() : "";
         String password = etPassword.getText() != null ? etPassword.getText().toString().trim() : "";
@@ -119,9 +128,12 @@ public class RegisterActivity extends AppCompatActivity {
         }
 
         // Gọi ViewModel để xử lý logic nghiệp vụ
-        authViewModel.register(email, password);
+        authViewModel.register(email, password); // FirebaseAuth xử lý ở tầng repository
     }
 
+    /**
+     * Lắng nghe kết quả đăng ký từ ViewModel để cập nhật UI.
+     */
     private void observeViewModel() {
         // Lắng nghe kết quả từ AuthViewModel (dùng chung LiveData authResult với Login)
         authViewModel.getAuthResult().observe(this, resource -> {
@@ -145,6 +157,9 @@ public class RegisterActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Hiển thị progress và khoá nút khi đang xử lý.
+     */
     private void setLoading(boolean isLoading) {
         if (progressBar != null) {
             progressBar.setVisibility(isLoading ? View.VISIBLE : View.GONE);
@@ -152,6 +167,9 @@ public class RegisterActivity extends AppCompatActivity {
         btnRegister.setEnabled(!isLoading);
     }
 
+    /**
+     * Điều hướng sang bước tạo username sau khi đăng ký thành công.
+     */
     private void goToNextStep() {
         // Chuyển sang màn hình tạo Username
         Intent intent = new Intent(getApplicationContext(), CreateUsernameActivity.class);
