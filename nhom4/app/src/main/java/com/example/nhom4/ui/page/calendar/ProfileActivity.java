@@ -1,7 +1,12 @@
 package com.example.nhom4.ui.page.calendar;
 
+import android.annotation.SuppressLint;
+import android.app.PendingIntent;
+import android.appwidget.AppWidgetManager;
+import android.content.ComponentName;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.widget.ImageView;
 import android.widget.Toast;
@@ -9,17 +14,22 @@ import android.widget.Toast;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.lifecycle.ViewModelProvider;
 
 import com.bumptech.glide.Glide;
 import com.example.nhom4.R;
-import com.example.nhom4.data.Resource;
 import com.example.nhom4.data.bean.UserProfile;
 import com.example.nhom4.ui.page.SplashActivity;
-import com.example.nhom4.ui.viewmodel.ProfileViewModel;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.imageview.ShapeableImageView;
 import com.google.android.material.textfield.TextInputEditText;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Màn hình hồ sơ người dùng: xem/chỉnh sửa tên, email, ngày sinh và ảnh đại diện.
@@ -27,11 +37,15 @@ import com.google.android.material.textfield.TextInputEditText;
 public class ProfileActivity extends AppCompatActivity {
 
     private ShapeableImageView ivProfileAvatar;
-    private ImageView btnChangeAvatar;
+    private ImageView btnChangeAvatar, ivAddWidgetIcon;
+
     private TextInputEditText etEmail, etName, etBirthday;
     private MaterialButton btnSave, btnLogout;
 
-    private ProfileViewModel viewModel;
+    private FirebaseAuth auth;
+    private FirebaseFirestore db;
+    private FirebaseStorage storage;
+
     private Uri selectedImageUri = null;
 
     private final ActivityResultLauncher<String> pickImageLauncher = registerForActivityResult(
@@ -49,15 +63,31 @@ public class ProfileActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_profile);
 
-        // Init ViewModel
-        viewModel = new ViewModelProvider(this).get(ProfileViewModel.class);
+        auth = FirebaseAuth.getInstance();
+        db = FirebaseFirestore.getInstance();
+        storage = FirebaseStorage.getInstance();
 
         initViews();
-        setupEvents();
-        observeViewModel();
+        loadUserProfile();
 
-        // Load dữ liệu ban đầu
-        viewModel.loadProfile();
+        // Sự kiện chọn avatar
+        btnChangeAvatar.setOnClickListener(v -> pickImageLauncher.launch("image/*"));
+        ivProfileAvatar.setOnClickListener(v -> pickImageLauncher.launch("image/*"));
+
+        // Sự kiện Lưu
+        btnSave.setOnClickListener(v -> saveProfileChanges());
+
+        // Đăng xuất
+        btnLogout.setOnClickListener(v -> {
+            auth.signOut();
+            Intent intent = new Intent(ProfileActivity.this, SplashActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(intent);
+            finish();
+        });
+
+        // Click icon thêm widget
+        ivAddWidgetIcon.setOnClickListener(v -> addWidgetToHomeScreen());
     }
 
     /**
@@ -66,6 +96,9 @@ public class ProfileActivity extends AppCompatActivity {
     private void initViews() {
         ivProfileAvatar = findViewById(R.id.iv_profile_avatar);
         btnChangeAvatar = findViewById(R.id.btn_edit_avatar_icon);
+
+        // <-- đây là icon widget mới
+        ivAddWidgetIcon = findViewById(R.id.iv_add_widget_icon);
 
         etEmail = findViewById(R.id.item_email).findViewById(R.id.et_value);
         etName = findViewById(R.id.item_name).findViewById(R.id.et_value);
@@ -77,73 +110,167 @@ public class ProfileActivity extends AppCompatActivity {
         btnLogout.setIconResource(R.drawable.outline_logout_24);
     }
 
-    /**
-     * Gắn toàn bộ sự kiện tap: chọn ảnh, lưu và đăng xuất.
-     */
-    private void setupEvents() {
-        // Chọn ảnh
-        btnChangeAvatar.setOnClickListener(v -> pickImageLauncher.launch("image/*"));
-        ivProfileAvatar.setOnClickListener(v -> pickImageLauncher.launch("image/*"));
+    // -----------------------------
+    // Thêm widget vào màn hình chính
+    // -----------------------------
+    private void addWidgetToHomeScreen() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            AppWidgetManager appWidgetManager = getSystemService(AppWidgetManager.class);
+            ComponentName myProvider = new ComponentName(this, com.example.nhom4.ui.page.widget.ActivityWidgetProvider.class);
 
-        // Lưu
-        btnSave.setOnClickListener(v -> {
-            String name = etName.getText().toString().trim();
-            String email = etEmail.getText().toString().trim();
-            String birthday = etBirthday.getText().toString().trim();
+            if (appWidgetManager.isRequestPinAppWidgetSupported()) {
+                Intent pinnedWidgetCallbackIntent = new Intent(this, ProfileActivity.class);
+                PendingIntent successCallback = PendingIntent.getActivity(this, 0,
+                        pinnedWidgetCallbackIntent,
+                        PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
 
-            viewModel.saveProfile(name, email, birthday, selectedImageUri);
-        });
-
-        // Đăng xuất
-        btnLogout.setOnClickListener(v -> {
-            viewModel.logout();
-            Intent intent = new Intent(ProfileActivity.this, SplashActivity.class);
-            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-            startActivity(intent);
-            finish();
-        });
+                appWidgetManager.requestPinAppWidget(myProvider, null, successCallback);
+            } else {
+                Toast.makeText(this, "Launcher không hỗ trợ thêm widget", Toast.LENGTH_SHORT).show();
+            }
+        } else {
+            Toast.makeText(this, "Yêu cầu Android 8.0 trở lên để thêm widget từ app", Toast.LENGTH_SHORT).show();
+        }
     }
 
-    /**
-     * Lắng nghe LiveData profile và trạng thái lưu để cập nhật UI tương ứng.
-     */
-    private void observeViewModel() {
-        // 1. Quan sát dữ liệu Profile
-        viewModel.getUserProfile().observe(this, resource -> {
-            if (resource.status == Resource.Status.LOADING) {
-                // Có thể hiện loading skeleton
-            } else if (resource.status == Resource.Status.SUCCESS && resource.data != null) {
-                UserProfile profile = resource.data;
-                etName.setText(profile.getUsername());
-                etEmail.setText(profile.getEmail());
-                etBirthday.setText(profile.getBirthday());
+    private void loadUserProfile() {
+        FirebaseUser user = auth.getCurrentUser();
+        if (user == null) return;
 
-                if (profile.getProfilePhotoUrl() != null && !profile.getProfilePhotoUrl().isEmpty()) {
-                    Glide.with(this).load(profile.getProfilePhotoUrl()).into(ivProfileAvatar); // Render avatar mới nhất
-                }
-            } else if (resource.status == Resource.Status.ERROR) {
-                Toast.makeText(this, resource.message, Toast.LENGTH_SHORT).show();
-            }
-        });
+        String uid = user.getUid();
 
-        // 2. Quan sát trạng thái Lưu
-        viewModel.getSaveStatus().observe(this, resource -> {
-            switch (resource.status) {
-                case LOADING:
-                    btnSave.setEnabled(false);
-                    btnSave.setText("Đang lưu...");
-                    break;
-                case SUCCESS:
-                    btnSave.setEnabled(true);
-                    btnSave.setText("Lưu thay đổi");
+        // ------------------------------------------------
+        // BƯỚC 1 — Lấy từ users trước
+        // ------------------------------------------------
+        db.collection("users").document(uid).get()
+                .addOnSuccessListener(userDoc -> {
+                    final String[] nameFromUsers = {null};
+                    final String[] emailFromUsers = {null};
+                    final String[] avatarFromUsers = {null};
+
+
+                    if (userDoc.exists()) {
+                        nameFromUsers[0] = userDoc.getString("username");
+                        emailFromUsers[0] = userDoc.getString("email");
+                        avatarFromUsers[0] = userDoc.getString("profilePhotoUrl");
+
+                    }
+
+                    // ------------------------------------------------
+                    // BƯỚC 2 — Lấy tiếp user_profile
+                    // ------------------------------------------------
+                    db.collection("user_profile").document(uid).get()
+                            .addOnSuccessListener(profileDoc -> {
+
+                                String finalName = "Chưa có tên";
+                                String finalEmail = user.getEmail();
+                                String finalBirthday = "Chưa có ngày sinh";
+                                String finalAvatar = null;
+
+                                // nếu user_profile có dữ liệu
+                                if (profileDoc.exists()) {
+                                    if (profileDoc.getString("username") != null)
+                                        finalName = profileDoc.getString("username");
+
+                                    if (profileDoc.getString("email") != null)
+                                        finalEmail = profileDoc.getString("email");
+
+                                    if (profileDoc.getString("birthday") != null)
+                                        finalBirthday = profileDoc.getString("birthday");
+
+                                    if (profileDoc.getString("profilePhotoUrl") != null)
+                                        finalAvatar = profileDoc.getString("profilePhotoUrl");
+                                }
+
+                                // ------------------------------------------------
+                                // ƯU TIÊN DỮ LIỆU TỪ users
+                                // ------------------------------------------------
+                                if (nameFromUsers[0] != null) finalName = nameFromUsers[0];
+                                if (emailFromUsers[0] != null) finalEmail = emailFromUsers[0];
+                                if (avatarFromUsers[0] != null) finalAvatar = avatarFromUsers[0];
+
+
+                                // ------------------------------------------------
+                                // Gán lên UI
+                                // ------------------------------------------------
+                                etName.setText(finalName);
+                                etEmail.setText(finalEmail);
+                                etBirthday.setText(finalBirthday);
+
+                                if (finalAvatar != null && !finalAvatar.isEmpty()) {
+                                    Glide.with(this).load(finalAvatar).into(ivProfileAvatar);
+                                }
+
+                                // ------------------------------------------------
+                                // Nếu cả 2 collection đều chưa có -> tạo profile mặc định
+                                // ------------------------------------------------
+                                if (!profileDoc.exists()) {
+                                    Map<String, Object> defaultProfile = new HashMap<>();
+                                    defaultProfile.put("uid", uid);
+                                    defaultProfile.put("username", finalName);
+                                    defaultProfile.put("email", finalEmail);
+                                    defaultProfile.put("birthday", finalBirthday);
+                                    defaultProfile.put("profilePhotoUrl", finalAvatar);
+
+                                    db.collection("user_profile").document(uid).set(defaultProfile);
+                                }
+                            })
+                            .addOnFailureListener(e ->
+                                    Toast.makeText(this, "Lỗi load profile: " + e.getMessage(), Toast.LENGTH_SHORT).show()
+                            );
+                });
+    }
+
+
+    private void saveProfileChanges() {
+        FirebaseUser user = auth.getCurrentUser();
+        if (user == null) return;
+
+        btnSave.setEnabled(false);
+        btnSave.setText("Đang lưu...");
+
+        String newEmail = etEmail.getText().toString().trim();
+        String newName = etName.getText().toString().trim();
+        String newBirthday = etBirthday.getText().toString().trim();
+
+        Map<String, Object> updates = new HashMap<>();
+        updates.put("email", newEmail.isEmpty() ? user.getEmail() : newEmail);
+        updates.put("username", newName.isEmpty() ? "Chưa có tên" : newName);
+        updates.put("birthday", newBirthday.isEmpty() ? "Chưa có ngày sinh" : newBirthday);
+
+        if (selectedImageUri != null) {
+            StorageReference avatarRef = storage.getReference().child("avatars/" + user.getUid() + ".jpg");
+            avatarRef.putFile(selectedImageUri)
+                    .addOnSuccessListener(taskSnapshot ->
+                            avatarRef.getDownloadUrl().addOnSuccessListener(uri -> {
+                                updates.put("profilePhotoUrl", uri.toString());
+                                updateFirestore(updates);
+                            }))
+                    .addOnFailureListener(e -> {
+                        Toast.makeText(this, "Lỗi upload ảnh: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                        btnSave.setEnabled(true);
+                        btnSave.setText("Lưu thay đổi");
+                    });
+        } else {
+            updateFirestore(updates);
+        }
+    }
+
+    private void updateFirestore(Map<String, Object> updates) {
+        FirebaseUser user = auth.getCurrentUser();
+        if (user == null) return;
+
+        db.collection("user_profile").document(user.getUid())
+                .update(updates)
+                .addOnSuccessListener(aVoid -> {
                     Toast.makeText(this, "Cập nhật thành công!", Toast.LENGTH_SHORT).show();
-                    break;
-                case ERROR:
                     btnSave.setEnabled(true);
                     btnSave.setText("Lưu thay đổi");
-                    Toast.makeText(this, "Lỗi: " + resource.message, Toast.LENGTH_SHORT).show();
-                    break;
-            }
-        });
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(this, "Lỗi cập nhật: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    btnSave.setEnabled(true);
+                    btnSave.setText("Lưu thay đổi");
+                });
     }
 }
