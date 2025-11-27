@@ -20,6 +20,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+/**
+ * Adapter chính cho màn hình chat, hỗ trợ 4 kiểu view:
+ * - Tin nhắn text gửi/nhận
+ * - Widget trả lời bài post gửi/nhận
+ */
 public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     private static final int TYPE_SENT = 1;
@@ -30,15 +35,26 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private List<Message> messages = new ArrayList<>();
     private final String currentUserId;
 
+    /**
+     * @param currentUserId id người dùng hiện tại để xác định tin nhắn gửi hay nhận
+     */
     public ChatAdapter(String currentUserId) {
         this.currentUserId = currentUserId;
     }
 
+    /**
+     * Cập nhật toàn bộ danh sách tin nhắn.
+     */
     public void setMessages(List<Message> messages) {
         this.messages = messages;
         notifyDataSetChanged();
     }
 
+    /**
+     * Xác định kiểu view cho từng tin nhắn.
+     * @param position
+     * @return
+     */
     @Override
     public int getItemViewType(int position) {
         Message message = messages.get(position);
@@ -48,11 +64,17 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         boolean isMe = message.getSenderId().equals(currentUserId);
 
         if ("post_reply".equals(message.getType())) {
-            return isMe ? TYPE_WIDGET_SENT : TYPE_WIDGET_RECEIVED;
+            return isMe ? TYPE_WIDGET_SENT : TYPE_WIDGET_RECEIVED; // Widget trả lời bài post
         }
-        return isMe ? TYPE_SENT : TYPE_RECEIVED;
+        return isMe ? TYPE_SENT : TYPE_RECEIVED; // Tin nhắn text
     }
 
+    /**
+     * Tạo ViewHolder tương ứng với từng kiểu view.
+     * @param parent
+     * @param viewType
+     * @return
+     */
     @NonNull
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -69,28 +91,39 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         }
     }
 
+    /**
+     * Bind dữ liệu mô hình vào ViewHolder. 
+     * @param holder
+     * @param position
+     */
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
         Message msg = messages.get(position);
 
         if (holder instanceof SentHolder) {
-            ((SentHolder) holder).bind(msg);
+            ((SentHolder) holder).bind(msg); // Bong bóng tự gửi
         } else if (holder instanceof ReceivedHolder) {
-            ((ReceivedHolder) holder).bind(msg);
+            ((ReceivedHolder) holder).bind(msg); // Bong bóng nhận
         }
         // [QUAN TRỌNG] Bổ sung logic bind cho Widget
         else if (holder instanceof WidgetSenderHolder) {
-            ((WidgetSenderHolder) holder).bind(msg);
+            ((WidgetSenderHolder) holder).bind(msg); // Widget do mình gửi
         } else if (holder instanceof WidgetReceiverHolder) {
-            ((WidgetReceiverHolder) holder).bind(msg);
+            ((WidgetReceiverHolder) holder).bind(msg); // Widget nhận
         }
     }
 
+    /**
+     * Trả về số lượng tin nhắn.
+     */
     @Override
     public int getItemCount() {
         return messages.size();
     }
 
+    /**
+     * Định dạng timestamp Firebase thành chuỗi HH:mm.
+     */
     private static String formatTime(Timestamp timestamp) {
         if (timestamp == null) return "";
         return new SimpleDateFormat("HH:mm", Locale.getDefault()).format(timestamp.toDate());
@@ -98,6 +131,9 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     // --- VIEW HOLDERS ---
 
+    /**
+     * ViewHolder cho bong bóng tin nhắn do người dùng hiện tại gửi.
+     */
     static class SentHolder extends RecyclerView.ViewHolder {
         TextView tvMsg, tvTime;
         SentHolder(View v) {
@@ -111,6 +147,9 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         }
     }
 
+    /**
+     * ViewHolder cho tin nhắn nhận, kèm avatar người gửi.
+     */
     static class ReceivedHolder extends RecyclerView.ViewHolder {
         TextView tvMsg, tvTime;
         ShapeableImageView avatar;
@@ -127,6 +166,9 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         }
     }
 
+    /**
+     * ViewHolder cho widget trả lời bài viết do chính mình gửi đi.
+     */
     static class WidgetSenderHolder extends RecyclerView.ViewHolder {
         TextView tvTitle, tvTime, tvBody;
         // Nếu bạn muốn hiện ảnh bài post nhỏ trong widget, khai báo thêm ImageView ở đây
@@ -151,6 +193,9 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         }
     }
 
+    /**
+     * ViewHolder cho widget trả lời bài viết nhận từ người khác.
+     */
     static class WidgetReceiverHolder extends RecyclerView.ViewHolder {
         TextView tvTitle, tvTime, tvBody;
 

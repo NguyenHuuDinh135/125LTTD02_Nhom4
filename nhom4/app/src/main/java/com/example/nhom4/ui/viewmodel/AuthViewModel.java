@@ -8,6 +8,9 @@ import com.example.nhom4.data.Resource;
 import com.example.nhom4.data.repository.AuthRepository;
 import com.google.firebase.auth.FirebaseUser;
 
+/**
+ * ViewModel bao quát toàn bộ luồng Auth: login/register, kiểm tra username và lưu profile.
+ */
 public class AuthViewModel extends ViewModel {
 
     private final AuthRepository repository;
@@ -43,7 +46,7 @@ public class AuthViewModel extends ViewModel {
     // --- AUTHENTICATION LOGIC ---
 
     public void login(String email, String password) {
-        repository.login(email, password, authResult);
+        repository.login(email, password, authResult); // Kết quả emit qua LiveData
     }
 
     public void register(String email, String password) {
@@ -56,6 +59,9 @@ public class AuthViewModel extends ViewModel {
 
     // --- USER PROFILE LOGIC (cho CreateUsernameActivity) ---
 
+    /**
+     * Kiểm tra xem username đã tồn tại chưa (debounce ở Activity).
+     */
     public void checkUsername(String username) {
         if (username == null || username.trim().isEmpty()) {
             return;
@@ -63,6 +69,9 @@ public class AuthViewModel extends ViewModel {
         repository.checkUsernameExists(username.trim(), usernameCheckResult);
     }
 
+    /**
+     * Lưu thông tin profile đầu tiên (username + email).
+     */
     public void createUserProfile(String username) {
         FirebaseUser currentUser = repository.getCurrentUser();
         if (currentUser == null) {
@@ -73,6 +82,6 @@ public class AuthViewModel extends ViewModel {
         String userId = currentUser.getUid();
         String email = currentUser.getEmail();
 
-        repository.createNewUserProfile(userId, username, email, createProfileResult);
+        repository.createNewUserProfile(userId, username, email, createProfileResult); // Lưu Firestore + update displayName
     }
 }

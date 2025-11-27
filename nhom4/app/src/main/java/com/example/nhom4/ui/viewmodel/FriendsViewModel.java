@@ -12,6 +12,9 @@ import com.example.nhom4.data.repository.FriendRepository;
 
 import java.util.List;
 
+/**
+ * ViewModel đứng sau BottomSheet bạn bè: tải gợi ý, lời mời và xử lý các hành động kết bạn.
+ */
 public class FriendsViewModel extends ViewModel {
 
     private final FriendRepository friendRepository;
@@ -33,14 +36,20 @@ public class FriendsViewModel extends ViewModel {
     public LiveData<Resource<List<FriendRequest>>> getFriendRequests() { return friendRequests; }
     public LiveData<Resource<String>> getActionStatus() { return actionStatus; }
 
+    /**
+     * Lấy cả danh sách gợi ý và lời mời đang chờ ngay khi khởi tạo.
+     */
     private void loadData() {
         String uid = getCurrentUserId();
         if (uid != null) {
-            friendRepository.getUsersToConnect(uid, suggestions);
+            friendRepository.getUsersToConnect(uid, suggestions); // Lắng nghe realtime danh sách đề xuất
             friendRepository.getPendingRequests(uid, friendRequests);
         }
     }
 
+    /**
+     * Gửi lời mời kết bạn rồi chuyển thông báo trạng thái qua actionStatus.
+     */
     public void sendFriendRequest(User user) {
         String uid = getCurrentUserId();
         if (uid == null) return;
@@ -66,6 +75,9 @@ public class FriendsViewModel extends ViewModel {
         handleResponse(request, "rejected", "Đã từ chối lời mời");
     }
 
+    /**
+     * Dùng chung cho accept/decline để cập nhật actionStatus.
+     */
     private void handleResponse(FriendRequest request, String status, String successMsg) {
         MutableLiveData<Resource<Boolean>> tempResult = new MutableLiveData<>();
         friendRepository.respondToRequest(request.getRequestId(), status, tempResult);

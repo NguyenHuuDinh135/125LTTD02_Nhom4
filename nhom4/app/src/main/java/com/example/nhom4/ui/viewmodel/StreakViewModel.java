@@ -18,6 +18,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Xử lý toàn bộ logic cho màn hình streak/calendar:
+ * - Lấy bài viết, dựng map ngày -> ảnh
+ * - Tính thống kê + danh sách ngày theo tháng hiện tại.
+ */
 public class StreakViewModel extends ViewModel {
 
     private final StreakRepository repository;
@@ -49,6 +54,9 @@ public class StreakViewModel extends ViewModel {
     public LiveData<YearMonth> getCurrentMonth() { return currentMonth; }
 
     // Xử lý logic chính
+    /**
+     * Chuyển danh sách post thành dữ liệu lịch + thống kê.
+     */
     public void processPosts(List<Post> posts) {
         postedDataMap.clear();
         StreakStats currentStats = new StreakStats();
@@ -112,6 +120,9 @@ public class StreakViewModel extends ViewModel {
         return streak;
     }
 
+    /**
+     * Tạo danh sách 42 ô lịch (bao gồm ngày tháng trước/sau) cho View hiển thị.
+     */
     public void generateCalendarDays(YearMonth yearMonth) {
         if (yearMonth == null) return;
 

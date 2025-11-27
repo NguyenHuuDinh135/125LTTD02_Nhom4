@@ -15,6 +15,9 @@ import com.example.nhom4.data.bean.Mood;
 
 import java.util.List;
 
+/**
+ * Adapter hiển thị thanh lựa chọn mood cảm xúc, có hỗ trợ highlight mood đang chọn.
+ */
 public class MoodAdapter extends RecyclerView.Adapter<MoodAdapter.MoodViewHolder> {
 
     private List<Mood> moodList;
@@ -38,13 +41,24 @@ public class MoodAdapter extends RecyclerView.Adapter<MoodAdapter.MoodViewHolder
         notifyDataSetChanged();
     }
 
+    /**
+     * Tạo ViewHolder cho một item mood.
+     * @param parent
+     * @param viewType
+     * @return
+     */
     @NonNull
     @Override
     public MoodViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_mood_icon, parent, false);
         return new MoodViewHolder(view);
     }
-
+    
+    /**
+     * Bind dữ liệu mood vào ViewHolder, xử lý sự kiện click và hiệu ứng chọn.
+     * @param holder
+     * @param position
+     */
     @Override
     public void onBindViewHolder(@NonNull MoodViewHolder holder, int position) {
         Mood mood = moodList.get(position);
@@ -72,7 +86,7 @@ public class MoodAdapter extends RecyclerView.Adapter<MoodAdapter.MoodViewHolder
         holder.itemView.setOnClickListener(v -> {
             // Cập nhật vị trí chọn
             int previousItem = selectedPosition;
-            selectedPosition = holder.getAdapterPosition();
+            selectedPosition = holder.getAdapterPosition(); // Lấy lại position an toàn
 
             // Refresh lại danh sách để hiện hiệu ứng highlight
             notifyItemChanged(previousItem);
@@ -85,12 +99,18 @@ public class MoodAdapter extends RecyclerView.Adapter<MoodAdapter.MoodViewHolder
         });
     }
 
+    /**
+     * Trả về số lượng mood trong danh sách.
+     */
     @Override
     public int getItemCount() {
         // Kiểm tra null để tránh crash
         return moodList != null ? moodList.size() : 0;
     }
 
+    /**
+     * ViewHolder cho một mood icon + tên tương ứng.
+     */
     public static class MoodViewHolder extends RecyclerView.ViewHolder {
         ImageView imgMood;
         TextView tvMoodName;

@@ -12,6 +12,9 @@ import com.google.firebase.auth.FirebaseUser;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * ViewModel cho ProfileActivity: tải thông tin người dùng và cập nhật profile + avatar.
+ */
 public class ProfileViewModel extends ViewModel {
     private final ProfileRepository repository;
 
@@ -25,6 +28,9 @@ public class ProfileViewModel extends ViewModel {
     public LiveData<Resource<UserProfile>> getUserProfile() { return userProfile; }
     public LiveData<Resource<Boolean>> getSaveStatus() { return saveStatus; }
 
+    /**
+     * Tải thông tin profile hiện tại của người dùng.
+     */
     public void loadProfile() {
         FirebaseUser user = repository.getCurrentUser();
         if (user != null) {
@@ -32,6 +38,9 @@ public class ProfileViewModel extends ViewModel {
         }
     }
 
+    /**
+     * Chuẩn bị map dữ liệu và gọi repository cập nhật profile.
+     */
     public void saveProfile(String name, String email, String birthday, Uri imageUri) {
         FirebaseUser user = repository.getCurrentUser();
         if (user == null) return;
@@ -42,7 +51,7 @@ public class ProfileViewModel extends ViewModel {
         updates.put("email", email.isEmpty() ? user.getEmail() : email);
         updates.put("birthday", birthday.isEmpty() ? "Chưa có ngày sinh" : birthday);
 
-        repository.updateProfile(user.getUid(), updates, imageUri, saveStatus);
+        repository.updateProfile(user.getUid(), updates, imageUri, saveStatus); // Repo phụ trách upload ảnh (nếu có)
     }
 
     public void logout() {

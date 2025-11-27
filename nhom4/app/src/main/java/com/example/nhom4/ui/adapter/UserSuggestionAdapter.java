@@ -14,6 +14,9 @@ import com.bumptech.glide.Glide;
 
 import java.util.List;
 
+/**
+ * Adapter cho danh sách người dùng được gợi ý kết bạn.
+ */
 public class UserSuggestionAdapter extends RecyclerView.Adapter<UserSuggestionAdapter.UserViewHolder> {
 
     private final List<User> userList;
@@ -28,6 +31,12 @@ public class UserSuggestionAdapter extends RecyclerView.Adapter<UserSuggestionAd
         this.listener = listener;
     }
 
+    /**
+     * Tạo ViewHolder cho một item người dùng.
+     * @param parent
+     * @param viewType
+     * @return
+     */
     @NonNull
     @Override
     public UserViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -35,12 +44,18 @@ public class UserSuggestionAdapter extends RecyclerView.Adapter<UserSuggestionAd
         return new UserViewHolder(view);
     }
 
+    /**
+     * Bind dữ liệu người dùng vào ViewHolder, xử lý sự kiện nút thêm bạn.
+     * @param holder
+     * @param position
+     */
     @Override
     public void onBindViewHolder(@NonNull UserViewHolder holder, int position) {
         User user = userList.get(position);
 
         holder.tvName.setText(user.getUsername());
-
+        
+        // Sử dụng Glide để tải ảnh avatar
         Glide.with(holder.itemView.getContext())
                 .load(user.getProfilePhotoUrl())
                 .placeholder(R.drawable.ic_launcher_foreground)
@@ -50,17 +65,23 @@ public class UserSuggestionAdapter extends RecyclerView.Adapter<UserSuggestionAd
         holder.btnAdd.setOnClickListener(v -> {
             if (listener != null) {
                 listener.onAddClick(user);
-                holder.btnAdd.setText("Đã gửi");
+                holder.btnAdd.setText("Đã gửi"); // Đổi trạng thái nút để báo cho người dùng
                 holder.btnAdd.setEnabled(false);
             }
         });
     }
 
+    /**
+     * Trả về số lượng người dùng trong danh sách.
+     */
     @Override
     public int getItemCount() {
         return userList != null ? userList.size() : 0;
     }
 
+    /**
+     * ViewHolder giữ thông tin hiển thị avatar + nút kết bạn.
+     */
     public static class UserViewHolder extends RecyclerView.ViewHolder {
         TextView tvName;
         MaterialButton btnAdd;

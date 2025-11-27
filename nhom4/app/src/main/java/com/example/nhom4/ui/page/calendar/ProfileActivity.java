@@ -21,6 +21,9 @@ import com.google.android.material.button.MaterialButton;
 import com.google.android.material.imageview.ShapeableImageView;
 import com.google.android.material.textfield.TextInputEditText;
 
+/**
+ * Màn hình hồ sơ người dùng: xem/chỉnh sửa tên, email, ngày sinh và ảnh đại diện.
+ */
 public class ProfileActivity extends AppCompatActivity {
 
     private ShapeableImageView ivProfileAvatar;
@@ -57,6 +60,9 @@ public class ProfileActivity extends AppCompatActivity {
         viewModel.loadProfile();
     }
 
+    /**
+     * Ánh xạ view và chuẩn bị trạng thái ban đầu cho nút đăng xuất.
+     */
     private void initViews() {
         ivProfileAvatar = findViewById(R.id.iv_profile_avatar);
         btnChangeAvatar = findViewById(R.id.btn_edit_avatar_icon);
@@ -71,6 +77,9 @@ public class ProfileActivity extends AppCompatActivity {
         btnLogout.setIconResource(R.drawable.outline_logout_24);
     }
 
+    /**
+     * Gắn toàn bộ sự kiện tap: chọn ảnh, lưu và đăng xuất.
+     */
     private void setupEvents() {
         // Chọn ảnh
         btnChangeAvatar.setOnClickListener(v -> pickImageLauncher.launch("image/*"));
@@ -95,6 +104,9 @@ public class ProfileActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Lắng nghe LiveData profile và trạng thái lưu để cập nhật UI tương ứng.
+     */
     private void observeViewModel() {
         // 1. Quan sát dữ liệu Profile
         viewModel.getUserProfile().observe(this, resource -> {
@@ -107,7 +119,7 @@ public class ProfileActivity extends AppCompatActivity {
                 etBirthday.setText(profile.getBirthday());
 
                 if (profile.getProfilePhotoUrl() != null && !profile.getProfilePhotoUrl().isEmpty()) {
-                    Glide.with(this).load(profile.getProfilePhotoUrl()).into(ivProfileAvatar);
+                    Glide.with(this).load(profile.getProfilePhotoUrl()).into(ivProfileAvatar); // Render avatar mới nhất
                 }
             } else if (resource.status == Resource.Status.ERROR) {
                 Toast.makeText(this, resource.message, Toast.LENGTH_SHORT).show();

@@ -28,6 +28,9 @@ import com.example.nhom4.ui.page.main.CenterFragment;
 import com.example.nhom4.ui.viewmodel.ReplyViewModel;
 import com.google.android.material.button.MaterialButton;
 
+/**
+ * Fragment hiển thị một bài post trong feed (ảnh + caption) và cho phép gửi phản hồi nhanh.
+ */
 public class PostFragment extends Fragment {
 
     // Các key argument
@@ -51,6 +54,9 @@ public class PostFragment extends Fragment {
     private ReplyViewModel replyViewModel;
     private Post currentPostObject; // Lưu lại object post hiện tại để gửi
 
+    /**
+     * Factory method truyền toàn bộ dữ liệu bài viết qua Bundle.
+     */
     public static PostFragment newInstance(Post post) {
         PostFragment fragment = new PostFragment();
         Bundle args = new Bundle();
@@ -197,6 +203,9 @@ public class PostFragment extends Fragment {
     }
 
     // Hàm hiện Overlay
+    /**
+     * Mở overlay nhập phản hồi và hiện bàn phím.
+     */
     private void showReplyOverlay() {
         overlayContainer.setVisibility(View.VISIBLE);
         edtReplyReal.requestFocus();

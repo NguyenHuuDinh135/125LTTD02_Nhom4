@@ -19,12 +19,18 @@ import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.List;
 
+/**
+ * Adapter hiển thị danh sách lời mời kết bạn, cho phép chấp nhận hoặc từ chối.
+ */
 public class FriendRequestAdapter extends RecyclerView.Adapter<FriendRequestAdapter.RequestViewHolder> {
 
     private List<FriendRequest> requestList;
     private OnRequestActionListener listener;
     private FirebaseFirestore db;
 
+    /**
+     * Callback để màn hình bên ngoài xử lý hành động Accept/Decline.
+     */
     public interface OnRequestActionListener {
         void onAccept(FriendRequest request);
         void onDecline(FriendRequest request);
@@ -36,11 +42,20 @@ public class FriendRequestAdapter extends RecyclerView.Adapter<FriendRequestAdap
         db = FirebaseFirestore.getInstance();
     }
 
+    /**
+     * Thay danh sách lời mời mới và refresh lại RecyclerView.
+     */
     public void setRequests(List<FriendRequest> requests) {
         this.requestList = requests;
         notifyDataSetChanged();
     }
-
+    
+    /**
+     * Tạo ViewHolder cho mỗi item lời mời kết bạn.
+     * @param parent
+     * @param viewType
+     * @return
+     */
     @NonNull
     @Override
     public RequestViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -49,6 +64,11 @@ public class FriendRequestAdapter extends RecyclerView.Adapter<FriendRequestAdap
         return new RequestViewHolder(view);
     }
 
+    /**
+     * Bind dữ liệu mô hình vào ViewHolder.
+     * @param holder
+     * @param position
+     */
     @Override
     public void onBindViewHolder(@NonNull RequestViewHolder holder, int position) {
         FriendRequest request = requestList.get(position);
@@ -69,10 +89,10 @@ public class FriendRequestAdapter extends RecyclerView.Adapter<FriendRequestAdap
                         }
                     }
                 })
-                .addOnFailureListener(e -> {});
+                .addOnFailureListener(e -> {}); // Bỏ qua lỗi nhỏ, UI vẫn hiển thị tên request
 
         holder.btnAccept.setOnClickListener(v -> {
-            if (listener != null) listener.onAccept(request);
+            if (listener != null) listener.onAccept(request); // Báo ra ViewModel xử lý
         });
 
         holder.btnDecline.setOnClickListener(v -> {
@@ -80,11 +100,17 @@ public class FriendRequestAdapter extends RecyclerView.Adapter<FriendRequestAdap
         });
     }
 
+    /**
+     * Trả về số lượng lời mời trong danh sách.
+     */
     @Override
     public int getItemCount() {
         return requestList != null ? requestList.size() : 0;
     }
 
+    /**
+     * ViewHolder giữ view của một lời mời kết bạn.
+     */
     public static class RequestViewHolder extends RecyclerView.ViewHolder {
         TextView tvName;
         MaterialButton btnAccept, btnDecline;

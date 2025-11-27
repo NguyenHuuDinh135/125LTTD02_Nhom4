@@ -10,6 +10,9 @@ import com.example.nhom4.data.bean.Post;
 import com.example.nhom4.data.repository.AuthRepository;
 import com.example.nhom4.data.repository.ChatRepository;
 
+/**
+ * ViewModel phục vụ PostFragment: tìm/khởi tạo conversation và gửi reply dạng widget.
+ */
 public class ReplyViewModel extends ViewModel {
 
     private final ChatRepository chatRepository;
@@ -26,6 +29,9 @@ public class ReplyViewModel extends ViewModel {
         return sendStatus;
     }
 
+    /**
+     * Tạo tin nhắn post_reply và gửi tới chủ bài viết.
+     */
     public void sendReply(String content, Post post) {
         if (content.isEmpty() || post == null) return;
 
@@ -39,7 +45,7 @@ public class ReplyViewModel extends ViewModel {
 
         // 1. Tìm hoặc tạo Conversation ID
         MutableLiveData<Resource<String>> conversationResult = new MutableLiveData<>();
-        chatRepository.findOrCreateConversation(currentUserId, post.getUserId(), conversationResult);
+        chatRepository.findOrCreateConversation(currentUserId, post.getUserId(), conversationResult); // Backend đảm bảo chỉ có 1 room
 
         // 2. Lắng nghe kết quả tìm ID -> Sau đó gửi tin
         conversationResult.observeForever(res -> {

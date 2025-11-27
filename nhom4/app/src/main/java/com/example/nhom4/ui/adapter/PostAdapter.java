@@ -11,6 +11,9 @@ import com.example.nhom4.ui.page.post.PostFragment;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Adapter cho ViewPager2 dọc của feed, mỗi trang là một {@link PostFragment}.
+ */
 public class PostAdapter extends FragmentStateAdapter {
 
     private final List<Post> postList = new ArrayList<>();
@@ -28,16 +31,24 @@ public class PostAdapter extends FragmentStateAdapter {
         notifyDataSetChanged();
     }
 
+    /**
+     * Tạo Fragment cho một bài đăng tại vị trí nhất định.
+     * @param position
+     * @return
+     */
     @NonNull
     @Override
     public Fragment createFragment(int position) {
         Post post = postList.get(position);
         // [FIX] Sử dụng phương thức newInstance mới nhận vào object Post
-        return PostFragment.newInstance(post);
+        return PostFragment.newInstance(post); // Truyền đủ dữ liệu post sang fragment
     }
 
+    /**
+     * Trả về số lượng bài đăng trong danh sách.
+     */
     @Override
     public int getItemCount() {
-        return postList.size();
+        return postList.size(); // ViewPager render đúng số bài
     }
 }

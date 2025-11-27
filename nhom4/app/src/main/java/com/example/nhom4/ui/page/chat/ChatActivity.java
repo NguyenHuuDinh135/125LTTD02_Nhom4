@@ -19,6 +19,9 @@ import com.example.nhom4.ui.viewmodel.ChatViewModel;
 import com.google.android.material.button.MaterialButton;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+/**
+ * Màn hình chat 1-1: hiển thị tin nhắn, gửi tin mới và load thông tin đối tác.
+ */
 public class ChatActivity extends AppCompatActivity {
 
     private ChatViewModel viewModel;
@@ -61,10 +64,13 @@ public class ChatActivity extends AppCompatActivity {
         // Sự kiện gửi
         btnSend.setOnClickListener(v -> {
             String content = etMessage.getText().toString();
-            viewModel.sendMessage(conversationId, content);
+            viewModel.sendMessage(conversationId, content); // ViewModel tự bỏ qua tin rỗng
         });
     }
 
+    /**
+     * Ánh xạ View và cấu hình toolbar (nếu tồn tại).
+     */
     private void initViews() {
         recyclerView = findViewById(R.id.rvMessages);
         etMessage = findViewById(R.id.etMessage);
@@ -80,6 +86,9 @@ public class ChatActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Chuẩn bị RecyclerView với ChatAdapter và layout stackBottom.
+     */
     private void setupRecyclerView() {
         adapter = new ChatAdapter(viewModel.getCurrentUserId());
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
@@ -88,6 +97,9 @@ public class ChatActivity extends AppCompatActivity {
         recyclerView.setAdapter(adapter);
     }
 
+    /**
+     * Theo dõi luồng tin nhắn và trạng thái gửi để cập nhật UI.
+     */
     private void observeViewModel() {
         // Quan sát tin nhắn
         viewModel.getMessages().observe(this, resource -> {
@@ -114,6 +126,9 @@ public class ChatActivity extends AppCompatActivity {
 
     // Load thông tin người kia để hiển thị lên Toolbar (Tạm thời gọi Firestore trực tiếp ở đây cho đơn giản UI)
     // Trong thực tế nên chuyển vào ViewModel loadPartnerInfo()
+    /**
+     * Tạm thời lấy thông tin user đối tác từ Firestore để hiển thị tiêu đề.
+     */
     private void loadPartnerInfo() {
         if (partnerId != null) {
             FirebaseFirestore.getInstance().collection("users").document(partnerId)

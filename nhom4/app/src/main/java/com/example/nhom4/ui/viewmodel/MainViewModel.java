@@ -18,6 +18,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+/**
+ * ViewModel trung tâm cho MainFragment/CenterFragment:
+ * - Lấy feed bài viết, mood, activity tham gia
+ * - Tạo bài post mới và xử lý mở khóa phần thưởng.
+ */
 public class MainViewModel extends ViewModel {
 
     private final PostRepository postRepository;
@@ -52,7 +57,7 @@ public class MainViewModel extends ViewModel {
     public LiveData<Resource<Mood>> getUnlockedReward() { return unlockedReward; }
 
     private void loadPosts() {
-        postRepository.getPosts(posts);
+        postRepository.getPosts(posts); // Snapshot listener trả dữ liệu feed
     }
 
     private void loadMoods() {
@@ -155,6 +160,9 @@ public class MainViewModel extends ViewModel {
     }
 
     // [MỚI] Mở khóa Mood Premium ngẫu nhiên
+    /**
+     * Random một mood premium và ghi nhận vào user khi hoàn thành target.
+     */
     private void unlockRandomPremiumMood(String activityId) {
         if (authRepository.getCurrentUser() == null) return;
         String uid = authRepository.getCurrentUser().getUid();

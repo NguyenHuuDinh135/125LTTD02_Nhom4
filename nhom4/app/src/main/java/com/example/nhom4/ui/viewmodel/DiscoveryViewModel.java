@@ -14,6 +14,9 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * ViewModel cho DiscoveryFragment: tải danh sách hội thoại và hoạt động đã tham gia.
+ */
 public class DiscoveryViewModel extends ViewModel {
 
     private final FirebaseFirestore db = FirebaseFirestore.getInstance();
@@ -50,7 +53,7 @@ public class DiscoveryViewModel extends ViewModel {
                         String conversationId = doc.getId();
                         List<String> members = (List<String>) doc.get("members");
                         if (members != null) {
-                            String friendId = members.get(0).equals(currentUserId) ? members.get(1) : members.get(0);
+                            String friendId = members.get(0).equals(currentUserId) ? members.get(1) : members.get(0); // Lấy id người còn lại
                             fetchFriendInfo(conversationId, friendId, list, snapshots.size());
                         }
                     }
@@ -58,6 +61,9 @@ public class DiscoveryViewModel extends ViewModel {
                 .addOnFailureListener(e -> conversations.postValue(Resource.error(e.getMessage(), null)));
     }
 
+    /**
+     * Sau khi biết conversationId, lấy thông tin basic của bạn bè để bind lên UI.
+     */
     private void fetchFriendInfo(String conversationId, String friendId, List<Conversation> list, int totalExpected) {
         db.collection("users").document(friendId).get()
                 .addOnSuccessListener(userDoc -> {
@@ -69,7 +75,7 @@ public class DiscoveryViewModel extends ViewModel {
                         list.add(conv);
                     }
                     if (list.size() > 0) {
-                        conversations.postValue(Resource.success(list));
+                        conversations.postValue(Resource.success(list)); // emit mỗi khi có đủ dữ liệu người bạn
                     }
                 });
     }

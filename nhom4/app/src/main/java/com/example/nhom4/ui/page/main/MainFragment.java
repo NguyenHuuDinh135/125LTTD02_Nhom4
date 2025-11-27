@@ -44,6 +44,12 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Fragment chính mô phỏng giao diện đăng bài kiểu BeReal:
+ * - Tab mood: chọn cảm xúc và đăng nhanh không cần camera
+ * - Tab activity: bật camera, ghi lại hoạt động và chia sẻ
+ * Đồng thời tích hợp cameraX, danh sách hoạt động/mood và bottom sheet bạn bè.
+ */
 public class MainFragment extends Fragment {
 
     // --- UI COMPONENTS ---
@@ -93,6 +99,9 @@ public class MainFragment extends Fragment {
         toggleGroupContentType.check(R.id.btnTabMood);
     }
 
+    /**
+     * Ánh xạ toàn bộ view trong layout và các nút điều hướng.
+     */
     private void initViews(View view) {
         modeSwitch = view.findViewById(R.id.modeSwitch);
         toggleGroupContentType = view.findViewById(R.id.toggleGroupContentType);
@@ -113,6 +122,9 @@ public class MainFragment extends Fragment {
         imgSendIcon = bottomBar.findViewById(R.id.img_send_icon);
     }
 
+    /**
+     * Chuẩn bị danh sách mood (ngang) và activity (dọc) với callback chọn item.
+     */
     private void setupRecyclers() {
         // Setup Mood Adapter
         moodAdapter = new MoodAdapter(new ArrayList<>(), mood -> {
@@ -131,6 +143,9 @@ public class MainFragment extends Fragment {
         activityRecyclerView.setAdapter(activityAdapter);
     }
 
+    /**
+     * Gắn listener cho toggle tab, switch camera, bottom bar và nút chụp.
+     */
     private void setupEventHandlers() {
         toggleGroupContentType.addOnButtonCheckedListener((group, checkedId, isChecked) -> {
             if (isChecked) {
@@ -166,6 +181,9 @@ public class MainFragment extends Fragment {
         });
     }
 
+    /**
+     * Lắng nghe tất cả luồng LiveData từ MainViewModel để cập nhật UI.
+     */
     private void observeViewModel() {
         // 1. Lắng nghe trạng thái Upload
         viewModel.getUploadStatus().observe(getViewLifecycleOwner(), resource -> {
@@ -210,6 +228,9 @@ public class MainFragment extends Fragment {
     }
 
     // Hiển thị Dialog chúc mừng
+    /**
+     * Hiển thị thông báo khi người dùng mở khóa mood premium.
+     */
     private void showRewardDialog(Mood mood) {
         new MaterialAlertDialogBuilder(requireContext())
                 .setTitle("🎉 CHÚC MỪNG! 🎉")
@@ -219,6 +240,9 @@ public class MainFragment extends Fragment {
                 .show();
     }
 
+    /**
+     * Gom caption + ảnh + lựa chọn mood/activity rồi gọi ViewModel tạo post.
+     */
     private void performPost() {
         String caption = edtCaptionOverlay.getText().toString();
         String imagePath = currentPhotoFile != null ? currentPhotoFile.getAbsolutePath() : null;
@@ -331,6 +355,9 @@ public class MainFragment extends Fragment {
         toggleCameraMode(true);
     }
 
+    /**
+     * Khởi động CameraX với chế độ preview + capture.
+     */
     private void startCamera() {
         if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
             requestPermissions(new String[]{Manifest.permission.CAMERA}, 1001);

@@ -15,6 +15,10 @@ import com.example.nhom4.ui.page.auth.LoginActivity;
 import com.example.nhom4.ui.page.auth.RegisterActivity;
 import com.example.nhom4.ui.viewmodel.AuthViewModel;
 
+/**
+ * Màn hình splash: kiểm tra trạng thái đăng nhập rồi điều hướng,
+ * nếu chưa đăng nhập thì hiện 2 nút đăng ký/đăng nhập với hiệu ứng fade-in.
+ */
 public class SplashActivity extends AppCompatActivity {
 
     private View btnSignUp;
@@ -39,6 +43,9 @@ public class SplashActivity extends AppCompatActivity {
         new Handler().postDelayed(this::checkUserStatus, 1000);
     }
 
+    /**
+     * Hỏi ViewModel xem user đã đăng nhập chưa để quyết định điều hướng.
+     */
     private void checkUserStatus() {
         // [MVVM] Hỏi ViewModel xem đã đăng nhập chưa, không gọi Firebase trực tiếp
         if (authViewModel.isLoggedIn()) {
@@ -46,10 +53,13 @@ public class SplashActivity extends AppCompatActivity {
             goToMainActivity();
         } else {
             // TRƯỜNG HỢP 2: Chưa đăng nhập -> Hiện nút sau 1 giây nữa
-            new Handler().postDelayed(this::showButtons, 1000);
+            new Handler().postDelayed(this::showButtons, 1000); // Đợi thêm để tạo hiệu ứng splash
         }
     }
 
+    /**
+     * Hiển thị bộ nút sau khi splash kết thúc.
+     */
     private void showButtons() {
         // Hiện nút lên
         btnSignUp.setVisibility(View.VISIBLE);
