@@ -73,4 +73,8 @@ dependencies {
     implementation("androidx.camera:camera-video:${cameraxVersion}")
     // Lưu ý: Dòng firebase-storage ở dưới bị trùng lặp, tôi đã giữ nguyên nhưng bạn có thể xóa bớt 1 dòng nếu muốn
     implementation("com.google.firebase:firebase-storage")
+
+    // Widget
+    implementation("com.squareup.picasso:picasso:2.71828")
+    implementation("androidx.glance:glance-appwidget:1.1.0")
 }
