@@ -72,3 +72,28 @@ public class AuthRepository {
                         // Tìm thấy documents -> Tồn tại -> Trả về TRUE (Báo lỗi cho user)
                         result.postValue(Resource.success(true));
                     } else {
+                        // Không thấy -> Chưa tồn tại -> Trả về FALSE (Hợp lệ)
+                        result.postValue(Resource.success(false));
+                    }
+                })
+                .addOnFailureListener(e -> result.postValue(Resource.error(e.getMessage(), null)));
+    }
+
+    // Lưu thông tin User mới vào Firestore
+    public void createNewUserProfile(String userId, String username, String email, MutableLiveData<Resource<Boolean>> result) {
+        result.postValue(Resource.loading(null));
+
+        Map<String, Object> userMap = new HashMap<>();
+        userMap.put("username", username);
+        userMap.put("email", email);
+        userMap.put("displayName", username);
+        userMap.put("uid", userId);
+        userMap.put("createdAt", com.google.firebase.Timestamp.now());
+        // Thêm các trường mặc định khác nếu cần (profilePhotoUrl: null...)
+
+        db.collection("users").document(userId)
+                .set(userMap)
+                .addOnSuccessListener(aVoid -> result.postValue(Resource.success(true)))
+                .addOnFailureListener(e -> result.postValue(Resource.error(e.getMessage(), false)));
+    }
+}

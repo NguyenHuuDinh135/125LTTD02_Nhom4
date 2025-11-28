@@ -118,15 +118,11 @@ public class ProfileActivity extends AppCompatActivity {
             AppWidgetManager appWidgetManager = getSystemService(AppWidgetManager.class);
             ComponentName myProvider = new ComponentName(this, com.example.nhom4.ui.page.widget.ActivityWidgetProvider.class);
 
-            if (appWidgetManager.isRequestPinAppWidgetSupported()) {
-                Intent pinnedWidgetCallbackIntent = new Intent(this, ProfileActivity.class);
-                PendingIntent successCallback = PendingIntent.getActivity(this, 0,
-                        pinnedWidgetCallbackIntent,
-                        PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
-
-                appWidgetManager.requestPinAppWidget(myProvider, null, successCallback);
-            } else {
+            if (!appWidgetManager.isRequestPinAppWidgetSupported()) {
                 Toast.makeText(this, "Launcher không hỗ trợ thêm widget", Toast.LENGTH_SHORT).show();
+            } else {
+                // Pin widget trực tiếp, không cần PendingIntent callback
+                appWidgetManager.requestPinAppWidget(myProvider, null, null);
             }
         } else {
             Toast.makeText(this, "Yêu cầu Android 8.0 trở lên để thêm widget từ app", Toast.LENGTH_SHORT).show();
@@ -139,87 +135,44 @@ public class ProfileActivity extends AppCompatActivity {
 
         String uid = user.getUid();
 
-        // ------------------------------------------------
-        // BƯỚC 1 — Lấy từ users trước
-        // ------------------------------------------------
-        db.collection("users").document(uid).get()
-                .addOnSuccessListener(userDoc -> {
-                    final String[] nameFromUsers = {null};
-                    final String[] emailFromUsers = {null};
-                    final String[] avatarFromUsers = {null};
+        db.collection("user_profile").document(uid).get()
+                .addOnSuccessListener(doc -> {
+                    String finalName = doc.getString("username");
+                    String finalEmail = doc.getString("email");
+                    String finalBirthday = doc.getString("birthday");
+                    String finalAvatar = doc.getString("profilePhotoUrl");
 
+                    // Nếu chưa có, dùng giá trị mặc định
+                    if (finalName == null) finalName = "Chưa có tên";
+                    if (finalEmail == null) finalEmail = user.getEmail();
+                    if (finalBirthday == null) finalBirthday = "Chưa có ngày sinh";
 
-                    if (userDoc.exists()) {
-                        nameFromUsers[0] = userDoc.getString("username");
-                        emailFromUsers[0] = userDoc.getString("email");
-                        avatarFromUsers[0] = userDoc.getString("profilePhotoUrl");
+                    // Gán UI
+                    etName.setText(finalName);
+                    etEmail.setText(finalEmail);
+                    etBirthday.setText(finalBirthday);
 
+                    if (finalAvatar != null && !finalAvatar.isEmpty()) {
+                        Glide.with(this).load(finalAvatar).into(ivProfileAvatar);
                     }
 
-                    // ------------------------------------------------
-                    // BƯỚC 2 — Lấy tiếp user_profile
-                    // ------------------------------------------------
-                    db.collection("user_profile").document(uid).get()
-                            .addOnSuccessListener(profileDoc -> {
+                    // Nếu chưa tồn tại -> tạo mới
+                    if (!doc.exists()) {
+                        Map<String, Object> defaultProfile = new HashMap<>();
+                        defaultProfile.put("uid", uid);
+                        defaultProfile.put("username", finalName);
+                        defaultProfile.put("email", finalEmail);
+                        defaultProfile.put("birthday", finalBirthday);
+                        defaultProfile.put("profilePhotoUrl", finalAvatar);
 
-                                String finalName = "Chưa có tên";
-                                String finalEmail = user.getEmail();
-                                String finalBirthday = "Chưa có ngày sinh";
-                                String finalAvatar = null;
-
-                                // nếu user_profile có dữ liệu
-                                if (profileDoc.exists()) {
-                                    if (profileDoc.getString("username") != null)
-                                        finalName = profileDoc.getString("username");
-
-                                    if (profileDoc.getString("email") != null)
-                                        finalEmail = profileDoc.getString("email");
-
-                                    if (profileDoc.getString("birthday") != null)
-                                        finalBirthday = profileDoc.getString("birthday");
-
-                                    if (profileDoc.getString("profilePhotoUrl") != null)
-                                        finalAvatar = profileDoc.getString("profilePhotoUrl");
-                                }
-
-                                // ------------------------------------------------
-                                // ƯU TIÊN DỮ LIỆU TỪ users
-                                // ------------------------------------------------
-                                if (nameFromUsers[0] != null) finalName = nameFromUsers[0];
-                                if (emailFromUsers[0] != null) finalEmail = emailFromUsers[0];
-                                if (avatarFromUsers[0] != null) finalAvatar = avatarFromUsers[0];
-
-
-                                // ------------------------------------------------
-                                // Gán lên UI
-                                // ------------------------------------------------
-                                etName.setText(finalName);
-                                etEmail.setText(finalEmail);
-                                etBirthday.setText(finalBirthday);
-
-                                if (finalAvatar != null && !finalAvatar.isEmpty()) {
-                                    Glide.with(this).load(finalAvatar).into(ivProfileAvatar);
-                                }
-
-                                // ------------------------------------------------
-                                // Nếu cả 2 collection đều chưa có -> tạo profile mặc định
-                                // ------------------------------------------------
-                                if (!profileDoc.exists()) {
-                                    Map<String, Object> defaultProfile = new HashMap<>();
-                                    defaultProfile.put("uid", uid);
-                                    defaultProfile.put("username", finalName);
-                                    defaultProfile.put("email", finalEmail);
-                                    defaultProfile.put("birthday", finalBirthday);
-                                    defaultProfile.put("profilePhotoUrl", finalAvatar);
-
-                                    db.collection("user_profile").document(uid).set(defaultProfile);
-                                }
-                            })
-                            .addOnFailureListener(e ->
-                                    Toast.makeText(this, "Lỗi load profile: " + e.getMessage(), Toast.LENGTH_SHORT).show()
-                            );
-                });
+                        db.collection("user_profile").document(uid).set(defaultProfile);
+                    }
+                })
+                .addOnFailureListener(e ->
+                        Toast.makeText(this, "Lỗi load profile: " + e.getMessage(), Toast.LENGTH_SHORT).show()
+                );
     }
+
 
 
     private void saveProfileChanges() {

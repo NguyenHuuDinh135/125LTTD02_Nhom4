@@ -49,4 +49,8 @@ public class StreakRepository {
                     List<Post> posts = snapshots.toObjects(Post.class);
 
                     // Trả về danh sách thành công
-                    result.postValue(Resource.success(
+                    result.postValue(Resource.success(posts));
+                })
+                .addOnFailureListener(e -> result.postValue(Resource.error(e.getMessage(), null)));
+    }
+}
