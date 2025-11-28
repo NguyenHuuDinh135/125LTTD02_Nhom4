@@ -26,7 +26,11 @@ android {
             )
         }
     }
+
     compileOptions {
+        // --- BẬT TÍNH NĂNG DESUGARING TẠI ĐÂY ---
+        isCoreLibraryDesugaringEnabled = true
+
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
@@ -35,6 +39,9 @@ android {
 val cameraxVersion = "1.3.4"
 
 dependencies {
+    // --- THÊM THƯ VIỆN DESUGARING TẠI ĐÂY ---
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
+
     implementation("com.github.bumptech.glide:glide:4.16.0")
     implementation(libs.appcompat)
     implementation(libs.material)
@@ -46,6 +53,10 @@ dependencies {
     implementation(libs.impress)
     implementation(libs.firebase.crashlytics.buildtools)
     implementation(libs.firebase.database)
+    implementation(libs.rendering)
+    implementation(libs.firebase.storage)
+    implementation(libs.datastore.core)
+    implementation(libs.contentpager)
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
@@ -60,5 +71,10 @@ dependencies {
     implementation("androidx.camera:camera-lifecycle:${cameraxVersion}")
     implementation("androidx.camera:camera-view:${cameraxVersion}")
     implementation("androidx.camera:camera-video:${cameraxVersion}")
-    implementation ("com.google.firebase:firebase-storage")
+    // Lưu ý: Dòng firebase-storage ở dưới bị trùng lặp, tôi đã giữ nguyên nhưng bạn có thể xóa bớt 1 dòng nếu muốn
+    implementation("com.google.firebase:firebase-storage")
+
+    // Widget
+    implementation("com.squareup.picasso:picasso:2.71828")
+    implementation("androidx.glance:glance-appwidget:1.1.0")
 }

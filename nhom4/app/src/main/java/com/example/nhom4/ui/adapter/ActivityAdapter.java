@@ -1,6 +1,5 @@
 package com.example.nhom4.ui.adapter;
 
-import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -9,80 +8,137 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
 import com.example.nhom4.R;
 import com.example.nhom4.data.bean.Activity;
+import com.google.android.material.imageview.ShapeableImageView;
+import com.google.android.material.progressindicator.LinearProgressIndicator;
 
+import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Adapter hiển thị danh sách hoạt động/habit trong màn hình streak.
+ * Chịu trách nhiệm bind dữ liệu mô hình {@link Activity} vào layout item_habit_card.
+ */
 public class ActivityAdapter extends RecyclerView.Adapter<ActivityAdapter.ActivityViewHolder> {
 
-    private final List<Activity> activityList;
-    private final OnActivitySelectedListener listener; // Biến lưu listener
-    private int selectedPosition = -1; // Vị trí item đang được chọn
+    private List<Activity> list;
+    private final OnItemClickListener listener;
 
-    // 1. Định nghĩa Interface để Fragment có thể lắng nghe
-    public interface OnActivitySelectedListener {
-        void onActivitySelected(Activity activity);
+    /**
+     * Interface thông báo ra ngoài khi người dùng bấm vào một habit.
+     */
+    public interface OnItemClickListener {
+        void onItemClick(Activity activity);
     }
 
-    // 2. Cập nhật Constructor để nhận thêm Listener
-    public ActivityAdapter(List<Activity> activityList, OnActivitySelectedListener listener) {
-        this.activityList = activityList;
+    /**
+     * @param list        dữ liệu ban đầu, có thể rỗng
+     * @param listener    callback xử lý sự kiện click
+     */
+    public ActivityAdapter(List<Activity> list, OnItemClickListener listener) {
+        this.list = (list != null) ? list : new ArrayList<>();
         this.listener = listener;
     }
 
+    /**
+     * Thay toàn bộ danh sách và refresh RecyclerView.
+     */
+    public void setList(List<Activity> list) {
+        // Ghi đè danh sách cũ bằng dữ liệu mới từ ViewModel
+        this.list = list;
+        notifyDataSetChanged();
+    }
+
+    /**
+     * Tạo ViewHolder cho mỗi item.
+     * @param parent
+     * @param viewType
+     * @return
+     */
     @NonNull
     @Override
     public ActivityViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        // Lưu ý: Đảm bảo layout item_activity_text của bạn phù hợp (ví dụ dùng MaterialCardView hoặc TextView có background selector)
-        View view = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.item_activity_text, parent, false);
+        // Inflate mỗi item card habit
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_habit_card, parent, false);
         return new ActivityViewHolder(view);
     }
 
+    /**
+     * Bind dữ liệu mô hình vào ViewHolder.
+     * @param holder
+     * @param position
+     */
     @Override
     public void onBindViewHolder(@NonNull ActivityViewHolder holder, int position) {
-        Activity activity = activityList.get(position);
-        holder.activityTitle.setText(activity.getTitle());
+        Activity activity = list.get(position); // Lấy activity tương ứng vị trí hiện tại
 
-        // 3. Xử lý hiệu ứng Visual khi được chọn
-        if (selectedPosition == position) {
-            // Item đang chọn: Đổi màu hoặc style (Ví dụ: Đậm, màu primary container)
-            holder.itemView.setBackgroundColor(Color.LTGRAY); // Hoặc setBackgroundResource(...)
-            holder.activityTitle.getPaint().setFakeBoldText(true);
+        holder.tvTitle.setText(activity.getTitle());
+        holder.tvDesc.setText(activity.getDescription() != null ? activity.getDescription() : "");
+
+        // Load ảnh hoạt động bằng Glide
+        if (activity.getImageUrl() != null && !activity.getImageUrl().isEmpty()) {
+            Glide.with(holder.itemView.getContext())
+                    .load(activity.getImageUrl())
+                    .placeholder(R.drawable.ic_launcher_foreground)
+                    .centerCrop()
+                    .into(holder.imgIcon);
         } else {
-            // Item bình thường
-            holder.itemView.setBackgroundColor(Color.TRANSPARENT);
-            holder.activityTitle.getPaint().setFakeBoldText(false);
+            holder.imgIcon.setImageResource(R.drawable.ic_launcher_foreground);
         }
 
-        // 4. Bắt sự kiện Click
+        // Xử lý Progress Bar
+        int target = activity.getTarget() > 0 ? activity.getTarget() : 10; // Tránh chia cho 0
+        int progress = activity.getProgress();
+        int percent = (progress * 100) / target; // Quy đổi sang %
+        if (percent > 100) percent = 100;
+
+        if (holder.progressBar != null) {
+            holder.progressBar.setProgress(percent);
+        }
+
+        if (holder.tvProgressText != null) {
+            holder.tvProgressText.setText(progress + "/" + target);
+        }
+
+        // Click
         holder.itemView.setOnClickListener(v -> {
-            // Cập nhật vị trí chọn để redraw lại giao diện
-            int previousPosition = selectedPosition;
-            selectedPosition = holder.getAdapterPosition();
-
-            notifyItemChanged(previousPosition); // Reset item cũ
-            notifyItemChanged(selectedPosition); // Highlight item mới
-
-            // Gọi callback về Fragment
-            if (listener != null) {
-                listener.onActivitySelected(activity);
-            }
+            if (listener != null) listener.onItemClick(activity); // Bắn callback ra Fragment
         });
     }
 
+    /**
+     * Trả về số lượng item trong danh sách.
+     */
     @Override
     public int getItemCount() {
-        return activityList.size();
+        return list.size();
     }
 
-    static class ActivityViewHolder extends RecyclerView.ViewHolder {
-        TextView activityTitle;
+    /**
+     * ViewHolder quản lý toàn bộ view trong một thẻ habit.
+     */
+    public static class ActivityViewHolder extends RecyclerView.ViewHolder {
+        ShapeableImageView imgIcon; // iv_habit_icon
+        TextView tvTitle;           // tv_habit_title
+        TextView tvDesc;            // tv_habit_desc
+        LinearProgressIndicator progressBar;
+        TextView tvProgressText;    // tv_habit_status (hoặc tv_progress_text tùy XML)
 
         public ActivityViewHolder(@NonNull View itemView) {
             super(itemView);
-            activityTitle = itemView.findViewById(R.id.activity_title);
+            // Ánh xạ ID theo item_habit_card.xml
+            imgIcon = itemView.findViewById(R.id.iv_habit_icon);
+            tvTitle = itemView.findViewById(R.id.tv_habit_title);
+            tvDesc = itemView.findViewById(R.id.tv_habit_desc);
+
+            // Bạn cần đảm bảo file XML có các ID này, hoặc sửa ở đây cho khớp
+            progressBar = itemView.findViewById(R.id.progressBar);
+            // Nếu chưa có id progressBar trong XML thì thêm vào, hoặc dùng tạm 1 view khác
+
+            // Tạm thời map vào tv_habit_status_label nếu XML của bạn dùng tên đó
+            tvProgressText = itemView.findViewById(R.id.tv_habit_status_label);
         }
     }
 }

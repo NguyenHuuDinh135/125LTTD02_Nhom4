@@ -1,36 +1,45 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/bts_layot"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/bts_layot"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?attr/colorSurface"
     android:orientation="vertical"
-    android:paddingTop="15dp"
     android:paddingLeft="22dp"
-    android:paddingRight="22dp"
-    android:background="?attr/colorSurface">
+    android:paddingTop="15dp"
+    android:paddingRight="22dp">
+
+    <!-- Thanh nắm (Handle) -->
     <com.google.android.material.button.MaterialButton
-        android:layout_width="wrap_content"
-        android:layout_height="20dp"
+        android:layout_width="40dp"
+        android:layout_height="6dp"
         android:layout_gravity="center"
-        android:clickable="false"
         android:layout_marginBottom="20dp"
-        android:backgroundTint="?attr/colorOnSurfaceInverse"/>
+        android:backgroundTint="?attr/colorOnSurfaceInverse"
+        android:clickable="false"
+        android:minHeight="0dp"
+        android:insetTop="0dp"
+        android:insetBottom="0dp"
+        app:cornerRadius="3dp" />
+
+    <!-- Tiêu đề chính & Số lượng bạn bè -->
     <com.google.android.material.textview.MaterialTextView
         android:id="@+id/txtCount"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:layout_marginBottom="20dp"
-        android:text="20 Friends"
-        android:textStyle="bold"
+        android:drawableStart="@drawable/baseline_favorite_24"
+        android:drawablePadding="8dp"
+        android:drawableTint="@color/md_theme_errorContainer_highContrast"
+        android:text="@string/b_n_b"
         android:textAppearance="@style/TextAppearance.Material3.TitleLarge"
         android:textColor="?attr/colorOnSurface"
-        android:drawableStart="@drawable/baseline_favorite_24"
-        android:drawableTint="@color/md_theme_errorContainer_highContrast"
-        android:drawablePadding="8dp"/>
+        android:textStyle="bold" />
 
+    <!-- Ô tìm kiếm -->
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/search_input_layout"
         android:layout_width="match_parent"
@@ -52,7 +61,7 @@
             android:id="@+id/et_search"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Tìm kiếm bạn mới"
+            android:hint="@string/t_m_ki_m_b_n_m_is"
             android:inputType="text"
             android:maxLines="1"
             android:textColor="?attr/colorOnSurface"
@@ -63,78 +72,86 @@
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1"
         android:layout_marginTop="8dp"
-        android:layout_marginBottom="4dp">
+        android:layout_marginBottom="4dp"
+        android:layout_weight="1">
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:paddingLeft="26dp"
-            android:paddingRight="26dp">
+            android:paddingLeft="4dp"
+            android:paddingRight="4dp">
+
+            <!-- PHẦN 1: LỜI MỜI KẾT BẠN (Trước đây là Your Friends) -->
             <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/tv_section_requests"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Your Friends"
-                android:textStyle="bold"
-                android:textSize="18dp"
-                android:textAppearance="@style/TextAppearance.Material3.BodyLarge"
-                android:textColor="?attr/colorOnSurfaceVariant"
                 android:layout_marginTop="16dp"
                 android:drawableStart="@drawable/friend_ic"
+                android:drawablePadding="8dp"
                 android:drawableTint="?attr/colorOnSurfaceVariant"
-                android:drawablePadding="8dp"/>
+                android:text="@string/l_i_m_i_k_t_b_n"
+                android:textAppearance="@style/TextAppearance.Material3.BodyLarge"
+                android:textColor="?attr/colorOnSurfaceVariant"
+                android:textSize="18sp"
+                android:textStyle="bold" />
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rcvFriends"
                 android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_weight="1"
-                tools:itemCount="3"
-                tools:listitem="@layout/item_friend"/>
+                android:layout_height="wrap_content"
+                android:nestedScrollingEnabled="false"
+                tools:itemCount="2"
+                tools:listitem="@layout/item_recommend_friend" />
+
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_see_more_1"
                 style="@style/Widget.Material3.Button.TonalButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
-                android:layout_marginTop="16dp"
-                android:text="Xem thêm bạn"
+                android:layout_marginTop="8dp"
+                android:text="@string/xem_t_t_c"
                 android:textAllCaps="false"
                 app:cornerRadius="12dp" />
 
-            <!-- SUGGESTIONS label -->
+            <!-- PHẦN 2: GỢI Ý KẾT BẠN -->
             <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/tv_section_suggestions"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Suggestions"
-                android:textStyle="bold"
-                android:textSize="18dp"
-                android:textAppearance="@style/TextAppearance.Material3.BodyLarge"
                 android:layout_marginTop="16dp"
-                android:textColor="?attr/colorOnSurfaceVariant"
                 android:drawableStart="@drawable/star_shine_ic"
+                android:drawablePadding="8dp"
                 android:drawableTint="?attr/colorOnSurfaceVariant"
-                android:drawablePadding="8dp"/>
+                android:text="@string/g_i_cho_b_n"
+                android:textAppearance="@style/TextAppearance.Material3.BodyLarge"
+                android:textColor="?attr/colorOnSurfaceVariant"
+                android:textSize="18sp"
+                android:textStyle="bold" />
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rcvSuggestions"
                 android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:nestedScrollingEnabled="false"
                 tools:itemCount="3"
-                tools:listitem="@layout/item_recommend_friend"/>
+                tools:listitem="@layout/item_recommend_friend" />
+
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_see_more_2"
                 style="@style/Widget.Material3.Button.TonalButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
-                android:layout_marginTop="16dp"
-                android:text="Xem thêm"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="24dp"
+                android:text="@string/sxem_th_m"
                 android:textAllCaps="false"
-                app:cornerRadius="12dp" />
+                app:cornerRadius="12dp"
+                tools:ignore="HardcodedText" />
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 </LinearLayout>
-

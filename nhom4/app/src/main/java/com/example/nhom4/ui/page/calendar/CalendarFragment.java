@@ -9,9 +9,13 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.viewpager2.widget.ViewPager2;
 import com.example.nhom4.R;
+import com.example.nhom4.ui.adapter.CalendarPagerAdapter;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 
+/**
+ * Fragment bao bọc ViewPager2 cho phần lịch, gồm 2 tab (Streak & Habit).
+ */
 public class CalendarFragment extends Fragment {
 
     private TabLayout tabLayout;
@@ -34,6 +38,9 @@ public class CalendarFragment extends Fragment {
         setupViewPager();
     }
 
+    /**
+     * Khởi tạo adapter và gán tiêu đề/icon cho từng tab.
+     */
     private void setupViewPager() {
         CalendarPagerAdapter adapter = new CalendarPagerAdapter(this);
         viewPager.setAdapter(adapter);
@@ -46,6 +53,6 @@ public class CalendarFragment extends Fragment {
                 tab.setText("Habit");
                 tab.setIcon(R.drawable.ic_walk); // Đảm bảo bạn có icon này
             }
-        }).attach();
+        }).attach(); // Liên kết TabLayout với ViewPager2
     }
 }

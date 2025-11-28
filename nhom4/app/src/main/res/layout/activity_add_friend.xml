@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="?attr/colorSurface"
-    tools:context=".ui.page.AddFriendActivity">
+    tools:context=".ui.page.auth.AddFriendActivity">
 
     <!-- 1. Toolbar chuẩn M3 -->
     <com.google.android.material.appbar.MaterialToolbar

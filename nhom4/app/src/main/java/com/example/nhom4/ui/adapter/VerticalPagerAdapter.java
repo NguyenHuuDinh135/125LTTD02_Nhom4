@@ -4,73 +4,60 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 
-import com.example.nhom4.ui.page.main.MainFragment;
+import com.example.nhom4.data.bean.Post;
+import com.example.nhom4.ui.page.main.MainFragment; // Import MainFragment
 import com.example.nhom4.ui.page.post.PostFragment;
 
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * Adapter điều khiển ViewPager2 dọc của màn hình chính:
+ * trang đầu là camera/MainFragment, các trang sau là feed bài đăng.
+ */
 public class VerticalPagerAdapter extends FragmentStateAdapter {
 
-    // Giả sử mình muốn hiển thị 20 bài post mẫu
-    private static final int NUM_POSTS = 20;
+    private List<Post> postList = new ArrayList<>();
 
     public VerticalPagerAdapter(@NonNull Fragment fragment) {
         super(fragment);
     }
 
+    /**
+     * Nhận danh sách post mới (từ ViewModel) và refresh.
+     */
+    public void setPostList(List<Post> postList) {
+        this.postList = postList;
+        notifyDataSetChanged();
+    }
+
+    /**
+     * Tạo Fragment cho một trang tại vị trí nhất định.
+     * @param position
+     * @return
+     */
     @NonNull
     @Override
     public Fragment createFragment(int position) {
+        // [QUAN TRỌNG] Vị trí 0 luôn là MainFragment (Màn hình Camera)
         if (position == 0) {
-            //
-            // Vị trí đầu tiên luôn là Màn hình chính (Camera/Check-in)
             return new MainFragment();
-        } else {
-            // Các vị trí còn lại (1, 2, 3...) là Post
-            // Vì position 0 là MainFragment, nên index của Post sẽ là (position - 1)
-            int postIndex = position - 1;
-
-            return createFakePostFragment(postIndex);
         }
+
+        // Các vị trí tiếp theo (1, 2, 3...) là danh sách bài đăng (Feed)
+        // Ta phải trừ đi 1 để lấy đúng index trong list
+        if (!postList.isEmpty() && position - 1 < postList.size()) {
+            Post post = postList.get(position - 1);
+            return PostFragment.newInstance(post); // Trang feed tương ứng với bài đăng
+        }
+
+        // Fallback nếu có lỗi index
+        return new Fragment(); // Không nên xảy ra, nhưng trả về fragment rỗng để tránh crash
     }
 
     @Override
     public int getItemCount() {
-        // Tổng số trang = 1 (MainFragment) + Số lượng bài Post
-        return 1 + NUM_POSTS;
-    }
-
-    // Hàm tạo dữ liệu giả (Logic lấy từ PostAdapter cũ của bạn)
-    private Fragment createFakePostFragment(int index) {
-        String imageUrl = "https://picsum.photos/seed/" + (index + 100) + "/800/1200"; // +100 để đổi seed khác
-        String captionStart, captionEnd, timestamp, avatarGroup;
-
-        // Logic switch case để tạo dữ liệu đa dạng
-        switch (index % 4) {
-            case 0:
-                captionStart = "Angry";
-                captionEnd = "It's Ok";
-                timestamp = "Bạn 22 thg 9";
-                avatarGroup = "Quangvinh12, Tue122,...";
-                break;
-            case 1:
-                captionStart = "Happy";
-                captionEnd = "Feeling Good";
-                timestamp = "Lisa 21 thg 9";
-                avatarGroup = "Lisa, Jisoo,...";
-                break;
-            case 2:
-                captionStart = "Sad";
-                captionEnd = "Rainy Day";
-                timestamp = "Bạn 20 thg 9";
-                avatarGroup = "Jennie,...";
-                break;
-            default:
-                captionStart = "Excited";
-                captionEnd = "New Project";
-                timestamp = "Rose 19 thg 9";
-                avatarGroup = "Rose, Quangvinh12,...";
-                break;
-        }
-
-        return PostFragment.newInstance(captionStart, captionEnd, imageUrl, timestamp, avatarGroup);
+        // Tổng số trang = 1 (Camera) + số lượng bài post
+        return 1 + postList.size();
     }
 }

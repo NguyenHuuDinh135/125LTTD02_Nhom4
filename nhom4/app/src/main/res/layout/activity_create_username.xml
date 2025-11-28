@@ -7,7 +7,7 @@
     android:layout_height="match_parent"
     android:background="?attr/colorSurface"
     android:padding="24dp"
-    tools:context=".ui.page.CreateUsernameActivity">
+    tools:context=".ui.page.auth.CreateUsernameActivity">
 
     <TextView
         android:id="@+id/textViewTitle"
@@ -71,7 +71,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="48dp"
-        android:text="Tiếp tục"
+        android:text="@string/ti_p_t_c1"
         android:textSize="16sp"
         android:textStyle="bold"
         android:paddingVertical="16dp"

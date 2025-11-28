@@ -10,13 +10,17 @@ import com.example.nhom4.R;
 import com.example.nhom4.data.bean.User;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.imageview.ShapeableImageView;
+import com.bumptech.glide.Glide;
 
 import java.util.List;
 
+/**
+ * Adapter cho danh sách người dùng được gợi ý kết bạn.
+ */
 public class UserSuggestionAdapter extends RecyclerView.Adapter<UserSuggestionAdapter.UserViewHolder> {
 
-    private List<User> userList;
-    private OnAddFriendClickListener listener;
+    private final List<User> userList;
+    private final OnAddFriendClickListener listener;
 
     public interface OnAddFriendClickListener {
         void onAddClick(User user);
@@ -27,54 +31,67 @@ public class UserSuggestionAdapter extends RecyclerView.Adapter<UserSuggestionAd
         this.listener = listener;
     }
 
+    /**
+     * Tạo ViewHolder cho một item người dùng.
+     * @param parent
+     * @param viewType
+     * @return
+     */
     @NonNull
     @Override
     public UserViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        // Đảm bảo bạn có layout item_recommend_friend.xml
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_recommend_friend, parent, false);
         return new UserViewHolder(view);
     }
 
+    /**
+     * Bind dữ liệu người dùng vào ViewHolder, xử lý sự kiện nút thêm bạn.
+     * @param holder
+     * @param position
+     */
     @Override
     public void onBindViewHolder(@NonNull UserViewHolder holder, int position) {
         User user = userList.get(position);
-        holder.tvName.setText(user.getUsername());
 
-        // Load avatar using Glide
-        // Make sure to add a placeholder drawable if you haven't already
-        // or remove the .placeholder() line if you don't have one.
-        com.bumptech.glide.Glide.with(holder.itemView.getContext())
+        holder.tvName.setText(user.getUsername());
+        
+        // Sử dụng Glide để tải ảnh avatar
+        Glide.with(holder.itemView.getContext())
                 .load(user.getProfilePhotoUrl())
-                .placeholder(R.drawable.avatar_placeholder) // Optional: default image
-                .error(R.drawable.avatar_placeholder)       // Optional: error image
+                .placeholder(R.drawable.ic_launcher_foreground)
+                .error(R.drawable.ic_launcher_foreground)
                 .into(holder.ivAvatar);
 
         holder.btnAdd.setOnClickListener(v -> {
-            listener.onAddClick(user);
-            holder.btnAdd.setText("Đã gửi");
-            holder.btnAdd.setEnabled(false);
+            if (listener != null) {
+                listener.onAddClick(user);
+                holder.btnAdd.setText("Đã gửi"); // Đổi trạng thái nút để báo cho người dùng
+                holder.btnAdd.setEnabled(false);
+            }
         });
     }
 
-
+    /**
+     * Trả về số lượng người dùng trong danh sách.
+     */
     @Override
     public int getItemCount() {
-        return userList.size();
+        return userList != null ? userList.size() : 0;
     }
 
+    /**
+     * ViewHolder giữ thông tin hiển thị avatar + nút kết bạn.
+     */
     public static class UserViewHolder extends RecyclerView.ViewHolder {
         TextView tvName;
         MaterialButton btnAdd;
-        // Add the ImageView for the avatar
         ShapeableImageView ivAvatar;
 
         public UserViewHolder(@NonNull View itemView) {
             super(itemView);
-            // CORRECTED IDs:
-            tvName = itemView.findViewById(R.id.tv_username); // Changed from tv_friend_name
-            btnAdd = itemView.findViewById(R.id.btn_add);     // Changed from btn_add_friend
-            ivAvatar = itemView.findViewById(R.id.iv_avatar); // Bind the avatar too
+            tvName = itemView.findViewById(R.id.tv_username);
+            btnAdd = itemView.findViewById(R.id.btn_add);
+            ivAvatar = itemView.findViewById(R.id.iv_avatar);
         }
     }
-
 }

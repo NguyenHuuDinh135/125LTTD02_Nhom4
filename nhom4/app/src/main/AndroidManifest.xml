@@ -9,6 +9,7 @@
     <uses-feature android:name="android.hardware.camera" android:required="false" />
 
     <application
+        android:name=".MyApplication"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -28,17 +29,36 @@
 
         <!-- LoginActivity không còn là Activity khởi chạy -->
         <activity
-            android:name=".ui.page.LoginActivity"
+            android:name=".ui.page.auth.LoginActivity"
             android:exported="false" />
 
         <activity
             android:name=".MainActivity"
             android:exported="false" />
-        <activity android:name=".ui.page.AddFriendActivity" android:exported="false" />
-        <activity android:name=".ui.page.ProfileActivity" android:exported="false" />
-        <activity android:name=".ui.page.CreateUsernameActivity" android:exported="false" />
+        <activity android:name=".ui.page.auth.AddFriendActivity" android:exported="false" />
+        <activity android:name=".ui.page.calendar.ProfileActivity" android:exported="false" />
+        <activity android:name=".ui.page.auth.CreateUsernameActivity" android:exported="false" />
         <!-- Các activity khác... -->
+        <activity android:name=".ui.page.auth.RegisterActivity" android:exported="false" />
+        <activity android:name=".ui.page.chat.ChatActivity" android:exported="false" android:windowSoftInputMode="adjustResize" />/>
 
+        <!-- Widget Provider -->
+        <receiver
+            android:name=".ui.page.widget.ActivityWidgetProvider"
+            android:exported="false">
+
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/activity_widget_info" />
+        </receiver>
+        <service
+            android:name=".ui.page.widget.ActivityWidgetService"
+            android:permission="android.permission.BIND_JOB_SERVICE"
+            android:exported="false" />
 
     </application>
 

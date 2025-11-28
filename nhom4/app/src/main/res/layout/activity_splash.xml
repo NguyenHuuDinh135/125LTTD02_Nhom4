@@ -9,7 +9,6 @@
     tools:context=".ui.page.SplashActivity">
 
     <!-- 1. Hình minh họa -->
-    <!-- Sử dụng guideline để kiểm soát vị trí tốt hơn trên màn hình dài/ngắn -->
     <ImageView
         android:id="@+id/imgIllustration"
         android:layout_width="0dp"
@@ -37,7 +36,6 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent">
 
-        <!-- Nên dùng app icon chuẩn vector nếu có -->
         <ImageView
             android:layout_width="40dp"
             android:layout_height="40dp"
@@ -70,7 +68,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 
-    <!-- 4. Nút Đăng ký (Nổi bật nhất) -->
+    <!-- 4. Nút Đăng ký (THÊM VISIBILITY INVISIBLE) -->
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnSignUp"
         style="@style/Widget.Material3.Button"
@@ -82,11 +80,12 @@
         android:text="@string/t_o_m_t_t_i_kho_n"
         android:textSize="16sp"
         android:textStyle="bold"
+        android:visibility="invisible"
         app:layout_constraintBottom_toTopOf="@+id/txtLogin"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 
-    <!-- 5. Nút Đăng nhập (Text Button) -->
+    <!-- 5. Nút Đăng nhập (THÊM VISIBILITY INVISIBLE) -->
     <com.google.android.material.button.MaterialButton
         android:id="@+id/txtLogin"
         style="@style/Widget.Material3.Button.TextButton"
@@ -97,6 +96,7 @@
         android:textColor="?attr/colorOnSurface"
         android:textSize="16sp"
         android:textStyle="bold"
+        android:visibility="invisible"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
