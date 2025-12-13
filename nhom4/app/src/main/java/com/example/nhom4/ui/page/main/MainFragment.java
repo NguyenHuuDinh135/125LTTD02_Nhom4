@@ -10,6 +10,7 @@ import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -59,6 +60,8 @@ public class MainFragment extends Fragment {
     private PreviewView cameraPreviewView;
     private ImageView imgMoodPreview, imgCapturedDisplay;
     private EditText edtCaptionOverlay;
+
+    private TextView textViewGreeting;
 
     // --- Bottom Bar ---
     private View btnNavLeft, btnNavRight, containerShutter;
@@ -129,6 +132,8 @@ public class MainFragment extends Fragment {
         // Setup Mood Adapter
         moodAdapter = new MoodAdapter(new ArrayList<>(), mood -> {
             this.selectedMood = mood;
+            edtCaptionOverlay.setText(mood.getName());
+            edtCaptionOverlay.setVisibility(View.VISIBLE);
             if (isMoodTabSelected && !modeSwitch.isChecked()) updatePreviewImage();
         });
         moodRecyclerView.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
@@ -311,8 +316,15 @@ public class MainFragment extends Fragment {
         if (modeSwitch.isChecked()) {
             takePhoto();
         } else {
-            Toast.makeText(getContext(), "Bật camera để chụp ảnh nhé!", Toast.LENGTH_SHORT).show();
-            modeSwitch.setChecked(true);
+            // Nếu Camera đang TẮT
+            if (isMoodTabSelected) {
+                // [MỚI] Nếu đang ở tab Mood -> Cho phép đăng bài ngay (không cần ảnh)
+                performPost();
+            } else {
+                // Nếu đang ở tab Activity -> Vẫn bắt buộc chụp ảnh minh chứng
+                Toast.makeText(getContext(), "Bật camera để chụp ảnh hoạt động nhé!", Toast.LENGTH_SHORT).show();
+                modeSwitch.setChecked(true);
+            }
         }
     }
 
