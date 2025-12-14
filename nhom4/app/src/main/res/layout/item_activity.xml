@@ -1,75 +1,75 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical">
+    android:layout_marginVertical="8dp"
+    app:cardBackgroundColor="?attr/colorSurfaceContainerHigh"
+    app:cardCornerRadius="24dp"
+    app:cardElevation="0dp"
+    app:strokeWidth="0dp">
 
-    <LinearLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:layout_marginBottom="8dp"
-        android:gravity="center_vertical"
-        android:orientation="horizontal"
-        android:paddingTop="16dp"
-        android:paddingBottom="16dp">
+        android:padding="16dp">
 
         <com.google.android.material.imageview.ShapeableImageView
-            android:id="@+id/myImageView"
-            android:layout_width="56dp"
-            android:layout_height="56dp"
-            android:layout_gravity="top"
-            android:src="@drawable/element"
-            app:strokeColor="@color/cardview_light_background" />
+            android:id="@+id/iv_activity_icon"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:scaleType="centerCrop"
+            android:src="@drawable/ic_launcher_foreground"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.Medium" />
 
         <LinearLayout
+            android:id="@+id/text_container"
             android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_marginLeft="16dp"
-            android:layout_weight="2"
-            android:gravity="center_vertical"
-            android:orientation="vertical">
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="8dp"
+            android:orientation="vertical"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/iv_arrow_details"
+            app:layout_constraintStart_toEndOf="@+id/iv_activity_icon"
+            app:layout_constraintTop_toTopOf="parent">
 
             <com.google.android.material.textview.MaterialTextView
-                android:id="@+id/textView2"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/activity"
-                android:textSize="12sp" />
-
-            <com.google.android.material.textview.MaterialTextView
-                android:id="@+id/textView3"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/att1"
-                android:textColor="@color/cardview_light_background"
-                android:textSize="16sp"
-                android:textStyle="bold"
-                app:lineHeight="24sp" />
-
-            <com.google.android.material.textview.MaterialTextView
-                android:id="@+id/textView4"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:lines="3"
-                android:text="@string/detail"
-                android:textColor="@color/cardview_light_background"
-                android:textSize="14sp"
-                app:lineHeight="24sp" />
-        </LinearLayout>
-
-<!--        Cho image end-->
-        <ImageView
-                android:id="@+id/imageView6"
+                android:id="@+id/tv_activity_name"
+                style="@style/TextAppearance.Material3.TitleLarge"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:contentDescription="@string/cometo"
-                android:paddingLeft="10dp"
-                android:paddingRight="10dp"
-                android:layout_gravity="bottom"
-                app:srcCompat="@drawable/outline_arrow_forward_ios_24" />
+                android:text="Chạy bộ"
+                android:textStyle="bold"
+                android:textColor="?attr/colorOnSurface" />
 
-    </LinearLayout>
-</LinearLayout>
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/tv_activity_time"
+                style="@style/TextAppearance.Material3.BodyMedium"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="15:00 - 15:30 (30p)"
+                android:textColor="?attr/colorPrimary"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <ImageView
+            android:id="@+id/iv_arrow_details"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:contentDescription="@string/todo"
+            android:src="@drawable/outline_arrow_forward_ios_24"
+            app:tint="?attr/colorOnSurfaceVariant"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</com.google.android.material.card.MaterialCardView>

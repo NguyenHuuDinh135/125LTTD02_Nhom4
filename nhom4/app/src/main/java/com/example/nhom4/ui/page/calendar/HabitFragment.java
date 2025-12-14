@@ -70,8 +70,25 @@ public class HabitFragment extends Fragment {
         viewModel = new ViewModelProvider(this).get(ActivityViewModel.class);
 
         recyclerView = view.findViewById(R.id.rv_habits);
-        btnAddHabit = view.findViewById(R.id.btn_add_habit);
+    // Trong onViewCreated hoặc onCreate
+        MaterialButton btnAddHabit = view.findViewById(R.id.btn_add_habit);
 
+        btnAddHabit.setOnClickListener(v -> {
+            AddHabitBottomSheet bottomSheet = new AddHabitBottomSheet();
+
+            // Lắng nghe kết quả trả về
+            bottomSheet.setListener((name, desc, timeRange, isRepeat, imageUri) -> {
+                // 1. Tạo object Activity mới từ dữ liệu nhận được
+                // Activity newActivity = new Activity(name, desc, ...);
+
+                // 2. Thêm vào list và cập nhật Adapter
+                // adapter.add(newActivity);
+
+                Toast.makeText(getContext(), "Đã thêm: " + name, Toast.LENGTH_SHORT).show();
+            });
+
+            bottomSheet.show(getParentFragmentManager(), "AddHabitBottomSheet");
+        });
         setupRecyclerView();
         setupEvents();
         observeViewModel();

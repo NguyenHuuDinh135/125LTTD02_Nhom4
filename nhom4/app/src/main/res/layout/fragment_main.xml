@@ -2,38 +2,80 @@
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/root_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="?attr/colorSurface">
 
-    <!-- 1. Lời chào -->
-    <com.google.android.material.textview.MaterialTextView
-        android:id="@+id/textViewGreeting"
-        style="@style/TextAppearance.Material3.HeadlineMedium"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:id="@+id/header_container"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="24dp"
-        android:text="Heyy, What's up guyy?"
-        android:textColor="?attr/colorOnSurface"
-        android:textStyle="bold"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:gravity="center"
+        android:orientation="vertical"
+        app:layout_constraintTop_toTopOf="parent">
 
-    <!-- 2. Main Card (Chứa Camera, Mood Image VÀ Activity List) -->
+        <com.google.android.material.imageview.ShapeableImageView
+            android:id="@+id/imgHeaderIcon"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:layout_marginBottom="8dp"
+            android:scaleType="centerCrop"
+            android:visibility="invisible"
+            app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.Full" />
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/textViewGreeting"
+            style="@style/TextAppearance.Material3.HeadlineMedium"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="Heyy, What's up?"
+            android:textColor="?attr/colorOnSurface"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/inputLayoutContent"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="24dp"
+        android:layout_marginTop="8dp"
+        android:visibility="gone"
+        app:boxBackgroundMode="none"
+        app:hintTextColor="?attr/colorOnSurfaceVariant"
+        app:layout_constraintTop_toBottomOf="@id/header_container">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/edtContent"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@android:color/transparent"
+            android:gravity="center_horizontal"
+            android:inputType="textCapSentences|textMultiLine"
+            android:maxLines="3"
+            android:padding="0dp"
+            android:textColor="?attr/colorOnSurface"
+            android:textSize="16sp" />
+    </com.google.android.material.textfield.TextInputLayout>
+
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/mainCard"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginHorizontal="24dp"
-        android:layout_marginTop="24dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="12dp"
         app:cardBackgroundColor="?attr/colorSurfaceContainerHigh"
-        app:cardCornerRadius="28dp"
-        app:cardElevation="4dp"
+        app:cardCornerRadius="32dp"
+        app:cardElevation="0dp"
+        app:strokeWidth="0dp"
         app:layout_constraintDimensionRatio="1:1"
+        app:layout_constraintBottom_toTopOf="@+id/control_layout"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/textViewGreeting">
+        app:layout_constraintTop_toBottomOf="@id/inputLayoutContent">
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
@@ -46,29 +88,38 @@
                 android:visibility="gone" />
 
             <ImageView
-                android:id="@+id/imgCapturedDisplay"
+                android:id="@+id/btnFlash"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_margin="16dp"
+                android:background="@drawable/bg_circle_translucent"
+                android:padding="8dp"
+                android:src="@drawable/baseline_flash_off_24"
+                android:visibility="gone"
+                app:tint="#FFFFFF"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"/>
+
+            <ImageView
+                android:id="@+id/imgMainDisplay"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:scaleType="centerCrop"
                 android:visibility="gone"/>
 
-            <ImageView
-                android:id="@+id/imgMoodPreview"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:padding="40dp"
-                android:scaleType="fitCenter"
-                android:src="@drawable/ic_launcher_foreground"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
-
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/activity_recycler_view"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:background="?attr/colorSurfaceContainerHigh"
+                android:clipToPadding="false"
+                android:padding="16dp"
+                android:visibility="gone" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/mood_recycler_view"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
                 android:padding="16dp"
                 android:clipToPadding="false"
                 android:visibility="gone"
@@ -76,49 +127,37 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
-            <EditText
-                android:id="@+id/edtCaptionOverlay"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_margin="16dp"
-                android:background="@android:color/transparent"
-                android:fontFamily="sans-serif-medium"
-                android:gravity="center"
-                android:hint="Thêm một tin nhắn..."
-                android:textColorHint="#CCFFFFFF"
-                android:textColor="@android:color/white"
-                android:textSize="16sp"
-                android:visibility="gone"
-                android:imeOptions="actionDone"
-                android:inputType="textCapSentences"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintVertical_bias="0.8" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </com.google.android.material.card.MaterialCardView>
 
-    <!-- 3. Control Layout -->
+    <com.google.android.material.imageview.ShapeableImageView
+        android:id="@+id/imgAnimationFloat"
+        android:layout_width="64dp"
+        android:layout_height="64dp"
+        android:scaleType="centerCrop"
+        android:visibility="gone"
+        app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.Full"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"/>
+
     <LinearLayout
         android:id="@+id/control_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:paddingHorizontal="24dp"
+        android:paddingBottom="12dp"
         android:gravity="center_horizontal"
-        app:layout_constraintTop_toBottomOf="@id/mainCard">
+        app:layout_constraintBottom_toTopOf="@+id/bottom_bar">
 
-        <!-- Toggle Mood / Activity -->
         <com.google.android.material.button.MaterialButtonToggleGroup
             android:id="@+id/toggleGroupContentType"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             app:singleSelection="true"
             app:selectionRequired="true"
-            app:checkedButton="@id/btnTabMood"
-            android:layout_marginBottom="8dp">
+            app:checkedButton="@id/btnTabMood">
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnTabMood"
@@ -134,29 +173,8 @@
                 android:layout_height="wrap_content"
                 android:text="Hoạt động" />
         </com.google.android.material.button.MaterialButtonToggleGroup>
-
-        <!-- Switch Camera -->
-        <com.google.android.material.switchmaterial.SwitchMaterial
-            android:id="@+id/modeSwitch"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:checked="false"
-            android:text="Bật Camera"
-            android:layout_marginBottom="12dp"/>
-
-        <!-- List Mood (Vẫn ở dưới để chọn) -->
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/mood_recycler_view"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:visibility="visible"/>
-
-        <!-- Đã xóa activity_recycler_view ở đây vì chuyển lên mainCard -->
-
     </LinearLayout>
 
-    <!-- 4. Bottom Bar -->
     <include
         android:id="@+id/bottom_bar"
         layout="@layout/component_bottom_bar_main"

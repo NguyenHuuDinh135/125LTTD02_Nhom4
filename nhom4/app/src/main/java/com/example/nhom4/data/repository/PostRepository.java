@@ -1,9 +1,14 @@
 package com.example.nhom4.data.repository;
 
 import android.net.Uri;
+import android.util.Log;
+
+import androidx.lifecycle.MutableLiveData;
 
 import com.example.nhom4.data.Resource;
 import com.example.nhom4.data.bean.Post;
+import com.google.android.gms.tasks.Task;
+import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -14,47 +19,41 @@ import com.google.firebase.storage.StorageReference;
 import java.util.ArrayList;
 import java.util.List;
 
-import androidx.lifecycle.MutableLiveData;
-
 /**
  * PostRepository
  * ----------------------------------------------------
- * Class này chịu trách nhiệm quản lý dữ liệu Bài viết (Newsfeed):
- * 1. Lấy danh sách bài viết từ Firestore (lọc theo bạn bè).
- * 2. Upload ảnh và tạo bài viết mới.
+ * Quản lý dữ liệu bài viết: Lấy tin (Feed) và Đăng bài (Create).
+ * Đã tối ưu hóa tốc độ tải bằng cách xử lý song song (Parallel execution).
  */
 public class PostRepository {
+
     private final FirebaseFirestore db = FirebaseFirestore.getInstance();
     private final FirebaseStorage storage = FirebaseStorage.getInstance();
     private final FirebaseAuth auth = FirebaseAuth.getInstance();
 
-    /**
-     * Hàm lấy bài viết (Get Posts)
-     * ----------------------------
-     * Logic phức tạp: Cần kết hợp dữ liệu từ 3 bảng (Relationships -> Posts -> Users).
-     *
-     * Quy trình 3 bước:
-     * B1: Lấy danh sách ID bạn bè.
-     * B2: Lắng nghe toàn bộ bài viết (Realtime) và lọc thủ công (Client-side filter).
-     * B3: Điền thông tin người đăng (Tên, Avatar) vào từng bài viết.
-     */
-    // [SỬA] Hàm lấy bài viết: Chỉ lấy bài của bạn bè + chính mình
+    // =================================================================================
+    // 1. LẤY DANH SÁCH BÀI VIẾT (FEED)
+    // =================================================================================
+
     public void getPosts(MutableLiveData<Resource<List<Post>>> result) {
-        if (auth.getCurrentUser() == null) return;
+        if (auth.getCurrentUser() == null) {
+            result.postValue(Resource.error("Chưa đăng nhập", null));
+            return;
+        }
         String currentUserId = auth.getCurrentUser().getUid();
 
-        result.postValue(Resource.loading(null)); // Báo UI hiện loading
+        result.postValue(Resource.loading(null));
 
-        // --- BƯỚC 1: Xác định "Mình được xem bài của ai?" ---
-        // Lấy danh sách ID bạn bè (những người có status = "accepted")
+        // BƯỚC 1: Lấy danh sách ID bạn bè (để lọc bài viết)
         db.collection("relationships")
                 .whereArrayContains("members", currentUserId)
                 .whereEqualTo("status", "accepted")
                 .get()
                 .addOnSuccessListener(snapshots -> {
                     List<String> friendIds = new ArrayList<>();
-                    friendIds.add(currentUserId); // QUAN TRỌNG: Thêm chính mình vào để thấy bài của mình
+                    friendIds.add(currentUserId); // [QUAN TRỌNG] Thêm chính mình để thấy bài mình vừa đăng
 
+                    // Duyệt qua các mối quan hệ để lấy ID đối phương
                     for (DocumentSnapshot doc : snapshots) {
                         List<String> members = (List<String>) doc.get("members");
                         if (members != null) {
@@ -66,121 +65,136 @@ public class PostRepository {
                         }
                     }
 
-                    // --- BƯỚC 2: Query bài viết (Realtime) ---
-                    // Lưu ý: Firestore khó query "vừa sort thời gian, vừa lọc theo list bạn bè".
-                    // Nên ta lấy bài viết về rồi tự lọc bằng code Java (Client-side).
+                    // BƯỚC 2: Lắng nghe Realtime bảng 'posts'
+                    // Lưu ý: Dùng addSnapshotListener để tự động cập nhật khi có bài mới
                     db.collection("posts")
                             .orderBy("createdAt", Query.Direction.DESCENDING) // Bài mới nhất lên đầu
                             .addSnapshotListener((postSnapshots, e) -> {
                                 if (e != null) {
+                                    Log.e("PostRepo", "Listen failed.", e);
                                     result.postValue(Resource.error(e.getMessage(), null));
                                     return;
                                 }
 
                                 if (postSnapshots != null) {
-                                    List<Post> filteredList = new ArrayList<>();
+                                    List<Post> tempPosts = new ArrayList<>();
 
-                                    // Vòng lặp lọc bài viết (Client-side filtering)
+                                    // Lọc client-side: Chỉ lấy bài của người trong list friendIds
                                     for (DocumentSnapshot doc : postSnapshots) {
                                         Post post = doc.toObject(Post.class);
                                         if (post != null) {
-                                            // [QUAN TRỌNG] Chỉ thêm nếu userId nằm trong list bạn bè
+                                            // Kiểm tra quyền xem
                                             if (friendIds.contains(post.getUserId())) {
                                                 post.setPostId(doc.getId());
-                                                filteredList.add(post);
+                                                tempPosts.add(post);
                                             }
                                         }
                                     }
 
-                                    // Nếu lọc xong mà không có bài nào
-                                    if (filteredList.isEmpty()) {
+                                    if (tempPosts.isEmpty()) {
                                         result.postValue(Resource.success(new ArrayList<>()));
                                         return;
                                     }
 
-                                    // --- BƯỚC 3: "Join" bảng User để lấy tên và avatar ---
-                                    // Gọi hàm đệ quy để xử lý bất đồng bộ, tránh lỗi hiển thị thiếu tên
-                                    loadUserInfoRecursive(filteredList, 0, new ArrayList<>(), result);
+                                    // BƯỚC 3: Tải thông tin User (Avatar, Tên) SONG SONG cho siêu tốc
+                                    fetchUsersForPostsParallel(tempPosts, result);
                                 }
                             });
                 })
-                .addOnFailureListener(e -> result.postValue(Resource.error("Lỗi lấy danh sách bạn: " + e.getMessage(), null)));
-    }
-
-    /**
-     * Helper: Load thông tin user tuần tự (Recursive)
-     * ------------------------------------------------
-     * TẠI SAO DÙNG ĐỆ QUY?
-     * Vì việc gọi db...get() là bất đồng bộ (Async).
-     * Nếu dùng vòng lặp 'for', code sẽ chạy hết vòng lặp TRƯỚC KHI dữ liệu user kịp tải về.
-     * Cách này đảm bảo: Tải xong User cho bài 1 -> Mới tải tiếp cho bài 2 -> ... -> Xong hết mới trả về UI.
-     */
-    private void loadUserInfoRecursive(List<Post> sourceList, int index, List<Post> finalResult, MutableLiveData<Resource<List<Post>>> liveData) {
-        // Điều kiện dừng: Khi đã duyệt hết danh sách
-        if (index >= sourceList.size()) {
-            liveData.postValue(Resource.success(finalResult)); // Trả về danh sách hoàn chỉnh
-            return;
-        }
-
-        Post currentPost = sourceList.get(index);
-
-        // Truy vấn thông tin người đăng bài
-        db.collection("users").document(currentPost.getUserId()).get()
-                .addOnSuccessListener(userDoc -> {
-                    if (userDoc.exists()) {
-                        // Map dữ liệu User vào bài viết
-                        currentPost.setUserName(userDoc.getString("username"));
-                        currentPost.setUserAvatar(userDoc.getString("profilePhotoUrl"));
-                    } else {
-                        // Fallback nếu không tìm thấy user
-                        currentPost.setUserName("Người dùng");
-                    }
-                    finalResult.add(currentPost);
-
-                    // GỌI LẠI CHÍNH NÓ: Tăng index lên 1 để xử lý bài tiếp theo
-                    loadUserInfoRecursive(sourceList, index + 1, finalResult, liveData);
-                })
                 .addOnFailureListener(e -> {
-                    // Nếu lỗi mạng, vẫn thêm bài viết vào list nhưng để tên mặc định
-                    currentPost.setUserName("Người dùng");
-                    finalResult.add(currentPost);
-                    loadUserInfoRecursive(sourceList, index + 1, finalResult, liveData);
+                    result.postValue(Resource.error("Lỗi lấy danh sách bạn bè: " + e.getMessage(), null));
                 });
     }
 
     /**
-     * Tạo bài viết mới
-     * Chia làm 2 trường hợp:
-     * 1. Có ảnh: Upload ảnh lên Storage -> Lấy URL -> Lưu vào Firestore.
-     * 2. Không ảnh: Lưu thẳng vào Firestore.
+     * Kỹ thuật Tải Song Song (Parallel Fetching):
+     * Gom tất cả request lấy thông tin User vào 1 danh sách và chạy cùng lúc.
+     * Nhanh hơn rất nhiều so với chạy vòng lặp tuần tự.
      */
-    public void createPost(Post post, Uri imageUri, MutableLiveData<Resource<Boolean>> result) {
+    private void fetchUsersForPostsParallel(List<Post> posts, MutableLiveData<Resource<List<Post>>> result) {
+        List<Task<DocumentSnapshot>> tasks = new ArrayList<>();
+
+        // 1. Tạo danh sách các nhiệm vụ (Task) cần làm
+        for (Post post : posts) {
+            tasks.add(db.collection("users").document(post.getUserId()).get());
+        }
+
+        // 2. Chạy tất cả Task cùng lúc và đợi khi XONG HẾT (whenAllSuccess)
+        Tasks.whenAllSuccess(tasks).addOnSuccessListener(objects -> {
+            // objects là danh sách kết quả (DocumentSnapshot) trả về theo đúng thứ tự
+            for (int i = 0; i < objects.size(); i++) {
+                DocumentSnapshot userDoc = (DocumentSnapshot) objects.get(i);
+                Post post = posts.get(i); // Bài viết tương ứng
+
+                if (userDoc.exists()) {
+                    post.setUserName(userDoc.getString("username"));
+                    post.setUserAvatar(userDoc.getString("profilePhotoUrl"));
+                } else {
+                    post.setUserName("Người dùng ẩn danh");
+                }
+            }
+
+            // 3. Trả về UI danh sách đã đầy đủ thông tin
+            result.postValue(Resource.success(posts));
+        });
+    }
+
+    // =================================================================================
+    // 2. ĐĂNG BÀI VIẾT MỚI (CREATE)
+    // =================================================================================
+
+    public void createPost(String caption, String photoPath, String moodName, String activityTitle, MutableLiveData<Resource<Boolean>> result) {
+        if (auth.getCurrentUser() == null) return;
+
         result.postValue(Resource.loading(null));
 
-        if (imageUri != null) {
-            // --- CASE 1: CÓ ẢNH ---
-            // Đặt tên file theo timestamp để tránh trùng lặp
+        Post post = new Post();
+        post.setUserId(auth.getCurrentUser().getUid());
+        post.setCaption(caption);
+        post.setCreatedAt(new com.google.firebase.Timestamp(new java.util.Date()));
+
+        // Phân loại Mood hay Activity
+        if (moodName != null) {
+            post.setType("mood");
+            post.setMoodName(moodName);
+            // Có thể set thêm iconUrl cho mood nếu cần
+        } else if (activityTitle != null) {
+            post.setType("activity");
+            post.setActivityTitle(activityTitle);
+        } else {
+            post.setType("normal");
+        }
+
+        // Xử lý ảnh (nếu có)
+        if (photoPath != null) {
+            Uri fileUri = Uri.fromFile(new java.io.File(photoPath));
             String fileName = "posts/" + post.getUserId() + "/" + System.currentTimeMillis() + ".jpg";
             StorageReference ref = storage.getReference().child(fileName);
 
-            ref.putFile(imageUri)
+            ref.putFile(fileUri)
                     .addOnSuccessListener(taskSnapshot ->
-                            // Upload xong, cần lấy download URL
                             ref.getDownloadUrl().addOnSuccessListener(uri -> {
-                                post.setPhotoUrl(uri.toString()); // Gán link ảnh vào object Post
-                                savePostToFirestore(post, result); // Lưu vào DB
+                                post.setPhotoUrl(uri.toString());
+                                savePostToFirestore(post, result);
                             }))
-                    .addOnFailureListener(e -> result.postValue(Resource.error("Upload failed: " + e.getMessage(), false)));
+                    .addOnFailureListener(e -> result.postValue(Resource.error("Lỗi upload ảnh: " + e.getMessage(), false)));
         } else {
-            // --- CASE 2: KHÔNG CÓ ẢNH ---
+            // Đăng bài không ảnh (ví dụ Mood)
             savePostToFirestore(post, result);
         }
     }
 
-    // Hàm phụ trợ lưu data vào Firestore để tránh viết lặp code
+    // Hàm phụ lưu vào Firestore
     private void savePostToFirestore(Post post, MutableLiveData<Resource<Boolean>> result) {
         db.collection("posts").add(post)
-                .addOnSuccessListener(doc -> result.postValue(Resource.success(true)))
-                .addOnFailureListener(e -> result.postValue(Resource.error(e.getMessage(), false)));
+                .addOnSuccessListener(documentReference -> {
+                    // Thành công!
+                    // Lưu ý: Nhờ addSnapshotListener ở hàm getPosts,
+                    // UI bên Feed sẽ tự động nhận được bài mới này ngay lập tức.
+                    result.postValue(Resource.success(true));
+                })
+                .addOnFailureListener(e -> {
+                    result.postValue(Resource.error("Lỗi lưu bài viết: " + e.getMessage(), false));
+                });
     }
 }
