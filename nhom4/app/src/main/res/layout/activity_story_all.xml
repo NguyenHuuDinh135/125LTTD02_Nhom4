@@ -148,41 +148,17 @@
 
         <!-- Bottom Thumbnails RecyclerView -->
 
-        <com.google.android.material.tabs.TabLayout
-            android:id="@+id/tabDots"
-            style="@style/Widget.Material3.TabLayout"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:background="@android:color/transparent"
-            android:minHeight="0dp"
-            android:paddingTop="0dp"
-            android:paddingBottom="0dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.498"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/cardImageContainer"
-            app:tabContentStart="0dp"
-            app:tabGravity="center"
-            app:tabIndicatorColor="@android:color/transparent"
-            app:tabIndicatorFullWidth="false"
-            app:tabIndicatorHeight="0dp"
-            app:tabMode="fixed"
-            app:tabPaddingEnd="4dp"
-            app:tabPaddingStart="4dp"
-            app:tabRippleColor="@null" />
-
         <com.google.android.material.textview.MaterialTextView
             android:id="@+id/tvTimestamp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
+            android:layout_marginTop="16dp"
             android:text="@string/_23_44"
             android:textAppearance="?attr/textAppearanceBodyMedium"
             android:textColor="?attr/colorOnSurfaceVariant"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tabDots" />
+            app:layout_constraintTop_toBottomOf="@id/cardImageContainer" />
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recyclerViewThumbnails"
