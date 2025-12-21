@@ -17,6 +17,7 @@ import com.google.android.material.button.MaterialButton;
 import com.google.android.material.imageview.ShapeableImageView; // QUAN TRỌNG
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -28,6 +29,10 @@ public class FriendRequestAdapter extends RecyclerView.Adapter<FriendRequestAdap
     private OnRequestActionListener listener;
     private FirebaseFirestore db;
 
+    // Thêm để hỗ trợ giới hạn 5 item (chỉ dùng trong FriendsBottomSheet)
+    private boolean isLimitedMode = true;        // Mặc định bật giới hạn 5 item
+    private static final int LIMIT_COUNT = 5;
+
     /**
      * Callback để màn hình bên ngoài xử lý hành động Accept/Decline.
      */
@@ -37,7 +42,7 @@ public class FriendRequestAdapter extends RecyclerView.Adapter<FriendRequestAdap
     }
 
     public FriendRequestAdapter(List<FriendRequest> requestList, OnRequestActionListener listener) {
-        this.requestList = requestList;
+        this.requestList = requestList == null ? new ArrayList<>() : requestList;
         this.listener = listener;
         db = FirebaseFirestore.getInstance();
     }
@@ -46,10 +51,10 @@ public class FriendRequestAdapter extends RecyclerView.Adapter<FriendRequestAdap
      * Thay danh sách lời mời mới và refresh lại RecyclerView.
      */
     public void setRequests(List<FriendRequest> requests) {
-        this.requestList = requests;
+        this.requestList = requests == null ? new ArrayList<>() : requests;
         notifyDataSetChanged();
     }
-    
+
     /**
      * Tạo ViewHolder cho mỗi item lời mời kết bạn.
      * @param parent
@@ -71,7 +76,7 @@ public class FriendRequestAdapter extends RecyclerView.Adapter<FriendRequestAdap
      */
     @Override
     public void onBindViewHolder(@NonNull RequestViewHolder holder, int position) {
-        FriendRequest request = requestList.get(position);
+        FriendRequest request = getCurrentList().get(position); // Lấy từ danh sách đang hiển thị
 
         // Load thông tin User
         db.collection("users").document(request.getRequesterId())
@@ -105,7 +110,47 @@ public class FriendRequestAdapter extends RecyclerView.Adapter<FriendRequestAdap
      */
     @Override
     public int getItemCount() {
-        return requestList != null ? requestList.size() : 0;
+        if (!isLimitedMode || requestList == null) {
+            return requestList == null ? 0 : requestList.size();
+        }
+        return Math.min(requestList.size(), LIMIT_COUNT);
+    }
+
+    /**
+     * Bật/tắt chế độ giới hạn 5 item (chỉ dùng trong FriendsBottomSheet)
+     */
+    public void setLimitedMode(boolean limited) {
+        if (this.isLimitedMode != limited) {
+            this.isLimitedMode = limited;
+            notifyDataSetChanged();
+        }
+    }
+
+    /**
+     * Trả về trạng thái hiện tại có đang giới hạn không
+     */
+    public boolean isLimitedMode() {
+        return isLimitedMode;
+    }
+
+    /**
+     * Trả về tổng số lời mời thực tế (để kiểm tra có cần hiện nút "Xem tất cả" không)
+     */
+    public int getFullItemCount() {
+        return requestList == null ? 0 : requestList.size();
+    }
+
+    /**
+     * Lấy danh sách đang hiển thị hiện tại (dùng trong onBind để tránh lỗi index)
+     */
+    private List<FriendRequest> getCurrentList() {
+        if (requestList == null) {
+            return new ArrayList<>();
+        }
+        if (!isLimitedMode) {
+            return requestList;
+        }
+        return requestList.size() > LIMIT_COUNT ? requestList.subList(0, LIMIT_COUNT) : requestList;
     }
 
     /**

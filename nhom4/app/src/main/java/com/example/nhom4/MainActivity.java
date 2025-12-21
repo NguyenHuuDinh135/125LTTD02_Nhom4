@@ -75,6 +75,7 @@ public class MainActivity extends AppCompatActivity {
                 // Đang ở Calendar -> Icon là hình người -> Bấm mở Profile
                 Intent intent = new Intent(MainActivity.this, ProfileActivity.class);
                 startActivity(intent);
+
             } else if (currentItem == 2) {
                 // Đang ở Discovery -> Icon là mũi tên back -> Bấm quay về Main
                 navigateToFeed();
@@ -84,8 +85,18 @@ public class MainActivity extends AppCompatActivity {
         // Click vào Avatar ở trang Main cũng mở Profile (tuỳ chọn)
         imgAvatar.setOnClickListener(v -> navigateToCalendar());
 
-        // Click nút Chat -> Sang màn hình Discovery (hoặc màn hình Chat nếu bạn có riêng)
-        btnChat.setOnClickListener(v -> navigateToDiscovery());
+        // Click nút bên phải (btnChat) - hành vi thay đổi theo trang
+        btnChat.setOnClickListener(v -> {
+            int currentItem = viewPagerMain.getCurrentItem();
+
+            if (currentItem == 0) {
+                // Đang ở Calendar -> bấm nút forward bên phải → về trang chính (Main)
+                navigateToFeed(); // position 1
+            } else if (currentItem == 1) {
+                // Click nút Chat -> Sang màn hình Discovery
+                navigateToDiscovery();
+            }
+        });
     }
 
     private void setupViewPager() {
