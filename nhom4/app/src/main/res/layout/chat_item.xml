@@ -14,7 +14,7 @@
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:layout_marginRight="8dp"
-            app:cardBackgroundColor="#CED2F0"
+            app:cardBackgroundColor="?android:attr/colorBackground"
             app:cardCornerRadius="0dp"
             app:cardElevation="0dp">
 
@@ -25,7 +25,7 @@
                 android:layout_gravity="center"
                 android:src="@drawable/avatar"
                 app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.Full"
-                app:strokeColor="@color/cardview_light_background" />
+                app:strokeColor="?android:attr/colorBackground" />
 
         </com.google.android.material.card.MaterialCardView>
 
@@ -42,7 +42,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/bray"
-                android:textColor="@color/cardview_light_background"
+                android:textColor="?android:attr/colorForeground"
                 android:textSize="16sp"
                 app:lineHeight="24sp" />
 
@@ -53,7 +53,7 @@
                 android:ellipsize="end"
                 android:maxLines="1"
                 android:text="@string/supporting_line_text_lorem_ipsum_dolor_sit_amet_consectetur"
-                android:textColor="@color/cardview_light_background"
+                android:textColor="?attr/colorOnSurfaceVariant"
                 android:textSize="16sp"
                 app:lineHeight="24sp" />
         </LinearLayout>
