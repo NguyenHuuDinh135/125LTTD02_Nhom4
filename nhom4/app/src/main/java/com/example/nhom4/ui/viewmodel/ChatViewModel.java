@@ -8,6 +8,7 @@ import com.example.nhom4.data.Resource;
 import com.example.nhom4.data.bean.Message;
 import com.example.nhom4.data.repository.AuthRepository;
 import com.example.nhom4.data.repository.ChatRepository;
+import com.example.nhom4.data.repository.FriendRepository;
 
 import java.util.List;
 
@@ -19,11 +20,13 @@ import java.util.List;
 public class ChatViewModel extends ViewModel {
 
     private final ChatRepository chatRepository;
+    private final FriendRepository friendRepository;
     private final AuthRepository authRepository;
 
     private final MutableLiveData<Resource<List<Message>>> messages = new MutableLiveData<>();
     private final MutableLiveData<Resource<Boolean>> sendStatus = new MutableLiveData<>();
-    private final MutableLiveData<Resource<Boolean>> deleteStatus = new MutableLiveData<>();
+    private final MutableLiveData<Resource<Boolean>> deleteConversationStatus = new MutableLiveData<>();
+    private final MutableLiveData<Resource<Boolean>> unFriendStatus = new MutableLiveData<>();
 
 
     private String currentUserId;
@@ -31,6 +34,7 @@ public class ChatViewModel extends ViewModel {
     public ChatViewModel() {
         chatRepository = new ChatRepository();
         authRepository = new AuthRepository();
+        friendRepository = new FriendRepository();
         if (authRepository.getCurrentUser() != null) {
             currentUserId = authRepository.getCurrentUser().getUid();
         }
@@ -38,7 +42,7 @@ public class ChatViewModel extends ViewModel {
 
     public LiveData<Resource<List<Message>>> getMessages() { return messages; }
     public LiveData<Resource<Boolean>> getSendStatus() { return sendStatus; }
-    public LiveData<Resource<Boolean>> getDeleteResult() { return  deleteStatus; }
+    public LiveData<Resource<Boolean>> getDeleteResult() { return  deleteConversationStatus; }
     public String getCurrentUserId() { return currentUserId; }
 
     // Bắt đầu lắng nghe tin nhắn khi có ConversationID
@@ -53,7 +57,7 @@ public class ChatViewModel extends ViewModel {
         if (currentUserId == null || content.trim().isEmpty()) return;
 
         Message msg = new Message(currentUserId, content.trim(), "text");
-        chatRepository.sendMessage(conversationId, msg, sendStatus); // Đẩy trạng thái LOADING/SUCCESS/ERROR
+        chatRepository.sendMessage(currentUserId, conversationId, msg, sendStatus); // Đẩy trạng thái LOADING/SUCCESS/ERROR
     }
 
     // [MỚI] Gửi tin nhắn Reply Post (Widget)
@@ -70,10 +74,13 @@ public class ChatViewModel extends ViewModel {
                 postTitle
         );
 
-        chatRepository.sendMessage(conversationId, msg, sendStatus);
+        chatRepository.sendMessage(currentUserId, conversationId, msg, sendStatus);
     }
 
     public  void deleteConversation(String conversationId) {
-        chatRepository.deleteConversation(conversationId, deleteStatus);
+        chatRepository.deleteConversation(conversationId, deleteConversationStatus);
+    }
+    public void unFriend(String friendId) {
+        friendRepository.unfriendUser(getCurrentUserId(), friendId, unFriendStatus);
     }
 }

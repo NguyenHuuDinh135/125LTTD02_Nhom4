@@ -67,7 +67,7 @@ public class ReplyViewModel extends ViewModel {
                 );
 
                 // Gửi
-                chatRepository.sendMessage(conversationId, msg, sendStatus);
+                chatRepository.sendMessage(currentUserId, conversationId, msg, sendStatus);
             } else if (res.status == Resource.Status.ERROR) {
                 sendStatus.setValue(Resource.error(res.message, false));
             }

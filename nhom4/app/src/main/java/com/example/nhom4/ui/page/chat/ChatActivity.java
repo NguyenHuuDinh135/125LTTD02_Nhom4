@@ -159,6 +159,7 @@ public class ChatActivity extends AppCompatActivity {
                 .setMessage("Bạn có chắc chắn muốn xóa toàn bộ tin nhắn với người này không? Hành động này không thể hoàn tác.")
                 .setPositiveButton("Xóa", (dialog, which) -> {
                     viewModel.deleteConversation(conversationId);
+                    viewModel.unFriend(partnerId);
                 })
                 .setNegativeButton("Hủy", null)
                 .show();
