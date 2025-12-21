@@ -130,4 +130,24 @@
     <string name="adde">Add</string>
     <string name="th_m_b_n">Thêm bạn</string>
     <string name="t_ch_i">Từ chối</string>
+    <string name="menu">Menu</string>
+    <string name="calendar">Calendar</string>
+    <string name="members">Members</string>
+    <string name="everyday">Everyday</string>
+    <string name="finished">Finished</string>
+    <string name="subtitle">Subtitle</string>
+    <string name="activity_title_placeholder">Activity Title</string>
+    <string name="activity_description_placeholder">Activity Description</string>
+    <string name="location_placeholder">Within 5 miles • $$-$$$</string>
+    <string name="time_range_placeholder">10:50 PM - 11:05 PM</string>
+    <string name="member_count_placeholder">3 member</string>
+    <string name="member_count_format">%1$d member</string>
+    <string name="story_image">Story Image</string>
+    <string name="story_thumbnail">Story Thumbnail</string>
+    <string name="thumbnail_image" />
+    <string name="ng_tr_c_11_gi">Ngủ Trước 11 giờ</string>
+    <string name="everday">Everday</string>
+    <string name="_10_50_pm_11_05_pm">10:50 PM - 11:05 PM</string>
+    <string name="_3_member">3 member</string>
+    <string name="habit_image" />
 </resources>
