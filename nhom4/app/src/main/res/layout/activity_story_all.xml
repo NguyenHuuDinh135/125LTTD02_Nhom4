@@ -160,19 +160,25 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/cardImageContainer" />
 
+        <!-- Bottom Thumbnails RecyclerView -->
+        <!-- Không cần LinearLayout bao ngoài vì RecyclerView nằm trực tiếp trong ConstraintLayout cha -->
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recyclerViewThumbnails"
-            android:layout_width="match_parent"
-            android:layout_height="80dp"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:scrollbars="horizontal"
+            android:layout_marginBottom="24dp"
             android:layout_marginTop="16dp"
-            android:layout_marginBottom="16dp"
-            android:paddingStart="8dp"
-            android:paddingEnd="8dp"
             android:clipToPadding="false"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/tvTimestamp"
+            app:layout_constraintVertical_bias="1.0"
             tools:listitem="@layout/item_story_thumbnail" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
