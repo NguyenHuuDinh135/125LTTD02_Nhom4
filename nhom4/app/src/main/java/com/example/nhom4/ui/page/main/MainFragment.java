@@ -4,12 +4,15 @@ import android.Manifest;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.util.Log;
+import android.util.Size;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.PathInterpolator;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -28,7 +31,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.example.nhom4.R;
-import com.example.nhom4.data.Resource; // Import Resource
+import com.example.nhom4.data.Resource;
 import com.example.nhom4.data.bean.Activity;
 import com.example.nhom4.data.bean.Mood;
 import com.example.nhom4.ui.adapter.ActivityAdapter;
@@ -36,34 +39,35 @@ import com.example.nhom4.ui.adapter.MoodAdapter;
 import com.example.nhom4.ui.page.friend.FriendsBottomSheet;
 import com.example.nhom4.ui.viewmodel.MainViewModel;
 import com.google.android.material.button.MaterialButtonToggleGroup;
-import com.google.android.material.dialog.MaterialAlertDialogBuilder; // Import Dialog
-import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.google.common.util.concurrent.ListenableFuture;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.List;
 
-/**
- * Fragment chính mô phỏng giao diện đăng bài kiểu BeReal:
- * - Tab mood: chọn cảm xúc và đăng nhanh không cần camera
- * - Tab activity: bật camera, ghi lại hoạt động và chia sẻ
- * Đồng thời tích hợp cameraX, danh sách hoạt động/mood và bottom sheet bạn bè.
- */
 public class MainFragment extends Fragment {
 
     // --- UI COMPONENTS ---
-    private SwitchMaterial modeSwitch;
     private MaterialButtonToggleGroup toggleGroupContentType;
     private RecyclerView moodRecyclerView, activityRecyclerView;
     private PreviewView cameraPreviewView;
-    private ImageView imgMoodPreview, imgCapturedDisplay;
-    private EditText edtCaptionOverlay;
+
+    // Các ImageViews quan trọng
+    private ImageView imgHeaderIcon;     // Icon tĩnh nhỏ trên Header (Đích đến của animation)
+    private ImageView imgMainDisplay;    // Ảnh to trong Card (Hiển thị GIF hoặc ảnh chụp)
+    private ImageView imgAnimationFloat; // View ảo dùng để bay
+    private ImageView btnFlash;          // Nút Flash
+
+    // Layout nhập liệu
+    private View inputLayoutContent;
+    private EditText edtContent;
+
+    private TextView textViewGreeting;
 
     // --- Bottom Bar ---
     private View btnNavLeft, btnNavRight, containerShutter;
     private ImageView imgSendIcon, iconNavLeft, iconNavRight;
 
+    // --- ADAPTERS ---
     private MoodAdapter moodAdapter;
     private ActivityAdapter activityAdapter;
 
@@ -71,11 +75,13 @@ public class MainFragment extends Fragment {
     private Mood selectedMood = null;
     private Activity selectedActivity = null;
     private boolean isMoodTabSelected = true;
+    private boolean isEditingMode = false; // True khi đang nhập nội dung (ẩn list, hiện ảnh to)
 
-    // Camera State
+    // --- CAMERA STATE ---
     private ProcessCameraProvider cameraProvider;
     private ImageCapture imageCapture;
     private CameraSelector currentCameraSelector = CameraSelector.DEFAULT_FRONT_CAMERA;
+    private int flashMode = ImageCapture.FLASH_MODE_OFF;
     private File currentPhotoFile = null;
 
     private MainViewModel viewModel;
@@ -90,29 +96,38 @@ public class MainFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         viewModel = new ViewModelProvider(requireActivity()).get(MainViewModel.class);
+
         initViews(view);
         setupRecyclers();
         setupEventHandlers();
         observeViewModel();
 
-        toggleCameraMode(false);
+        // Mặc định vào tab Mood
         toggleGroupContentType.check(R.id.btnTabMood);
+        switchToMoodTab();
     }
 
-    /**
-     * Ánh xạ toàn bộ view trong layout và các nút điều hướng.
-     */
     private void initViews(View view) {
-        modeSwitch = view.findViewById(R.id.modeSwitch);
+        // Header Area
+        textViewGreeting = view.findViewById(R.id.textViewGreeting);
+        imgHeaderIcon = view.findViewById(R.id.imgHeaderIcon);
+
+        // Input Area
+        inputLayoutContent = view.findViewById(R.id.inputLayoutContent);
+        edtContent = view.findViewById(R.id.edtContent);
+
+        // Main Card Area
         toggleGroupContentType = view.findViewById(R.id.toggleGroupContentType);
         moodRecyclerView = view.findViewById(R.id.mood_recycler_view);
         activityRecyclerView = view.findViewById(R.id.activity_recycler_view);
-
         cameraPreviewView = view.findViewById(R.id.cameraPreviewView);
-        imgMoodPreview = view.findViewById(R.id.imgMoodPreview);
-        imgCapturedDisplay = view.findViewById(R.id.imgCapturedDisplay);
-        edtCaptionOverlay = view.findViewById(R.id.edtCaptionOverlay);
+        imgMainDisplay = view.findViewById(R.id.imgMainDisplay);
+        btnFlash = view.findViewById(R.id.btnFlash);
 
+        // Floating View
+        imgAnimationFloat = view.findViewById(R.id.imgAnimationFloat);
+
+        // Bottom Bar
         View bottomBar = view.findViewById(R.id.bottom_bar);
         btnNavLeft = bottomBar.findViewById(R.id.btn_nav_left);
         iconNavLeft = (ImageView) btnNavLeft;
@@ -122,32 +137,205 @@ public class MainFragment extends Fragment {
         imgSendIcon = bottomBar.findViewById(R.id.img_send_icon);
     }
 
-    /**
-     * Chuẩn bị danh sách mood (ngang) và activity (dọc) với callback chọn item.
-     */
     private void setupRecyclers() {
-        // Setup Mood Adapter
-        moodAdapter = new MoodAdapter(new ArrayList<>(), mood -> {
-            this.selectedMood = mood;
-            edtCaptionOverlay.setText(mood.getName()); // thay đổi caption theo mood
-            if (isMoodTabSelected && !modeSwitch.isChecked()) updatePreviewImage();
+        // --- 1. MOOD ADAPTER ---
+        moodAdapter = new MoodAdapter(new ArrayList<>(), (mood, itemView) -> {
+            // Khi chọn Mood -> Thực hiện Animation bay
+            performMoodAnimation(mood, itemView);
         });
         moodRecyclerView.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
         moodRecyclerView.setAdapter(moodAdapter);
 
-        // [CẬP NHẬT] Setup Activity Adapter (Khởi tạo list rỗng, dữ liệu sẽ đến từ ViewModel)
+        // --- 2. ACTIVITY ADAPTER ---
         activityAdapter = new ActivityAdapter(new ArrayList<>(), activity -> {
-            this.selectedActivity = activity;
-            modeSwitch.setChecked(true); // Chọn hoạt động -> Tự bật camera
+            enterCameraModeActivity(activity);
         });
-        activityRecyclerView.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
+        activityRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         activityRecyclerView.setAdapter(activityAdapter);
     }
 
-    /**
-     * Gắn listener cho toggle tab, switch camera, bottom bar và nút chụp.
-     */
+    // =================================================================================
+    // LOGIC ANIMATION & CHUYỂN ĐỔI UI
+    // =================================================================================
+
+    // 1. Hiệu ứng bay Mood từ List lên Header
+    private void performMoodAnimation(Mood mood, View startView) {
+        this.selectedMood = mood;
+        this.isEditingMode = true;
+
+        // --- BƯỚC 1: TÍNH TOÁN TỌA ĐỘ ---
+        int[] startLoc = new int[2];
+        startView.getLocationOnScreen(startLoc);
+
+        int[] endLoc = new int[2];
+        imgHeaderIcon.getLocationOnScreen(endLoc); // Đích đến là icon trên Header
+
+        // Tính tỉ lệ phóng to/thu nhỏ để view bay khớp kích thước view đích
+        float scaleX = (float) imgHeaderIcon.getWidth() / startView.getWidth();
+        float scaleY = (float) imgHeaderIcon.getHeight() / startView.getHeight();
+
+        // --- BƯỚC 2: SETUP VIEW BAY (ẢNH TĨNH) ---
+        Glide.with(this).asBitmap().load(mood.getIconUrl()).into(imgAnimationFloat);
+
+        imgAnimationFloat.setVisibility(View.VISIBLE);
+        imgAnimationFloat.setAlpha(1f); // Reset độ trong suốt
+        imgAnimationFloat.setX(startLoc[0]);
+        imgAnimationFloat.setY(startLoc[1] - getStatusBarHeight());
+        imgAnimationFloat.getLayoutParams().width = startView.getWidth();
+        imgAnimationFloat.getLayoutParams().height = startView.getHeight();
+        imgAnimationFloat.requestLayout();
+
+        // Ẩn danh sách Mood ngay lập tức cho gọn
+        moodRecyclerView.animate().alpha(0f).setDuration(200).start();
+
+        // --- BƯỚC 3: BẮT ĐẦU BAY ---
+        imgAnimationFloat.animate()
+                .translationX(endLoc[0] - startLoc[0])
+                .translationY(endLoc[1] - startLoc[1])
+                .scaleX(scaleX)
+                .scaleY(scaleY)
+                .setDuration(500) // Thời gian bay
+                .setInterpolator(new PathInterpolator(0.165f, 0.84f, 0.44f, 1.0f)) // Curve mượt
+                .withEndAction(() -> {
+                    // --- BƯỚC 4: KẾT THÚC BAY (ĐẾN NƠI) ---
+
+                    // A. Xử lý Header: Hiện Icon tĩnh & Đổi tên
+                    imgHeaderIcon.setVisibility(View.VISIBLE);
+                    Glide.with(this).asBitmap().load(mood.getIconUrl()).into(imgHeaderIcon);
+
+                    textViewGreeting.setText(mood.getName());
+
+                    // B. Xử lý View Bay: Mờ dần rồi ẩn (tạo hiệu ứng hòa nhập vào header)
+                    imgAnimationFloat.animate()
+                            .alpha(0f)
+                            .setDuration(200)
+                            .withEndAction(() -> imgAnimationFloat.setVisibility(View.GONE))
+                            .start();
+
+                    // C. Xử lý Card Chính (Vùng xám): Hiện dần & Load Ảnh (Động hoặc Tĩnh)
+                    imgMainDisplay.setVisibility(View.VISIBLE);
+                    imgMainDisplay.setAlpha(0f); // Bắt đầu từ trong suốt
+
+                    // [FIX] Dùng .load() thường để hỗ trợ cả GIF và PNG/JPG tĩnh
+                    Glide.with(this).load(mood.getIconUrl()).into(imgMainDisplay);
+
+                    // Fade In ảnh chính
+                    imgMainDisplay.animate().alpha(1f).setDuration(400).start();
+
+                    // D. Ẩn list, Hiện Input, Ẩn Toggle
+                    moodRecyclerView.setVisibility(View.GONE);
+
+                    inputLayoutContent.setVisibility(View.VISIBLE);
+                    inputLayoutContent.setAlpha(0f);
+                    inputLayoutContent.animate().alpha(1f).setDuration(300).start();
+                    edtContent.requestFocus();
+
+                    toggleGroupContentType.setVisibility(View.GONE); // [YC] Ẩn Toggle khi Edit
+
+                    // E. Bottom Bar
+                    iconNavLeft.setImageResource(R.drawable.outline_arrow_back_ios_24);
+                    imgSendIcon.setVisibility(View.VISIBLE);
+                })
+                .start();
+    }
+
+    public int getStatusBarHeight() {
+        int result = 0;
+        int resourceId = getResources().getIdentifier("status_bar_height", "dimen", "android");
+        if (resourceId > 0) result = getResources().getDimensionPixelSize(resourceId);
+        return result;
+    }
+
+    // 2. Vào chế độ Camera khi chọn Activity
+    private void enterCameraModeActivity(Activity activity) {
+        this.selectedActivity = activity;
+        this.isEditingMode = true;
+
+        textViewGreeting.setText("Đang " + activity.getTitle());
+        imgHeaderIcon.setVisibility(View.GONE); // Activity ko có icon trên header
+
+        // Ẩn list -> Hiện Camera
+        activityRecyclerView.setVisibility(View.GONE);
+        cameraPreviewView.setVisibility(View.VISIBLE);
+        startCamera();
+
+        // Ẩn Input
+        inputLayoutContent.setVisibility(View.GONE);
+
+        // Ẩn Toggle (Tùy chọn, để tập trung chụp ảnh)
+        // toggleGroupContentType.setVisibility(View.GONE);
+
+        // Bottom Bar
+        iconNavLeft.setImageResource(R.drawable.outline_arrow_back_ios_24);
+        iconNavRight.setImageResource(R.drawable.outline_cameraswitch_24);
+        imgSendIcon.setVisibility(View.GONE);
+    }
+
+    // 3. Reset về Tab Mood (Thoát chế độ Edit)
+    private void switchToMoodTab() {
+        isMoodTabSelected = true;
+        isEditingMode = false;
+
+        // Hiện lại Toggle
+        toggleGroupContentType.setVisibility(View.VISIBLE);
+
+        // Reset Header
+        textViewGreeting.setText("Heyy, What's up?");
+        imgHeaderIcon.setVisibility(View.INVISIBLE); // Ẩn nhưng giữ chỗ
+
+        // Reset Card Content
+        moodRecyclerView.setVisibility(View.VISIBLE);
+        moodRecyclerView.setAlpha(1f);
+
+        activityRecyclerView.setVisibility(View.GONE);
+        imgMainDisplay.setVisibility(View.GONE);
+        imgMainDisplay.setImageDrawable(null); // Clear ảnh cũ
+        cameraPreviewView.setVisibility(View.GONE);
+        btnFlash.setVisibility(View.GONE);
+
+        // Ẩn Input
+        inputLayoutContent.setVisibility(View.GONE);
+        edtContent.setText("");
+
+        stopCamera();
+
+        // Reset Icons
+        iconNavLeft.setImageResource(R.drawable.outline_apps_24);
+        iconNavRight.setImageResource(R.drawable.outline_person_add_24);
+        imgSendIcon.setVisibility(View.GONE);
+    }
+
+    // 4. Reset về Tab Activity
+    private void switchToActivityTab() {
+        isMoodTabSelected = false;
+        isEditingMode = false;
+
+        toggleGroupContentType.setVisibility(View.VISIBLE);
+
+        // Reset Header
+        textViewGreeting.setText("Bạn đang làm gì?");
+        imgHeaderIcon.setVisibility(View.GONE);
+
+        activityRecyclerView.setVisibility(View.VISIBLE);
+
+        moodRecyclerView.setVisibility(View.GONE);
+        imgMainDisplay.setVisibility(View.GONE);
+        cameraPreviewView.setVisibility(View.GONE);
+        btnFlash.setVisibility(View.GONE);
+
+        // Ẩn Input
+        inputLayoutContent.setVisibility(View.GONE);
+        edtContent.setText("");
+
+        stopCamera();
+
+        iconNavLeft.setImageResource(R.drawable.outline_apps_24);
+        iconNavRight.setImageResource(R.drawable.outline_person_add_24);
+        imgSendIcon.setVisibility(View.GONE);
+    }
+
     private void setupEventHandlers() {
+        // Toggle Tab
         toggleGroupContentType.addOnButtonCheckedListener((group, checkedId, isChecked) -> {
             if (isChecked) {
                 if (checkedId == R.id.btnTabMood) switchToMoodTab();
@@ -155,172 +343,145 @@ public class MainFragment extends Fragment {
             }
         });
 
-        modeSwitch.setOnCheckedChangeListener((v, isChecked) -> toggleCameraMode(isChecked));
+        // Flash
+        btnFlash.setOnClickListener(v -> toggleFlash());
 
-        btnNavLeft.setOnClickListener(v -> {
-            if (imgCapturedDisplay.getVisibility() == View.VISIBLE) {
-                discardCapturedPhoto();
-            } else {
-                Toast.makeText(getContext(), "Open Menu", Toast.LENGTH_SHORT).show();
-            }
-        });
+        // Nav Left (Back/Cancel)
+        btnNavLeft.setOnClickListener(v -> handleNavLeftClick());
 
+        // Nav Right (Friends/Flip)
         btnNavRight.setOnClickListener(v -> {
-            if (modeSwitch.isChecked() && imgCapturedDisplay.getVisibility() == View.GONE) {
+            if (!isMoodTabSelected && isEditingMode && imgMainDisplay.getVisibility() == View.GONE) {
                 flipCamera();
             } else {
-                showFriendsBottomSheet();
+                new FriendsBottomSheet().show(getChildFragmentManager(), "FriendsSheet");
             }
         });
 
-        containerShutter.setOnClickListener(v -> {
-            if (imgCapturedDisplay.getVisibility() == View.VISIBLE) {
-                performPost();
-            } else {
-                handleShutterClick();
-            }
-        });
+        // Shutter
+        containerShutter.setOnClickListener(v -> handleShutterClick());
     }
 
-    /**
-     * Lắng nghe tất cả luồng LiveData từ MainViewModel để cập nhật UI.
-     */
-    private void observeViewModel() {
-        // 1. Lắng nghe trạng thái Upload
-        viewModel.getUploadStatus().observe(getViewLifecycleOwner(), resource -> {
-            switch (resource.status) {
-                case LOADING:
-                    // Có thể hiện Loading Dialog
-                    break;
-                case SUCCESS:
-                    Toast.makeText(getContext(), "Đăng thành công!", Toast.LENGTH_SHORT).show();
-                    discardCapturedPhoto();
-                    modeSwitch.setChecked(false);
-                    break;
-                case ERROR:
-                    Toast.makeText(getContext(), "Lỗi: " + resource.message, Toast.LENGTH_SHORT).show();
-                    break;
+    // =================================================================================
+    // LOGIC XỬ LÝ CLICK
+    // =================================================================================
+
+    private void handleNavLeftClick() {
+        if (isEditingMode) {
+            // Nếu đang xem ảnh chụp (Activity) -> Hủy
+            if (!isMoodTabSelected && imgMainDisplay.getVisibility() == View.VISIBLE) {
+                discardCapturedPhoto();
             }
-        });
-
-        // 2. Lắng nghe danh sách Mood
-        viewModel.getMoods().observe(getViewLifecycleOwner(), resource -> {
-            if (resource.data != null) moodAdapter.setList(resource.data);
-        });
-
-        // 3. [MỚI] Lắng nghe danh sách Activity đã tham gia
-        viewModel.getJoinedActivities().observe(getViewLifecycleOwner(), resource -> {
-            if (resource.status == Resource.Status.SUCCESS && resource.data != null) {
-                activityAdapter.setList(resource.data);
-
-                // Nếu list rỗng, có thể hiện thông báo "Hãy tham gia hoạt động từ bạn bè"
-                if (resource.data.isEmpty()) {
-                    Toast.makeText(getContext(), "Chưa có hoạt động nào. Hãy chờ bạn bè mời!", Toast.LENGTH_SHORT).show();
-                }
+            // Nếu đang Edit Mood hoặc Camera -> Quay về list
+            else {
+                if (isMoodTabSelected) switchToMoodTab();
+                else switchToActivityTab();
             }
-        });
-
-        // 4. [MỚI] Lắng nghe sự kiện nhận quà Premium
-        viewModel.getUnlockedReward().observe(getViewLifecycleOwner(), resource -> {
-            if (resource.status == Resource.Status.SUCCESS && resource.data != null) {
-                showRewardDialog(resource.data);
-            }
-        });
-    }
-
-    // Hiển thị Dialog chúc mừng
-    /**
-     * Hiển thị thông báo khi người dùng mở khóa mood premium.
-     */
-    private void showRewardDialog(Mood mood) {
-        new MaterialAlertDialogBuilder(requireContext())
-                .setTitle("🎉 CHÚC MỪNG! 🎉")
-                .setMessage("Bạn đã hoàn thành mục tiêu 10 bài đăng và mở khóa Mood Premium: " + mood.getName())
-                .setIcon(R.drawable.ic_launcher_foreground) // Có thể thay bằng icon mood
-                .setPositiveButton("Tuyệt vời", null)
-                .show();
-    }
-
-    /**
-     * Gom caption + ảnh + lựa chọn mood/activity rồi gọi ViewModel tạo post.
-     */
-    private void performPost() {
-        String caption = edtCaptionOverlay.getText().toString();
-        String imagePath = currentPhotoFile != null ? currentPhotoFile.getAbsolutePath() : null;
-
-        // Ẩn bàn phím
-        InputMethodManager imm = (InputMethodManager) requireContext().getSystemService(getContext().INPUT_METHOD_SERVICE);
-        if (imm != null) imm.hideSoftInputFromWindow(edtCaptionOverlay.getWindowToken(), 0);
-
-        // [CẬP NHẬT] Truyền đúng tham số vào ViewModel
-        if (isMoodTabSelected) {
-            viewModel.createPost(caption, imagePath, selectedMood, null);
         } else {
-            if (selectedActivity != null) {
-                viewModel.createPost(caption, imagePath, null, selectedActivity);
-            } else {
-                Toast.makeText(getContext(), "Vui lòng chọn một hoạt động!", Toast.LENGTH_SHORT).show();
-            }
+            Toast.makeText(getContext(), "Open Menu", Toast.LENGTH_SHORT).show();
         }
-    }
-
-    // --- Các hàm logic Camera và UI Toggle giữ nguyên ---
-    private void toggleCameraMode(boolean turnOn) {
-        if (turnOn) {
-            imgMoodPreview.setVisibility(View.GONE);
-            activityRecyclerView.setVisibility(View.GONE);
-            cameraPreviewView.setVisibility(View.VISIBLE);
-            imgCapturedDisplay.setVisibility(View.GONE);
-            edtCaptionOverlay.setVisibility(View.GONE);
-            iconNavLeft.setImageResource(R.drawable.outline_apps_24);
-            iconNavRight.setImageResource(R.drawable.outline_cameraswitch_24);
-            iconNavRight.setVisibility(View.VISIBLE);
-            imgSendIcon.setVisibility(View.GONE);
-            startCamera();
-        } else {
-            cameraPreviewView.setVisibility(View.GONE);
-            if (cameraProvider != null) cameraProvider.unbindAll();
-            imgCapturedDisplay.setVisibility(View.GONE);
-            edtCaptionOverlay.setVisibility(View.GONE);
-            iconNavLeft.setImageResource(R.drawable.outline_apps_24);
-            iconNavRight.setImageResource(R.drawable.outline_person_add_24);
-            iconNavRight.setVisibility(View.VISIBLE);
-            imgSendIcon.setVisibility(View.GONE);
-            if (isMoodTabSelected) {
-                imgMoodPreview.setVisibility(View.VISIBLE);
-                updatePreviewImage();
-            } else {
-                activityRecyclerView.setVisibility(View.VISIBLE);
-            }
-        }
-    }
-
-    private void flipCamera() {
-        if (currentCameraSelector == CameraSelector.DEFAULT_FRONT_CAMERA) {
-            currentCameraSelector = CameraSelector.DEFAULT_BACK_CAMERA;
-        } else {
-            currentCameraSelector = CameraSelector.DEFAULT_FRONT_CAMERA;
-        }
-        startCamera();
     }
 
     private void handleShutterClick() {
-        if (isMoodTabSelected && selectedMood == null) {
-            Toast.makeText(getContext(), "Chọn cảm xúc đã nào!", Toast.LENGTH_SHORT).show();
+        // CASE 1: Tab Mood -> Đăng bài
+        if (isMoodTabSelected) {
+            if (selectedMood != null) performPost();
+            else Toast.makeText(getContext(), "Chọn cảm xúc trước đã!", Toast.LENGTH_SHORT).show();
             return;
         }
-        if (modeSwitch.isChecked()) {
-            takePhoto();
-        } else {
-            Toast.makeText(getContext(), "Bật camera để chụp ảnh nhé!", Toast.LENGTH_SHORT).show();
-            modeSwitch.setChecked(true);
+
+        // CASE 2: Tab Activity
+        // 2a. Đã chụp xong -> Đăng bài
+        if (imgMainDisplay.getVisibility() == View.VISIBLE) {
+            performPost();
+            return;
         }
+        // 2b. Đang bật Camera -> Chụp ảnh
+        if (cameraPreviewView.getVisibility() == View.VISIBLE) {
+            takePhoto();
+            return;
+        }
+        Toast.makeText(getContext(), "Chọn hoạt động trước đã!", Toast.LENGTH_SHORT).show();
+    }
+
+    private void performPost() {
+        String caption = edtContent.getText().toString();
+        String imagePath = currentPhotoFile != null ? currentPhotoFile.getAbsolutePath() : null;
+
+        InputMethodManager imm = (InputMethodManager) requireContext().getSystemService(getContext().INPUT_METHOD_SERVICE);
+        if (imm != null) imm.hideSoftInputFromWindow(edtContent.getWindowToken(), 0);
+
+        if (isMoodTabSelected) {
+            viewModel.createPost(caption, null, selectedMood, null);
+        } else {
+            viewModel.createPost(caption, imagePath, null, selectedActivity);
+        }
+    }
+
+    // =================================================================================
+    // CAMERA LOGIC
+    // =================================================================================
+
+    private void startCamera() {
+        toggleGroupContentType.setVisibility(View.GONE);
+
+        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(new String[]{Manifest.permission.CAMERA}, 1001);
+            return;
+        }
+        ListenableFuture<ProcessCameraProvider> cameraProviderFuture = ProcessCameraProvider.getInstance(requireContext());
+        cameraProviderFuture.addListener(() -> {
+            try {
+                cameraProvider = cameraProviderFuture.get();
+                Preview preview = new Preview.Builder().build();
+                preview.setSurfaceProvider(cameraPreviewView.getSurfaceProvider());
+
+                imageCapture = new ImageCapture.Builder()
+                        .setTargetResolution(new Size(1020, 1020))
+                        .setFlashMode(flashMode)
+                        .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
+                        .build();
+
+                cameraProvider.unbindAll();
+                cameraProvider.bindToLifecycle(getViewLifecycleOwner(), currentCameraSelector, preview, imageCapture);
+
+                if (currentCameraSelector == CameraSelector.DEFAULT_BACK_CAMERA) {
+                    btnFlash.setVisibility(View.VISIBLE);
+                } else {
+                    btnFlash.setVisibility(View.GONE);
+                }
+
+            } catch (Exception e) {
+                Log.e("Camera", "Error", e);
+            }
+        }, ContextCompat.getMainExecutor(requireContext()));
+    }
+
+    private void toggleFlash() {
+        if (imageCapture == null) return;
+
+        switch (flashMode) {
+            case ImageCapture.FLASH_MODE_OFF:
+                flashMode = ImageCapture.FLASH_MODE_ON;
+                btnFlash.setImageResource(R.drawable.baseline_flash_on_24);
+                break;
+            case ImageCapture.FLASH_MODE_ON:
+                flashMode = ImageCapture.FLASH_MODE_AUTO;
+                btnFlash.setImageResource(R.drawable.baseline_flash_auto_24);
+                break;
+            default:
+                flashMode = ImageCapture.FLASH_MODE_OFF;
+                btnFlash.setImageResource(R.drawable.baseline_flash_off_24);
+                break;
+        }
+        imageCapture.setFlashMode(flashMode);
     }
 
     private void takePhoto() {
         if (imageCapture == null) return;
         File photoFile = new File(requireContext().getExternalCacheDir(), "post_" + System.currentTimeMillis() + ".jpg");
         ImageCapture.OutputFileOptions outputOptions = new ImageCapture.OutputFileOptions.Builder(photoFile).build();
+
         imageCapture.takePicture(outputOptions, ContextCompat.getMainExecutor(requireContext()),
                 new ImageCapture.OnImageSavedCallback() {
                     @Override
@@ -336,69 +497,71 @@ public class MainFragment extends Fragment {
     }
 
     private void showReviewUI(File photoFile) {
-        cameraProvider.unbindAll();
+        stopCamera();
         cameraPreviewView.setVisibility(View.GONE);
-        imgCapturedDisplay.setVisibility(View.VISIBLE);
-        Glide.with(this).load(photoFile).into(imgCapturedDisplay);
-        edtCaptionOverlay.setVisibility(View.VISIBLE);
-        edtCaptionOverlay.setText("");
-        edtCaptionOverlay.requestFocus();
-        InputMethodManager imm = (InputMethodManager) requireContext().getSystemService(getContext().INPUT_METHOD_SERVICE);
-        imm.showSoftInput(edtCaptionOverlay, InputMethodManager.SHOW_IMPLICIT);
+        btnFlash.setVisibility(View.GONE);
+
+        imgMainDisplay.setVisibility(View.VISIBLE);
+        Glide.with(this).load(photoFile).into(imgMainDisplay);
+
+        // Hiện ô nhập liệu
+        inputLayoutContent.setVisibility(View.VISIBLE);
+        edtContent.requestFocus();
+
+        // Ẩn Toggle
+        toggleGroupContentType.setVisibility(View.GONE);
+
+        imgSendIcon.setVisibility(View.VISIBLE);
         iconNavLeft.setImageResource(R.drawable.outline_close_24);
         iconNavRight.setVisibility(View.INVISIBLE);
-        imgSendIcon.setVisibility(View.VISIBLE);
     }
 
     private void discardCapturedPhoto() {
         currentPhotoFile = null;
-        edtCaptionOverlay.setText("");
-        toggleCameraMode(true);
+        imgMainDisplay.setVisibility(View.GONE);
+
+        inputLayoutContent.setVisibility(View.GONE);
+        edtContent.setText("");
+
+        // Hiện lại Toggle
+        toggleGroupContentType.setVisibility(View.VISIBLE);
+
+        // Bật lại Camera
+        cameraPreviewView.setVisibility(View.VISIBLE);
+        startCamera();
+
+        imgSendIcon.setVisibility(View.GONE);
+        iconNavLeft.setImageResource(R.drawable.outline_arrow_back_ios_24);
+        iconNavRight.setVisibility(View.VISIBLE);
     }
 
-    /**
-     * Khởi động CameraX với chế độ preview + capture.
-     */
-    private void startCamera() {
-        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-            requestPermissions(new String[]{Manifest.permission.CAMERA}, 1001);
-            return;
-        }
-        ListenableFuture<ProcessCameraProvider> cameraProviderFuture = ProcessCameraProvider.getInstance(requireContext());
-        cameraProviderFuture.addListener(() -> {
-            try {
-                cameraProvider = cameraProviderFuture.get();
-                Preview preview = new Preview.Builder().build();
-                preview.setSurfaceProvider(cameraPreviewView.getSurfaceProvider());
-                imageCapture = new ImageCapture.Builder().setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY).build();
-                cameraProvider.unbindAll();
-                cameraProvider.bindToLifecycle(getViewLifecycleOwner(), currentCameraSelector, preview, imageCapture);
-            } catch (Exception e) {
-                Log.e("Camera", "Error", e);
+    private void stopCamera() {
+        if (cameraProvider != null) cameraProvider.unbindAll();
+    }
+
+    private void flipCamera() {
+        currentCameraSelector = (currentCameraSelector == CameraSelector.DEFAULT_FRONT_CAMERA)
+                ? CameraSelector.DEFAULT_BACK_CAMERA
+                : CameraSelector.DEFAULT_FRONT_CAMERA;
+        startCamera();
+    }
+
+    // --- OBSERVER ---
+    private void observeViewModel() {
+        viewModel.getUploadStatus().observe(getViewLifecycleOwner(), resource -> {
+            if (resource.status == Resource.Status.SUCCESS) {
+                Toast.makeText(getContext(), "Đăng thành công!", Toast.LENGTH_SHORT).show();
+                if (isMoodTabSelected) switchToMoodTab();
+                else switchToActivityTab();
+            } else if (resource.status == Resource.Status.ERROR) {
+                Toast.makeText(getContext(), "Lỗi: " + resource.message, Toast.LENGTH_SHORT).show();
             }
-        }, ContextCompat.getMainExecutor(requireContext()));
-    }
-
-    private void switchToMoodTab() {
-        isMoodTabSelected = true;
-        moodRecyclerView.setVisibility(View.VISIBLE);
-        activityRecyclerView.setVisibility(View.GONE);
-        if (!modeSwitch.isChecked()) updatePreviewImage();
-    }
-
-    private void switchToActivityTab() {
-        isMoodTabSelected = false;
-        moodRecyclerView.setVisibility(View.GONE);
-        activityRecyclerView.setVisibility(View.VISIBLE);
-        imgMoodPreview.setVisibility(View.GONE);
-    }
-
-    private void updatePreviewImage() {
-        if (selectedMood != null) Glide.with(this).load(selectedMood.getIconUrl()).into(imgMoodPreview);
-        else imgMoodPreview.setImageResource(R.drawable.ic_launcher_foreground);
-    }
-
-    private void showFriendsBottomSheet() {
-        new FriendsBottomSheet().show(getChildFragmentManager(), "FriendsSheet");
+        });
+        viewModel.getMoods().observe(getViewLifecycleOwner(), resource -> {
+            if (resource.data != null) moodAdapter.setList(resource.data);
+        });
+        viewModel.getJoinedActivities().observe(getViewLifecycleOwner(), resource -> {
+            if (resource.data != null) activityAdapter.setList(resource.data);
+        });
     }
 }

@@ -82,10 +82,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
         // Click vào Avatar ở trang Main cũng mở Profile (tuỳ chọn)
-        imgAvatar.setOnClickListener(v -> {
-            Intent intent = new Intent(MainActivity.this, ProfileActivity.class);
-            startActivity(intent);
-        });
+        imgAvatar.setOnClickListener(v -> navigateToCalendar());
 
         // Click nút Chat -> Sang màn hình Discovery (hoặc màn hình Chat nếu bạn có riêng)
         btnChat.setOnClickListener(v -> navigateToDiscovery());
@@ -120,12 +117,12 @@ public class MainActivity extends AppCompatActivity {
                 // Ẩn các nút của trang Main
                 imgAvatar.setVisibility(View.GONE);
                 cardFriendsPill.setVisibility(View.GONE);
-                btnChat.setVisibility(View.GONE);
 
                 // Hiện nút điều hướng (Icon Profile) và Tiêu đề
                 btnNavIcon.setVisibility(View.VISIBLE);
                 // Đảm bảo bạn có icon này trong drawable, nếu chưa có hãy thêm vào hoặc dùng icon tạm
                 btnNavIcon.setImageResource(R.drawable.outline_account_circle_24);
+                btnChat.setImageResource(R.drawable.outline_arrow_forward_ios_24);
 
                 tvScreenTitle.setVisibility(View.VISIBLE);
                 tvScreenTitle.setText("Lịch sử & Streak");

@@ -1,35 +1,47 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/card_mood_container"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:background="?attr/selectableItemBackgroundBorderless"
-    android:gravity="center"
-    android:orientation="vertical"
-    android:padding="8dp">
+    android:layout_margin="4dp"
+    app:cardBackgroundColor="?attr/colorSurfaceContainerLow"
+    app:cardCornerRadius="20dp"
+    app:cardElevation="0dp"
+    app:strokeWidth="2dp"
+    app:strokeColor="@android:color/transparent">
 
-    <!-- Dùng ShapeableImageView để dễ bo tròn icon -->
-    <com.google.android.material.imageview.ShapeableImageView
-        android:id="@+id/mood_icon"
-        android:layout_width="64dp"
-        android:layout_height="64dp"
-        android:padding="4dp"
-        android:scaleType="fitCenter"
-        app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.Medium"
-        tools:src="@drawable/ic_launcher_background" />
-
-    <!-- Text chuẩn M3 -->
-    <com.google.android.material.textview.MaterialTextView
-        android:id="@+id/mood_name"
-        style="@style/TextAppearance.Material3.LabelMedium"
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
-        android:ellipsize="end"
-        android:maxLines="1"
-        android:textAlignment="center"
-        android:textColor="?attr/colorSurface"
-        tools:text="Hạnh phúc" />
+        android:gravity="center"
+        android:orientation="vertical"
+        android:paddingVertical="12dp"
+        android:paddingHorizontal="4dp">
 
-</LinearLayout>
+        <com.google.android.material.imageview.ShapeableImageView
+            android:id="@+id/mood_icon"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:scaleType="centerCrop"
+            app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.Medium"
+            android:src="@drawable/ic_launcher_foreground" />
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/mood_name"
+            style="@style/TextAppearance.Material3.LabelMedium"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:textAlignment="center"
+            android:textColor="?attr/colorOnSurface"
+            android:textStyle="bold"
+            tools:text="Vui vẻ" />
+
+    </LinearLayout>
+
+</com.google.android.material.card.MaterialCardView>

@@ -1,0 +1,69 @@
+Index: app/src/main/java/com/example/nhom4/ui/page/LoginActivity.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>// LoginActivity.java\r\npackage com.example.nhom4.ui.page;\r\n\r\nimport android.content.Intent;\r\nimport android.os.Bundle;\r\nimport android.text.InputType;\r\nimport android.util.Patterns;\r\nimport android.widget.Button;\r\nimport android.widget.CheckBox;\r\nimport android.widget.EditText;\r\nimport android.widget.ProgressBar;\r\nimport android.widget.TextView;\r\nimport android.widget.Toast;\r\n\r\nimport androidx.appcompat.app.AppCompatActivity;\r\n\r\nimport com.example.nhom4.R;\r\nimport com.google.android.material.textfield.TextInputEditText;\r\nimport com.google.firebase.auth.FirebaseAuth;\r\nimport com.google.firebase.auth.FirebaseUser;\r\n\r\npublic class LoginActivity extends AppCompatActivity {\r\n    private TextInputEditText etEmail, etPassword;\r\n    private Button btnLogin;\r\n    private CheckBox checkBoxShowPassword;\r\n    private TextView tvGoToRegister, tvForgotPassword;\r\n    private ProgressBar progressBar;\r\n    private FirebaseAuth mAuth;\r\n\r\n    @Override\r\n    protected void onCreate(Bundle savedInstanceState) {\r\n        super.onCreate(savedInstanceState);\r\n        setContentView(R.layout.activity_login);\r\n\r\n        // Khởi tạo Firebase Auth\r\n        mAuth = FirebaseAuth.getInstance();\r\n\r\n        // Ánh xạ các view từ layout\r\n        etEmail = findViewById(R.id.editTextEmail);\r\n        etPassword = findViewById(R.id.editTextPassword);\r\n        btnLogin = findViewById(R.id.buttonLogin);\r\n        tvGoToRegister = findViewById(R.id.textViewSignUp);\r\n        tvForgotPassword = findViewById(R.id.textViewForgotPassword);\r\n        progressBar = findViewById(R.id.progressBar);\r\n\r\n        // Xử lý sự kiện cho nút \"Đăng Nhập\"\r\n        btnLogin.setOnClickListener(v -> loginUser());\r\n\r\n        // Xử lý sự kiện cho text \"Sign Up\"\r\n        tvGoToRegister.setOnClickListener(v -> {\r\n            Intent intent = new Intent(LoginActivity.this, RegisterActivity.class);\r\n            startActivity(intent);\r\n        });\r\n\r\n        // Xử lý sự kiện cho checkbox \"Show password\"\r\n        checkBoxShowPassword.setOnCheckedChangeListener((buttonView, isChecked) -> {\r\n            if (isChecked) {\r\n                // Hiển thị mật khẩu\r\n                etPassword.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD);\r\n            } else {\r\n                // Ẩn mật khẩu\r\n                etPassword.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);\r\n            }\r\n            // Di chuyển con trỏ về cuối chuỗi\r\n            etPassword.setSelection(etPassword.length());\r\n        });\r\n\r\n        // (Tùy chọn) Xử lý sự kiện cho \"Forgot password\"\r\n        tvForgotPassword.setOnClickListener(v -> {\r\n            // Bạn có thể tạo một activity/dialog mới để xử lý việc reset mật khẩu\r\n            Toast.makeText(this, \"Chức năng quên mật khẩu đang được phát triển!\", Toast.LENGTH_SHORT).show();\r\n        });\r\n\r\n    }\r\n\r\n    private void loginUser() {\r\n        String email = etEmail.getText().toString().trim();\r\n        String password = etPassword.getText().toString().trim();\r\n\r\n        // --- VALIDATE INPUT ---\r\n        if (com.google.firebase.crashlytics.buildtools.reloc.org.apache.http.util.TextUtils.isEmpty(email)) {\r\n            etEmail.setError(\"Vui lòng nhập email.\");\r\n            etEmail.requestFocus();\r\n            return;\r\n        }\r\n\r\n        if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {\r\n            etEmail.setError(\"Email không hợp lệ.\");\r\n            etEmail.requestFocus();\r\n            return;\r\n        }\r\n\r\n        if (com.google.firebase.crashlytics.buildtools.reloc.org.apache.http.util.TextUtils.isEmpty(password)) {\r\n            etPassword.setError(\"Vui lòng nhập mật khẩu.\");\r\n            etPassword.requestFocus();\r\n            return;\r\n        }\r\n\r\n        // Hiển thị ProgressBar và vô hiệu hóa nút bấm\r\n//        progressBar.setVisibility(com.google.ar.imp.view.View.VISIBLE);\r\n        btnLogin.setEnabled(false);\r\n\r\n        // --- FIREBASE AUTHENTICATION ---\r\n        mAuth.signInWithEmailAndPassword(email, password)\r\n                .addOnCompleteListener(this, task -> {\r\n                    // Ẩn ProgressBar và kích hoạt lại nút bấm\r\n//                    progressBar.setVisibility(com.google.ar.imp.view.View.GONE);\r\n                    btnLogin.setEnabled(true);\r\n\r\n                    if (task.isSuccessful()) {\r\n                        // Đăng nhập thành công\r\n                        Toast.makeText(LoginActivity.this, \"Đăng nhập thành công.\", Toast.LENGTH_SHORT).show();\r\n//                        goToMainActivity();\r\n                    } else {\r\n                        // Đăng nhập thất bại, hiển thị thông báo lỗi\r\n                        Toast.makeText(LoginActivity.this, \"Xác thực thất bại: \" + task.getException().getMessage(),\r\n                                Toast.LENGTH_LONG).show();\r\n                    }\r\n                });\r\n    }\r\n\r\n    private void goToMainActivity() {\r\n//        Intent intent = new Intent(getApplicationContext(), MainActivity.class);\r\n//        // Xóa tất cả các activity trước đó khỏi stack để người dùng không thể quay lại màn hình login\r\n//        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);\r\n//        startActivity(intent);\r\n//        finish(); // Đóng LoginActivity\r\n    }\r\n}\r\n\r\n
+===================================================================
+diff --git a/app/src/main/java/com/example/nhom4/ui/page/LoginActivity.java b/app/src/main/java/com/example/nhom4/ui/page/LoginActivity.java
+--- a/app/src/main/java/com/example/nhom4/ui/page/LoginActivity.java	(revision a460d8afbeec77518ded7cc6eb5d6e1f9276ffe2)
++++ b/app/src/main/java/com/example/nhom4/ui/page/LoginActivity.java	(date 1764247652695)
+@@ -53,7 +53,7 @@
+         });
+ 
+         // Xử lý sự kiện cho checkbox "Show password"
+-        checkBoxShowPassword.setOnCheckedChangeListener((buttonView, isChecked) -> {
++        /*checkBoxShowPassword.setOnCheckedChangeListener((buttonView, isChecked) -> {
+             if (isChecked) {
+                 // Hiển thị mật khẩu
+                 etPassword.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD);
+@@ -63,7 +63,7 @@
+             }
+             // Di chuyển con trỏ về cuối chuỗi
+             etPassword.setSelection(etPassword.length());
+-        });
++        });*/
+ 
+         // (Tùy chọn) Xử lý sự kiện cho "Forgot password"
+         tvForgotPassword.setOnClickListener(v -> {
+@@ -110,7 +110,7 @@
+                     if (task.isSuccessful()) {
+                         // Đăng nhập thành công
+                         Toast.makeText(LoginActivity.this, "Đăng nhập thành công.", Toast.LENGTH_SHORT).show();
+-//                        goToMainActivity();
++                        goToMainActivity();
+                     } else {
+                         // Đăng nhập thất bại, hiển thị thông báo lỗi
+                         Toast.makeText(LoginActivity.this, "Xác thực thất bại: " + task.getException().getMessage(),
+Index: app/src/main/java/com/example/nhom4/ui/page/feed/FeedContainerFragment.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.example.nhom4.ui.page.feed;\r\n\r\nimport android.os.Bundle;\r\nimport android.text.TextUtils;\r\nimport android.view.LayoutInflater;\r\nimport android.view.View;\r\nimport android.view.ViewGroup;\r\nimport android.widget.EditText;\r\nimport android.widget.LinearLayout;\r\n\r\nimport androidx.annotation.NonNull;\r\nimport androidx.annotation.Nullable;\r\nimport androidx.fragment.app.Fragment;\r\nimport androidx.viewpager2.widget.ViewPager2;\r\n\r\nimport com.example.nhom4.R;\r\nimport com.example.nhom4.data.model.Message;\r\nimport com.example.nhom4.ui.page.chatbox.ChatboxViewModel;\r\nimport com.example.nhom4.ui.page.post.PostAdapter;\r\nimport com.google.android.material.button.MaterialButton;\r\n\r\npublic class FeedContainerFragment extends Fragment {\r\n\r\n    private ViewPager2 viewPagerPosts;\r\n    private EditText etMessage;\r\n    private LinearLayout reactionButtonContainer;\r\n    private  MaterialButton btnSend;\r\n\r\n    private ChatboxViewModel viewModel;\r\n\r\n    private String currentUserId = \"njf1b9ZQfRRrYc9SeEXDUp9ZFez1\"; // ID của người dùng hiện tại\r\n\r\n    @Nullable\r\n    @Override\r\n    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {\r\n        return inflater.inflate(R.layout.fragment_feed_container, container, false);\r\n    }\r\n\r\n    @Override\r\n    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {\r\n        super.onViewCreated(view, savedInstanceState);\r\n\r\n        viewPagerPosts = view.findViewById(R.id.viewPagerPosts);\r\n        etMessage = view.findViewById(R.id.etMessage);\r\n        reactionButtonContainer = view.findViewById(R.id.emojiContainer);\r\n        btnSend = view.findViewById(R.id.btnSend);\r\n\r\n        // --- SỬA ĐỔI TẠI ĐÂY ---\r\n        // Vì PostAdapter hiện tại của bạn đang dùng dữ liệu giả (fake data)\r\n        // và chỉ có constructor nhận FragmentActivity, nên ta chỉ truyền requireActivity().\r\n        PostAdapter adapter = new PostAdapter(requireActivity());\r\n        viewPagerPosts.setAdapter(adapter);\r\n\r\n        // Xử lý nút bấm Calendar để chuyển tab của ViewPager Cha (MainPagerAdapter)\r\n        View btnCalendar = view.findViewById(R.id.btnOpenCalendar);\r\n        if (btnCalendar != null) {\r\n            btnCalendar.setOnClickListener(v -> {\r\n                // Gọi về Activity để chuyển sang trang Calendar\r\n                if (getActivity() instanceof com.example.nhom4.MainActivity) {\r\n                    ((com.example.nhom4.MainActivity) getActivity()).navigateToCalendar();\r\n                }\r\n            });\r\n        }\r\n\r\n        etMessage.setOnFocusChangeListener((v, hasFocus) -> {\r\n           if(hasFocus) {\r\n               // Hiện nút send tin nhắn lên nhé broo\r\n               reactionButtonContainer.setVisibility(View.GONE);\r\n               btnSend.setVisibility(View.VISIBLE);\r\n           } else {\r\n               // Ngược lại thì chỉ cần ẩn đi thôi broo\r\n               reactionButtonContainer.setVisibility(View.VISIBLE);\r\n               btnSend.setVisibility(View.GONE);\r\n           }\r\n        });\r\n\r\n        btnSend.setOnClickListener(v -> {sendMessage();});\r\n\r\n    }\r\n\r\n    private void sendMessage() {\r\n        String messageText = etMessage.getText().toString();\r\n        if (TextUtils.isEmpty(messageText)) return;\r\n\r\n        Message message = new Message(\r\n                currentUserId,\r\n                messageText,\r\n                \"widget\"\r\n        );\r\n\r\n        String conversationId = \"OpGMIA2nZ8cjCMfow41Z\"; // test\r\n        viewModel.init(conversationId);\r\n\r\n        viewModel.sendMessage(message);\r\n\r\n        etMessage.setText(\"\");\r\n    }\r\n}\r\n
+===================================================================
+diff --git a/app/src/main/java/com/example/nhom4/ui/page/feed/FeedContainerFragment.java b/app/src/main/java/com/example/nhom4/ui/page/feed/FeedContainerFragment.java
+--- a/app/src/main/java/com/example/nhom4/ui/page/feed/FeedContainerFragment.java	(revision a460d8afbeec77518ded7cc6eb5d6e1f9276ffe2)
++++ b/app/src/main/java/com/example/nhom4/ui/page/feed/FeedContainerFragment.java	(date 1764249089568)
+@@ -14,7 +14,7 @@
+ import androidx.viewpager2.widget.ViewPager2;
+ 
+ import com.example.nhom4.R;
+-import com.example.nhom4.data.model.Message;
++import com.example.nhom4.data.bean.Message;
+ import com.example.nhom4.ui.page.chatbox.ChatboxViewModel;
+ import com.example.nhom4.ui.page.post.PostAdapter;
+ import com.google.android.material.button.MaterialButton;
+@@ -53,14 +53,14 @@
+ 
+         // Xử lý nút bấm Calendar để chuyển tab của ViewPager Cha (MainPagerAdapter)
+         View btnCalendar = view.findViewById(R.id.btnOpenCalendar);
+-        if (btnCalendar != null) {
++        /*if (btnCalendar != null) {
+             btnCalendar.setOnClickListener(v -> {
+                 // Gọi về Activity để chuyển sang trang Calendar
+                 if (getActivity() instanceof com.example.nhom4.MainActivity) {
+                     ((com.example.nhom4.MainActivity) getActivity()).navigateToCalendar();
+                 }
+             });
+-        }
++        }*/
+ 
+         etMessage.setOnFocusChangeListener((v, hasFocus) -> {
+            if(hasFocus) {

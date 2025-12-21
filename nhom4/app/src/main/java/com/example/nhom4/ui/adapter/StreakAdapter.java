@@ -93,8 +93,8 @@ public class StreakAdapter extends RecyclerView.Adapter<StreakAdapter.DayViewHol
                     .into(holder.ivDayImage);
 
 
-            // Đổi màu chữ sang trắng để nổi trên nền ảnh
-            holder.tvDayNumber.setTextColor(Color.WHITE);
+            //Ẩn chữ
+            holder.tvDayNumber.setVisibility(View.GONE);
         }
         // Nếu có bài viết nhưng không có ảnh (chỉ là mood/text) -> Có thể hiện nền màu
         else if (day.hasPost) {

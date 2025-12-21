@@ -9,6 +9,17 @@
     android:padding="24dp"
     tools:context=".ui.page.auth.LoginActivity">
 
+    <ImageView
+        android:id="@+id/imgHeader"
+        android:layout_width="0dp"
+        android:layout_height="250dp"
+        android:contentDescription="@null"
+        android:scaleType="fitCenter"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/sign_in" />
+
     <!-- 1. Tiêu đề: Dùng Headline hoặc Display của M3 -->
     <com.google.android.material.textview.MaterialTextView
         android:id="@+id/textViewLoginTitle"
@@ -20,7 +31,7 @@
         android:textColor="?attr/colorOnSurface"
         android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@id/imgHeader" />
 
     <com.google.android.material.textview.MaterialTextView
         android:id="@+id/textViewLoginSubTitle"
