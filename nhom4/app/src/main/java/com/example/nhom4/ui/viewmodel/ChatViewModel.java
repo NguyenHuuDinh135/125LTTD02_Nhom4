@@ -23,6 +23,8 @@ public class ChatViewModel extends ViewModel {
 
     private final MutableLiveData<Resource<List<Message>>> messages = new MutableLiveData<>();
     private final MutableLiveData<Resource<Boolean>> sendStatus = new MutableLiveData<>();
+    private final MutableLiveData<Resource<Boolean>> deleteStatus = new MutableLiveData<>();
+
 
     private String currentUserId;
 
@@ -36,6 +38,7 @@ public class ChatViewModel extends ViewModel {
 
     public LiveData<Resource<List<Message>>> getMessages() { return messages; }
     public LiveData<Resource<Boolean>> getSendStatus() { return sendStatus; }
+    public LiveData<Resource<Boolean>> getDeleteResult() { return  deleteStatus; }
     public String getCurrentUserId() { return currentUserId; }
 
     // Bắt đầu lắng nghe tin nhắn khi có ConversationID
@@ -68,5 +71,9 @@ public class ChatViewModel extends ViewModel {
         );
 
         chatRepository.sendMessage(conversationId, msg, sendStatus);
+    }
+
+    public  void deleteConversation(String conversationId) {
+        chatRepository.deleteConversation(conversationId, deleteStatus);
     }
 }

@@ -89,6 +89,8 @@ public class ChatListAdapter extends RecyclerView.Adapter<ChatListAdapter.ChatVi
             // Truyền đúng KEY mà ChatActivity đang chờ nhận
             intent.putExtra("CONVERSATION_ID", conversation.getConversationId());
             intent.putExtra("PARTNER_ID", conversation.getFriendId());
+            intent.putExtra("PARTNER_NAME", conversation.getFriendName());
+            intent.putExtra("PARTNER_AVATAR", conversation.getFriendAvatar());
 
             context.startActivity(intent); // Điều hướng sang màn chat chi tiết
         });

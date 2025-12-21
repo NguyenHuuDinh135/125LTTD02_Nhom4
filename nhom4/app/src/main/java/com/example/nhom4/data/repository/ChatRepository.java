@@ -210,4 +210,28 @@ public class ChatRepository {
                     }
                 });
     }
+
+    // 4. Xóa cuộc trò chuyện
+    // Lưu ý: Việc xóa document cha trong Firestore KHÔNG tự động xóa sub-collection (messages).
+    // Tuy nhiên, xóa document cha là đủ để cuộc trò chuyện biến mất khỏi danh sách UI.
+    public void deleteConversation(String conversationId, MutableLiveData<Resource<Boolean>> result) {
+        result.postValue(Resource.loading(null));
+
+        if (conversationId == null || conversationId.isEmpty()) {
+            result.postValue(Resource.error("Conversation ID không hợp lệ", false));
+            return;
+        }
+
+        db.collection("conversations").document(conversationId)
+            .delete()
+            .addOnSuccessListener(aVoid -> {
+                // Xóa thành công
+                result.postValue(Resource.success(true));
+            })
+            .addOnFailureListener(e -> {
+                // Xóa thất bại
+                result.postValue(Resource.error("Lỗi khi xóa: " + e.getMessage(), false));
+            });
+    }
+
 }
