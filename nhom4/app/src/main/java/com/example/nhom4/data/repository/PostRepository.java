@@ -32,7 +32,7 @@ public class PostRepository {
     private final FirebaseAuth auth = FirebaseAuth.getInstance();
 
     // =================================================================================
-    // 1. LẤY DANH SÁCH BÀI VIẾT (FEED)
+    // 1. LẤY DANH SÁCH BÀI VIẾT (FEED) - GIỮ NGUYÊN LOGIC TỐI ƯU
     // =================================================================================
 
     public void getPosts(MutableLiveData<Resource<List<Post>>> result) {
@@ -44,16 +44,15 @@ public class PostRepository {
 
         result.postValue(Resource.loading(null));
 
-        // BƯỚC 1: Lấy danh sách ID bạn bè (để lọc bài viết)
+        // BƯỚC 1: Lấy danh sách ID bạn bè
         db.collection("relationships")
                 .whereArrayContains("members", currentUserId)
                 .whereEqualTo("status", "accepted")
                 .get()
                 .addOnSuccessListener(snapshots -> {
                     List<String> friendIds = new ArrayList<>();
-                    friendIds.add(currentUserId); // [QUAN TRỌNG] Thêm chính mình để thấy bài mình vừa đăng
+                    friendIds.add(currentUserId); // Thêm chính mình
 
-                    // Duyệt qua các mối quan hệ để lấy ID đối phương
                     for (DocumentSnapshot doc : snapshots) {
                         List<String> members = (List<String>) doc.get("members");
                         if (members != null) {
@@ -65,10 +64,9 @@ public class PostRepository {
                         }
                     }
 
-                    // BƯỚC 2: Lắng nghe Realtime bảng 'posts'
-                    // Lưu ý: Dùng addSnapshotListener để tự động cập nhật khi có bài mới
+                    // BƯỚC 2: Lắng nghe Realtime
                     db.collection("posts")
-                            .orderBy("createdAt", Query.Direction.DESCENDING) // Bài mới nhất lên đầu
+                            .orderBy("createdAt", Query.Direction.DESCENDING)
                             .addSnapshotListener((postSnapshots, e) -> {
                                 if (e != null) {
                                     Log.e("PostRepo", "Listen failed.", e);
@@ -79,11 +77,9 @@ public class PostRepository {
                                 if (postSnapshots != null) {
                                     List<Post> tempPosts = new ArrayList<>();
 
-                                    // Lọc client-side: Chỉ lấy bài của người trong list friendIds
                                     for (DocumentSnapshot doc : postSnapshots) {
                                         Post post = doc.toObject(Post.class);
                                         if (post != null) {
-                                            // Kiểm tra quyền xem
                                             if (friendIds.contains(post.getUserId())) {
                                                 post.setPostId(doc.getId());
                                                 tempPosts.add(post);
@@ -96,7 +92,7 @@ public class PostRepository {
                                         return;
                                     }
 
-                                    // BƯỚC 3: Tải thông tin User (Avatar, Tên) SONG SONG cho siêu tốc
+                                    // BƯỚC 3: Tải thông tin User SONG SONG
                                     fetchUsersForPostsParallel(tempPosts, result);
                                 }
                             });
@@ -106,25 +102,17 @@ public class PostRepository {
                 });
     }
 
-    /**
-     * Kỹ thuật Tải Song Song (Parallel Fetching):
-     * Gom tất cả request lấy thông tin User vào 1 danh sách và chạy cùng lúc.
-     * Nhanh hơn rất nhiều so với chạy vòng lặp tuần tự.
-     */
     private void fetchUsersForPostsParallel(List<Post> posts, MutableLiveData<Resource<List<Post>>> result) {
         List<Task<DocumentSnapshot>> tasks = new ArrayList<>();
 
-        // 1. Tạo danh sách các nhiệm vụ (Task) cần làm
         for (Post post : posts) {
             tasks.add(db.collection("users").document(post.getUserId()).get());
         }
 
-        // 2. Chạy tất cả Task cùng lúc và đợi khi XONG HẾT (whenAllSuccess)
         Tasks.whenAllSuccess(tasks).addOnSuccessListener(objects -> {
-            // objects là danh sách kết quả (DocumentSnapshot) trả về theo đúng thứ tự
             for (int i = 0; i < objects.size(); i++) {
                 DocumentSnapshot userDoc = (DocumentSnapshot) objects.get(i);
-                Post post = posts.get(i); // Bài viết tương ứng
+                Post post = posts.get(i);
 
                 if (userDoc.exists()) {
                     post.setUserName(userDoc.getString("username"));
@@ -133,53 +121,41 @@ public class PostRepository {
                     post.setUserName("Người dùng ẩn danh");
                 }
             }
-
-            // 3. Trả về UI danh sách đã đầy đủ thông tin
             result.postValue(Resource.success(posts));
         });
     }
 
     // =================================================================================
-    // 2. ĐĂNG BÀI VIẾT MỚI (CREATE)
+    // 2. ĐĂNG BÀI VIẾT MỚI (CREATE) - ĐÃ SỬA LẠI SIGNATURE CHO KHỚP VIEWMODEL
     // =================================================================================
 
-    public void createPost(String caption, String photoPath, String moodName, String activityTitle, MutableLiveData<Resource<Boolean>> result) {
+    /**
+     * Hàm này nhận trực tiếp object Post đã được build từ ViewModel.
+     * Nhiệm vụ của nó chỉ là:
+     * 1. Upload ảnh (nếu imageUri != null) -> Lấy URL -> Gán vào Post.
+     * 2. Lưu Post vào Firestore.
+     */
+    public void createPost(Post post, Uri imageUri, MutableLiveData<Resource<Boolean>> result) {
         if (auth.getCurrentUser() == null) return;
 
         result.postValue(Resource.loading(null));
 
-        Post post = new Post();
-        post.setUserId(auth.getCurrentUser().getUid());
-        post.setCaption(caption);
-        post.setCreatedAt(new com.google.firebase.Timestamp(new java.util.Date()));
-
-        // Phân loại Mood hay Activity
-        if (moodName != null) {
-            post.setType("mood");
-            post.setMoodName(moodName);
-            // Có thể set thêm iconUrl cho mood nếu cần
-        } else if (activityTitle != null) {
-            post.setType("activity");
-            post.setActivityTitle(activityTitle);
-        } else {
-            post.setType("normal");
-        }
-
-        // Xử lý ảnh (nếu có)
-        if (photoPath != null) {
-            Uri fileUri = Uri.fromFile(new java.io.File(photoPath));
+        if (imageUri != null) {
+            // --- TRƯỜNG HỢP CÓ ẢNH (Activity Post) ---
             String fileName = "posts/" + post.getUserId() + "/" + System.currentTimeMillis() + ".jpg";
             StorageReference ref = storage.getReference().child(fileName);
 
-            ref.putFile(fileUri)
+            ref.putFile(imageUri)
                     .addOnSuccessListener(taskSnapshot ->
                             ref.getDownloadUrl().addOnSuccessListener(uri -> {
+                                // Upload xong, lấy link ảnh gán ngược vào Post object
                                 post.setPhotoUrl(uri.toString());
+                                // Sau đó lưu toàn bộ object xuống Firestore
                                 savePostToFirestore(post, result);
                             }))
                     .addOnFailureListener(e -> result.postValue(Resource.error("Lỗi upload ảnh: " + e.getMessage(), false)));
         } else {
-            // Đăng bài không ảnh (ví dụ Mood)
+            // --- TRƯỜNG HỢP KHÔNG CÓ ẢNH (Mood Post) ---
             savePostToFirestore(post, result);
         }
     }
@@ -189,8 +165,6 @@ public class PostRepository {
         db.collection("posts").add(post)
                 .addOnSuccessListener(documentReference -> {
                     // Thành công!
-                    // Lưu ý: Nhờ addSnapshotListener ở hàm getPosts,
-                    // UI bên Feed sẽ tự động nhận được bài mới này ngay lập tức.
                     result.postValue(Resource.success(true));
                 })
                 .addOnFailureListener(e -> {
