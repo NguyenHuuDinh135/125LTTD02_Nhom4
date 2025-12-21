@@ -129,6 +129,7 @@ public class MainFragment extends Fragment {
         // Setup Mood Adapter
         moodAdapter = new MoodAdapter(new ArrayList<>(), mood -> {
             this.selectedMood = mood;
+            edtCaptionOverlay.setText(mood.getName()); // thay đổi caption theo mood
             if (isMoodTabSelected && !modeSwitch.isChecked()) updatePreviewImage();
         });
         moodRecyclerView.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));

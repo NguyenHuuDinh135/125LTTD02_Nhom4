@@ -16,15 +16,28 @@
         <com.google.android.material.textview.MaterialTextView
             android:id="@+id/textViewProfileTitle"
             style="@style/TextAppearance.Material3.HeadlineLarge"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"
             android:text="@string/th_ng_tin_c_nh_n"
             android:textStyle="bold"
             android:textColor="?attr/colorOnSurface"
             app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/btn_back"
             app:layout_constraintTop_toTopOf="parent" />
 
+        <!-- Icon Arrow Back bên phải -->
+        <ImageView
+            android:id="@+id/btn_back"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginTop="24dp"
+            android:padding="8dp"
+            android:src="@drawable/ic_arrow_forward"
+            app:tint="?attr/colorOnSurface"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
         <!-- Khu vực Avatar -->
         <FrameLayout
             android:id="@+id/layout_avatar"

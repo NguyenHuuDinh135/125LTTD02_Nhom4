@@ -2,6 +2,7 @@ package com.example.nhom4.ui.page.auth;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.animation.DecelerateInterpolator;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
@@ -44,6 +45,16 @@ public class AddFriendActivity extends AppCompatActivity {
 
         initViews();
 
+        btnContinue.setTranslationY(200f);
+        btnContinue.setAlpha(0f);
+
+        btnContinue.animate()
+                .translationY(0f)
+                .alpha(1f)
+                .setDuration(350)
+                .setInterpolator(new DecelerateInterpolator())
+                .start();
+
         // [FIX] Ban đầu disable nút (nếu muốn bắt buộc kết bạn mới được đi tiếp)
         // Nếu muốn cho phép Skip, hãy đổi thành setEnabled(true) và setAlpha(1.0f)
         btnContinue.setEnabled(false);
@@ -82,10 +93,23 @@ public class AddFriendActivity extends AppCompatActivity {
 
         // Sự kiện nút Tiếp tục -> Vào Main
         btnContinue.setOnClickListener(v -> {
-            Intent intent = new Intent(AddFriendActivity.this, MainActivity.class);
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-            startActivity(intent);
-            finish();
+            btnContinue.animate()
+                    .scaleX(0.96f)
+                    .scaleY(0.96f)
+                    .setDuration(80)
+                    .withEndAction(() -> {
+                        btnContinue.animate()
+                                .scaleX(1f)
+                                .scaleY(1f)
+                                .setDuration(120)
+                                .start();
+
+                        Intent intent = new Intent(AddFriendActivity.this, MainActivity.class);
+                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                        startActivity(intent);
+                        finish();
+                    })
+                    .start();
         });
     }
 
@@ -101,6 +125,15 @@ public class AddFriendActivity extends AppCompatActivity {
                     adapter = new UserSuggestionAdapter(resource.data, this::showConfirmDialog);
                     // Thay toàn bộ danh sách để tránh lỗi diff khi server trả về tập mới
                     recyclerView.setAdapter(adapter);
+                    //Animation
+                    recyclerView.setAlpha(0f);
+                    recyclerView.setTranslationY(40f);
+
+                    recyclerView.animate()
+                            .alpha(1f)
+                            .translationY(0f)
+                            .setDuration(300)
+                            .start();
                 }
             } else if (resource.status == Resource.Status.ERROR) {
                 Toast.makeText(this, resource.message, Toast.LENGTH_SHORT).show();

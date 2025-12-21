@@ -70,7 +70,6 @@
         android:id="@+id/buttonContinue"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="48dp"
         android:text="@string/ti_p_t_c1"
         android:textSize="16sp"
         android:textStyle="bold"
@@ -78,8 +77,10 @@
         app:cornerRadius="32dp"
         app:icon="@android:drawable/ic_media_play"
         app:iconGravity="textEnd"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textViewDescription" />
+        android:elevation="8dp"
+        android:layout_marginBottom="24dp"
 
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
 </androidx.constraintlayout.widget.ConstraintLayout>
