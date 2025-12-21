@@ -165,14 +165,14 @@ public class StoryThumbnailAdapter extends RecyclerView.Adapter<StoryThumbnailAd
                 }
                 cardContainer.setStrokeWidth(cachedStrokeWidthSelectedPx);
 
-                // Cache primary color
-                if (cachedPrimaryColor == null) {
-                    cachedPrimaryColor = MaterialColors.getColor(
-                            context,
-                            com.google.android.material.R.attr.colorPrimary,
-                            "StoryThumbnailAdapter"
-                    );
-                }
+//                // Cache primary color
+//                if (cachedPrimaryColor == null) {
+//                    cachedPrimaryColor = MaterialColors.getColor(
+//                            context,
+//                            com.google.android.material.R.attr.colorPrimary,
+//                            "StoryThumbnailAdapter"
+//                    );
+//                }
                 cardContainer.setStrokeColor(ColorStateList.valueOf(cachedPrimaryColor));
             } else {
                 // Cache stroke width unselected
@@ -181,14 +181,14 @@ public class StoryThumbnailAdapter extends RecyclerView.Adapter<StoryThumbnailAd
                 }
                 cardContainer.setStrokeWidth(cachedStrokeWidthUnselectedPx);
 
-                // Cache outline color
-                if (cachedOutlineColor == null) {
-                    cachedOutlineColor = MaterialColors.getColor(
-                            context,
-                            com.google.android.material.R.attr.colorOutline,
-                            "StoryThumbnailAdapter"
-                    );
-                }
+//                // Cache outline color
+//                if (cachedOutlineColor == null) {
+//                    cachedOutlineColor = MaterialColors.getColor(
+//                            context,
+//                            com.google.android.material.R.attr.colorOutline,
+//                            "StoryThumbnailAdapter"
+//                    );
+//                }
                 cardContainer.setStrokeColor(ColorStateList.valueOf(cachedOutlineColor));
             }
         }
