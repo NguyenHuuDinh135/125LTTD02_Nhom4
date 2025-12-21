@@ -1,6 +1,7 @@
 package com.example.nhom4.ui.page.main;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,15 +18,10 @@ import com.example.nhom4.data.Resource;
 import com.example.nhom4.ui.adapter.VerticalPagerAdapter;
 import com.example.nhom4.ui.viewmodel.MainViewModel;
 
-/**
- * Fragment trung tâm chứa ViewPager2 dọc: camera ở đầu và feed bài viết bên dưới.
- */
 public class CenterFragment extends Fragment {
 
     private ViewPager2 viewPagerVertical;
     private VerticalPagerAdapter adapter;
-
-    // Sử dụng MainViewModel để lấy dữ liệu Post (ViewModel này chứa logic PostRepository)
     private MainViewModel viewModel;
 
     @Nullable
@@ -37,48 +33,40 @@ public class CenterFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-
-        // Init ViewModel (Dùng requireActivity() để chia sẻ dữ liệu với MainFragment nếu cần)
         viewModel = new ViewModelProvider(requireActivity()).get(MainViewModel.class);
 
         viewPagerVertical = view.findViewById(R.id.viewPagerVertical);
-
         setupAdapter();
         observeViewModel();
     }
 
-    /**
-     * Gắn VerticalPagerAdapter và đặt orientation theo chiều dọc.
-     */
     private void setupAdapter() {
         adapter = new VerticalPagerAdapter(this);
         viewPagerVertical.setAdapter(adapter);
         viewPagerVertical.setOrientation(ViewPager2.ORIENTATION_VERTICAL);
+
+        // Tùy chọn: Tắt hiệu ứng overscroll để mượt hơn
+        viewPagerVertical.setOverScrollMode(View.OVER_SCROLL_NEVER);
     }
 
-    /**
-     * Quan sát dữ liệu post từ MainViewModel và đẩy vào adapter.
-     */
     private void observeViewModel() {
-        // Lắng nghe danh sách bài viết từ ViewModel
         viewModel.getPosts().observe(getViewLifecycleOwner(), resource -> {
             if (resource.status == Resource.Status.SUCCESS && resource.data != null) {
-                // Cập nhật dữ liệu vào Adapter (VerticalPagerAdapter cần có hàm setPostList)
-                adapter.setPostList(resource.data); // ViewPager tự refresh feed
+                // Log để kiểm tra xem có nhận được list mới không
+                Log.d("CenterFragment", "New Posts received: " + resource.data.size());
+
+                // Cập nhật list vào adapter.
+                // Nhờ hàm getItemId đã sửa, ViewPager sẽ tự biết bài nào mới để hiện ra.
+                adapter.setPostList(resource.data);
             } else if (resource.status == Resource.Status.ERROR) {
-                Toast.makeText(getContext(), "Lỗi tải bài viết: " + resource.message, Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), "Lỗi: " + resource.message, Toast.LENGTH_SHORT).show();
             }
         });
     }
 
-    /**
-     * Cho phép fragment cha yêu cầu cuộn về trang camera.
-     */
     public void navigateToCamera() {
         if (viewPagerVertical != null) {
             viewPagerVertical.setCurrentItem(0, true);
         }
     }
-
-    // Không cần onResume load lại vì ViewModel sử dụng SnapshotListener (Realtime)
 }
