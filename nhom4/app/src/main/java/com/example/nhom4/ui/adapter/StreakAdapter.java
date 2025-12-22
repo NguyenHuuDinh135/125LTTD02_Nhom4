@@ -16,97 +16,83 @@ import com.bumptech.glide.load.resource.bitmap.RoundedCorners;
 import com.bumptech.glide.request.RequestOptions;
 import com.example.nhom4.R;
 import com.example.nhom4.data.bean.CalendarDay;
+import com.example.nhom4.data.bean.Post;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Adapter cho lưới streak (lịch), hiển thị ảnh/bài viết đã đăng theo từng ngày trong tháng.
- */
 public class StreakAdapter extends RecyclerView.Adapter<StreakAdapter.DayViewHolder> {
 
     private List<CalendarDay> days = new ArrayList<>();
     private final LocalDate today = LocalDate.now();
 
-    /**
-     * Update danh sách ngày và redraw.
-     */
+    // [MỚI] Interface lắng nghe sự kiện click
+    private OnPostClickListener listener;
+
+    public interface OnPostClickListener {
+        void onPostClick(Post post);
+    }
+
+    public void setOnPostClickListener(OnPostClickListener listener) {
+        this.listener = listener;
+    }
+
     public void setDays(List<CalendarDay> days) {
         this.days = days;
         notifyDataSetChanged();
     }
 
-    /**
-     * Tạo ViewHolder cho một ô ngày trong lịch.
-     * @param parent
-     * @param viewType
-     * @return
-     */
     @NonNull
     @Override
     public DayViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        // Sử dụng đúng layout bạn đã cung cấp
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_calendar_day, parent, false);
         return new DayViewHolder(view);
     }
 
-    /**
-     * Bind dữ liệu ngày vào ViewHolder, xử lý hiển thị ảnh, số ngày, hiệu ứng mờ và highlight.
-     * @param holder
-     * @param position
-     */
     @Override
     public void onBindViewHolder(@NonNull DayViewHolder holder, int position) {
         CalendarDay day = days.get(position);
 
-        // 1. Reset View để tránh reuse từ item cũ
+        // Reset state
         holder.ivDayImage.setVisibility(View.GONE);
         holder.viewOverlay.setVisibility(View.GONE);
-        holder.tvDayNumber.setTextColor(Color.parseColor("#000000")); // Mặc định màu đen (hoặc lấy từ attr)
+        holder.tvDayNumber.setVisibility(View.VISIBLE);
+        holder.tvDayNumber.setTextColor(Color.parseColor("#000000"));
 
-        // 2. Hiển thị số ngày
         if (day.date == null) {
             holder.tvDayNumber.setText("");
             return;
         }
         holder.tvDayNumber.setText(String.valueOf(day.date.getDayOfMonth()));
 
-        // 3. Xử lý mờ cho ngày không thuộc tháng hiện tại
-        if (!day.isCurrentMonth) {
-            holder.itemView.setAlpha(0.3f);
-        } else {
-            holder.itemView.setAlpha(1.0f);
-        }
+        // Opacity cho ngày không thuộc tháng
+        holder.itemView.setAlpha(day.isCurrentMonth ? 1.0f : 0.3f);
 
-        // 4. Xử lý hiển thị ẢNH (Streak)
+        // Xử lý hiển thị ảnh
         if (day.hasPost && day.thumbnailUrl != null && !day.thumbnailUrl.isEmpty()) {
-            // Có bài viết + có ảnh -> Hiện ảnh
             holder.ivDayImage.setVisibility(View.VISIBLE);
             holder.viewOverlay.setVisibility(View.VISIBLE);
+            holder.tvDayNumber.setVisibility(View.GONE); // Ẩn số nếu có ảnh
 
-            // Load ảnh bằng Glide
             Glide.with(holder.itemView.getContext())
                     .load(day.thumbnailUrl)
-                    // Sửa ở đây: Dùng CenterCrop là chủ đạo, bo góc nhẹ hơn (ví dụ 12)
                     .apply(new RequestOptions().transform(new CenterCrop(), new RoundedCorners(12)))
                     .into(holder.ivDayImage);
-
-
-            //Ẩn chữ
-            holder.tvDayNumber.setVisibility(View.GONE);
-        }
-        // Nếu có bài viết nhưng không có ảnh (chỉ là mood/text) -> Có thể hiện nền màu
-        else if (day.hasPost) {
-            // Tùy chọn: Set background màu cam nếu chỉ có text
-            // holder.ivDayImage.setBackgroundColor(Color.parseColor("#FF5722"));
-            // holder.ivDayImage.setVisibility(View.VISIBLE);
         }
 
-        // 5. Highlight ngày hôm nay (nếu chưa có ảnh)
+        // Highlight hôm nay
         if (day.date.equals(today) && !day.hasPost) {
             holder.tvDayNumber.setTextColor(Color.BLUE);
         }
+
+        // [MỚI] Xử lý sự kiện Click
+        holder.itemView.setOnClickListener(v -> {
+            // Chỉ bắt sự kiện nếu ngày đó có bài viết và listener đã được set
+            if (day.hasPost && day.post != null && listener != null) {
+                listener.onPostClick(day.post);
+            }
+        });
     }
 
     @Override
@@ -114,9 +100,6 @@ public class StreakAdapter extends RecyclerView.Adapter<StreakAdapter.DayViewHol
         return days.size();
     }
 
-    /**
-     * ViewHolder giữ view cho một ô ngày trong lịch.
-     */
     static class DayViewHolder extends RecyclerView.ViewHolder {
         TextView tvDayNumber;
         ImageView ivDayImage;
@@ -124,7 +107,6 @@ public class StreakAdapter extends RecyclerView.Adapter<StreakAdapter.DayViewHol
 
         public DayViewHolder(@NonNull View itemView) {
             super(itemView);
-            // Ánh xạ đúng ID trong item_calendar_day.xml của bạn
             tvDayNumber = itemView.findViewById(R.id.tv_day_number);
             ivDayImage = itemView.findViewById(R.id.iv_day_image);
             viewOverlay = itemView.findViewById(R.id.view_overlay);

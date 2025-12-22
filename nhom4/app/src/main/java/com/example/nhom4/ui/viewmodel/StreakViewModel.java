@@ -18,45 +18,32 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Xử lý toàn bộ logic cho màn hình streak/calendar:
- * - Lấy bài viết, dựng map ngày -> ảnh
- * - Tính thống kê + danh sách ngày theo tháng hiện tại.
- */
 public class StreakViewModel extends ViewModel {
 
     private final StreakRepository repository;
     private final MutableLiveData<Resource<List<Post>>> rawPosts = new MutableLiveData<>();
-
     private final MutableLiveData<List<CalendarDay>> calendarDays = new MutableLiveData<>();
     private final MutableLiveData<StreakStats> stats = new MutableLiveData<>();
     private final MutableLiveData<YearMonth> currentMonth = new MutableLiveData<>();
 
-    // [QUAN TRỌNG] Map: Ngày -> Link Ảnh (Để hiển thị lên lịch)
-    private Map<LocalDate, String> postedDataMap = new HashMap<>();
+    // [THAY ĐỔI] Map lưu Post thay vì chỉ String url
+    private Map<LocalDate, Post> postedDataMap = new HashMap<>();
 
     public StreakViewModel() {
         repository = new StreakRepository();
         currentMonth.setValue(YearMonth.now());
-        // Load dữ liệu ngay khi khởi tạo
         loadData();
     }
 
     public void loadData() {
-        // Repository đã tự lấy Current User ID
         repository.getAllUserPosts(rawPosts);
     }
 
-    // Getters
     public LiveData<Resource<List<Post>>> getRawPosts() { return rawPosts; }
     public LiveData<List<CalendarDay>> getCalendarDays() { return calendarDays; }
     public LiveData<StreakStats> getStats() { return stats; }
     public LiveData<YearMonth> getCurrentMonth() { return currentMonth; }
 
-    // Xử lý logic chính
-    /**
-     * Chuyển danh sách post thành dữ liệu lịch + thống kê.
-     */
     public void processPosts(List<Post> posts) {
         postedDataMap.clear();
         StreakStats currentStats = new StreakStats();
@@ -64,55 +51,34 @@ public class StreakViewModel extends ViewModel {
         for (Post post : posts) {
             if (post.getCreatedAt() == null) continue;
 
-            // Chuyển đổi Timestamp Firebase sang LocalDate theo múi giờ của điện thoại
             LocalDate date = post.getCreatedAt().toDate().toInstant()
                     .atZone(ZoneId.systemDefault()).toLocalDate();
 
-            // Ưu tiên lấy ảnh chụp (PhotoUrl), nếu không có thì lấy icon cảm xúc (MoodIconUrl)
-            String imgUrl = post.getPhotoUrl();
-            if (imgUrl == null || imgUrl.isEmpty()) {
-                imgUrl = post.getMoodIconUrl();
+            // Logic: Lưu Post vào map nếu ngày đó chưa có hoặc post này có ảnh (ưu tiên ảnh)
+            boolean hasImage = post.getPhotoUrl() != null && !post.getPhotoUrl().isEmpty();
+
+            if (!postedDataMap.containsKey(date) || hasImage) {
+                postedDataMap.put(date, post);
             }
 
-            // Lưu vào Map để hiển thị lên lịch
-            // Logic: Nếu ngày đó chưa có trong map HOẶC bài viết này có ảnh (ưu tiên hiện ảnh hơn là icon)
-            if (!postedDataMap.containsKey(date) || (imgUrl != null && !imgUrl.isEmpty())) {
-                postedDataMap.put(date, imgUrl);
-            }
-
-            // Thống kê tổng số lượng
+            // Thống kê
             if ("mood".equals(post.getType())) currentStats.totalMoods++;
             if ("activity".equals(post.getType())) currentStats.totalActivities++;
-            if (post.getPhotoUrl() != null && !post.getPhotoUrl().isEmpty()) currentStats.totalPhotos++;
+            if (hasImage) currentStats.totalPhotos++;
         }
 
-        // Tính chuỗi Streak hiện tại
         currentStats.currentStreak = calculateCurrentStreak();
         stats.setValue(currentStats);
-
-        // Vẽ lại lịch
         generateCalendarDays(currentMonth.getValue());
     }
 
     private int calculateCurrentStreak() {
         int streak = 0;
-        LocalDate checkDate = LocalDate.now(); // Ngày hôm nay trên điện thoại
-
-        // Logic:
-        // 1. Nếu hôm nay CÓ đăng bài -> Bắt đầu đếm từ hôm nay lùi về.
-        // 2. Nếu hôm nay CHƯA đăng bài -> Kiểm tra hôm qua.
-        //    - Nếu hôm qua CÓ đăng -> Bắt đầu đếm từ hôm qua lùi về (Streak chưa bị đứt).
-        //    - Nếu hôm qua KHÔNG đăng -> Streak = 0.
-
+        LocalDate checkDate = LocalDate.now();
         if (!postedDataMap.containsKey(checkDate)) {
-            // Hôm nay chưa đăng, check hôm qua
             checkDate = checkDate.minusDays(1);
-            if (!postedDataMap.containsKey(checkDate)) {
-                return 0; // Mất chuỗi
-            }
+            if (!postedDataMap.containsKey(checkDate)) return 0;
         }
-
-        // Vòng lặp đếm lùi về quá khứ
         while (postedDataMap.containsKey(checkDate)) {
             streak++;
             checkDate = checkDate.minusDays(1);
@@ -120,42 +86,37 @@ public class StreakViewModel extends ViewModel {
         return streak;
     }
 
-    /**
-     * Tạo danh sách 42 ô lịch (bao gồm ngày tháng trước/sau) cho View hiển thị.
-     */
     public void generateCalendarDays(YearMonth yearMonth) {
         if (yearMonth == null) return;
-
         List<CalendarDay> days = new ArrayList<>();
         LocalDate firstDayOfMonth = yearMonth.atDay(1);
         LocalDate lastDayOfMonth = yearMonth.atEndOfMonth();
-
-        // Lấy thứ của ngày đầu tháng (1 = Thứ 2, ..., 7 = Chủ Nhật)
         int dayOfWeek = firstDayOfMonth.getDayOfWeek().getValue();
 
-        // 1. Thêm các ngày của tháng trước (để lấp đầy hàng đầu tiên)
-        for (int i = 1; i < dayOfWeek; i++) {
-            LocalDate prevDate = firstDayOfMonth.minusDays(dayOfWeek - i);
-            String img = postedDataMap.get(prevDate);
-            days.add(new CalendarDay(prevDate, false, postedDataMap.containsKey(prevDate), img));
-        }
-
-        // 2. Thêm các ngày của tháng hiện tại
-        for (int i = 1; i <= lastDayOfMonth.getDayOfMonth(); i++) {
-            LocalDate date = yearMonth.atDay(i);
-            String img = postedDataMap.get(date);
-            days.add(new CalendarDay(date, true, postedDataMap.containsKey(date), img));
-        }
-
-        // 3. Thêm các ngày của tháng sau (để lấp đầy lưới 42 ô - cho đẹp đội hình)
-        int remaining = 42 - days.size();
-        for (int i = 1; i <= remaining; i++) {
-            LocalDate nextDate = lastDayOfMonth.plusDays(i);
-            String img = postedDataMap.get(nextDate);
-            days.add(new CalendarDay(nextDate, false, postedDataMap.containsKey(nextDate), img));
-        }
+        // Helper function để tạo CalendarDay từ Map
+        //
+        addDaysToGrid(days, firstDayOfMonth.minusDays(dayOfWeek - 1), dayOfWeek - 1, false); // Tháng trước
+        addDaysToGrid(days, firstDayOfMonth, lastDayOfMonth.getDayOfMonth(), true);         // Tháng này
+        addDaysToGrid(days, lastDayOfMonth.plusDays(1), 42 - days.size(), false);           // Tháng sau
 
         calendarDays.setValue(days);
+    }
+
+    private void addDaysToGrid(List<CalendarDay> list, LocalDate startDate, int count, boolean isCurrentMonth) {
+        for (int i = 0; i < count; i++) {
+            LocalDate date = startDate.plusDays(i);
+            Post post = postedDataMap.get(date);
+            boolean hasPost = (post != null);
+
+            // Lấy URL thumbnail (ưu tiên ảnh -> mood icon)
+            String thumb = null;
+            if (hasPost) {
+                thumb = post.getPhotoUrl();
+                if (thumb == null || thumb.isEmpty()) thumb = post.getMoodIconUrl();
+            }
+
+            list.add(new CalendarDay(date, isCurrentMonth, hasPost, thumb, post));
+        }
     }
 
     public void nextMonth() {

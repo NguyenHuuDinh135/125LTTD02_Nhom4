@@ -6,9 +6,6 @@ import android.content.Context;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.text.Spannable;
-import android.text.SpannableString;
-import android.text.style.ForegroundColorSpan;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -22,6 +19,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.constraintlayout.widget.Group; // [IMPORT QUAN TRỌNG]
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
@@ -33,7 +31,7 @@ import com.example.nhom4.data.bean.Post;
 import com.example.nhom4.ui.page.main.CenterFragment;
 import com.example.nhom4.ui.viewmodel.ReplyViewModel;
 import com.google.android.material.button.MaterialButton;
-import com.google.firebase.Timestamp; // [QUAN TRỌNG]
+import com.google.firebase.Timestamp;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -50,17 +48,22 @@ public class PostFragment extends Fragment {
     private static final String ARG_POST_TYPE = "arg_post_type";
     private static final String ARG_USERNAME = "arg_username";
     private static final String ARG_USER_AVATAR = "arg_user_avatar";
-    private static final String ARG_TIMESTAMP = "arg_timestamp"; // [MỚI] Key cho thời gian
+    private static final String ARG_TIMESTAMP = "arg_timestamp";
 
     private String captionStart, captionEnd, imageUrl;
     private String postId, userIdOfOwner, postType, userNameOfOwner, userAvatarOfOwner;
-    private long timestampMillis = 0; // [MỚI] Biến lưu thời gian dạng số
+    private long timestampMillis = 0;
 
-    // UI
+    // UI Controls
     private View overlayContainer;
     private View cardReplyBox;
     private EditText edtReplyReal, edtTrigger;
     private MaterialButton btnSendDirect, btnCancelReply;
+
+    // UI Post Content
+    private TextView textCaption, textPostContent;
+    private Group groupContentViews; // [MỚI] Group quản lý ẩn hiện nội dung
+    private View layoutEmptyPost;    // [MỚI] Layout hiển thị khi không có bài viết
 
     // Activity Invite UI
     private View layoutActivityInvite;
@@ -69,7 +72,7 @@ public class PostFragment extends Fragment {
     private ImageView imgInviterAvatar;
     private TextView tvInviteText;
 
-    private TextView tvTimestamp; // [MỚI]
+    private TextView tvTimestamp;
 
     private ReplyViewModel replyViewModel;
     private Post currentPostObject;
@@ -78,30 +81,31 @@ public class PostFragment extends Fragment {
         PostFragment fragment = new PostFragment();
         Bundle args = new Bundle();
 
-        String startText;
-        String displayImageUrl;
-        if ("mood".equals(post.getType())) {
-            startText = post.getMoodName();
-            displayImageUrl = post.getMoodIconUrl();
-        } else {
-            startText = post.getActivityTitle();
-            displayImageUrl = post.getPhotoUrl();
-        }
+        if (post != null) {
+            String startText;
+            String displayImageUrl;
+            if ("mood".equals(post.getType())) {
+                startText = post.getMoodName();
+                displayImageUrl = post.getMoodIconUrl();
+            } else {
+                startText = post.getActivityTitle();
+                displayImageUrl = post.getPhotoUrl();
+            }
 
-        args.putString(ARG_CAPTION_START, startText);
-        args.putString(ARG_CAPTION_END, post.getCaption());
-        args.putString(ARG_IMAGE_URL, displayImageUrl);
-        args.putString(ARG_POST_ID, post.getPostId());
-        args.putString(ARG_USER_ID, post.getUserId());
-        args.putString(ARG_POST_TYPE, post.getType());
-        args.putString(ARG_USERNAME, post.getUserName());
-        args.putString(ARG_USER_AVATAR, post.getUserAvatar());
+            args.putString(ARG_CAPTION_START, startText);
+            args.putString(ARG_CAPTION_END, post.getCaption());
+            args.putString(ARG_IMAGE_URL, displayImageUrl);
+            args.putString(ARG_POST_ID, post.getPostId());
+            args.putString(ARG_USER_ID, post.getUserId());
+            args.putString(ARG_POST_TYPE, post.getType());
+            args.putString(ARG_USERNAME, post.getUserName());
+            args.putString(ARG_USER_AVATAR, post.getUserAvatar());
 
-        // [MỚI] Chuyển đổi Timestamp sang long (mili-giây) để truyền qua Bundle
-        if (post.getCreatedAt() != null) {
-            args.putLong(ARG_TIMESTAMP, post.getCreatedAt().toDate().getTime());
-        } else {
-            args.putLong(ARG_TIMESTAMP, System.currentTimeMillis());
+            if (post.getCreatedAt() != null) {
+                args.putLong(ARG_TIMESTAMP, post.getCreatedAt().toDate().getTime());
+            } else {
+                args.putLong(ARG_TIMESTAMP, System.currentTimeMillis());
+            }
         }
 
         fragment.setArguments(args);
@@ -120,7 +124,7 @@ public class PostFragment extends Fragment {
             postType = getArguments().getString(ARG_POST_TYPE);
             userNameOfOwner = getArguments().getString(ARG_USERNAME);
             userAvatarOfOwner = getArguments().getString(ARG_USER_AVATAR);
-            timestampMillis = getArguments().getLong(ARG_TIMESTAMP); // [MỚI] Lấy thời gian
+            timestampMillis = getArguments().getLong(ARG_TIMESTAMP);
         }
     }
 
@@ -138,6 +142,12 @@ public class PostFragment extends Fragment {
         reconstructPostObject();
 
         initViews(view);
+
+        // [QUAN TRỌNG] Kiểm tra xem có bài viết không trước khi setup UI
+        if (checkIfEmptyState()) {
+            return; // Nếu rỗng, dừng lại, không load ảnh/text lỗi
+        }
+
         setupMainUI();
         setupPostTypeLogic();
         setupEvents();
@@ -145,6 +155,10 @@ public class PostFragment extends Fragment {
     }
 
     private void reconstructPostObject() {
+        if (postId == null) {
+            currentPostObject = null;
+            return;
+        }
         currentPostObject = new Post();
         currentPostObject.setPostId(postId);
         currentPostObject.setUserId(userIdOfOwner);
@@ -152,7 +166,6 @@ public class PostFragment extends Fragment {
         currentPostObject.setType(postType);
         currentPostObject.setUserName(userNameOfOwner);
         currentPostObject.setUserAvatar(userAvatarOfOwner);
-        // [MỚI] Khôi phục Timestamp từ long
         currentPostObject.setCreatedAt(new Timestamp(new Date(timestampMillis)));
 
         if ("mood".equals(postType)) {
@@ -165,7 +178,13 @@ public class PostFragment extends Fragment {
     }
 
     private void initViews(View view) {
-        tvTimestamp = view.findViewById(R.id.tvTimestamp); // [QUAN TRỌNG]
+        // Main Content Views
+        textCaption = view.findViewById(R.id.textCaption);
+        textPostContent = view.findViewById(R.id.textPostContent);
+        groupContentViews = view.findViewById(R.id.group_content_views); // Group XML
+        layoutEmptyPost = view.findViewById(R.id.layout_empty_post);     // Empty Layout
+
+        tvTimestamp = view.findViewById(R.id.tvTimestamp);
         edtTrigger = view.findViewById(R.id.edt_comment_trigger);
 
         layoutActivityInvite = view.findViewById(R.id.layout_activity_invite);
@@ -187,24 +206,52 @@ public class PostFragment extends Fragment {
         });
     }
 
+    // [MỚI] Hàm kiểm tra và xử lý hiển thị Empty State
+    private boolean checkIfEmptyState() {
+        if (currentPostObject == null || postId == null || postId.isEmpty()) {
+            // Ẩn nội dung post
+            groupContentViews.setVisibility(View.GONE);
+            // Hiện Empty Layout
+            layoutEmptyPost.setVisibility(View.VISIBLE);
+            return true;
+        } else {
+            // Hiện nội dung post
+            groupContentViews.setVisibility(View.VISIBLE);
+            // Ẩn Empty Layout
+            layoutEmptyPost.setVisibility(View.GONE);
+            return false;
+        }
+    }
+
     private void setupMainUI() {
-        // --- 1. CAPTION ---
-        TextView textCaption = getView().findViewById(R.id.textCaption);
-        String start = (captionStart != null) ? captionStart : "";
-        String end = (captionEnd != null) ? captionEnd : "";
-        Spannable spannable = new SpannableString(start + " - " + end);
-        if (!start.isEmpty()) {
+        // --- 1. CAPTION (TITLE/MOOD) ---
+        // Không ghép chuỗi nữa, chỉ hiển thị captionStart
+        if (captionStart != null && !captionStart.isEmpty()) {
+            textCaption.setText(captionStart);
+            textCaption.setVisibility(View.VISIBLE);
+
+            // Set màu Primary
             TypedValue typedValue = new TypedValue();
             requireContext().getTheme().resolveAttribute(android.R.attr.colorPrimary, typedValue, true);
-            int colorPrimary = typedValue.data;
-            spannable.setSpan(new ForegroundColorSpan(colorPrimary), 0, start.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+            textCaption.setTextColor(typedValue.data);
+        } else {
+            // Trường hợp hy hữu không có Title
+            textCaption.setVisibility(View.GONE);
         }
-        textCaption.setText(spannable);
 
-        // --- 2. TIMESTAMP (XỬ LÝ NGÀY GIỜ) ---
+        // --- 2. POST CONTENT (NỘI DUNG TEXT) ---
+        // Hiển thị ở TextView riêng bên dưới
+        if (captionEnd != null && !captionEnd.trim().isEmpty()) {
+            textPostContent.setText(captionEnd);
+            textPostContent.setVisibility(View.VISIBLE);
+        } else {
+            // Nếu không có nội dung text, ẩn đi cho gọn UI
+            textPostContent.setVisibility(View.GONE);
+        }
+
+        // --- 3. TIMESTAMP ---
         if (tvTimestamp != null) {
             if (timestampMillis > 0) {
-                // Format: 14:30 - 25/12/2023
                 SimpleDateFormat sdf = new SimpleDateFormat("HH:mm - dd/MM/yyyy", Locale.getDefault());
                 String dateString = sdf.format(new Date(timestampMillis));
                 tvTimestamp.setText(dateString);
@@ -213,13 +260,13 @@ public class PostFragment extends Fragment {
             }
         }
 
-        // --- 3. AVATAR GROUP (USER NAME) ---
+        // --- 4. AVATAR GROUP (USER NAME) ---
         TextView textAvatarGroup = getView().findViewById(R.id.textAvatarGroup);
         if (textAvatarGroup != null) {
             textAvatarGroup.setText((userNameOfOwner != null && !userNameOfOwner.isEmpty()) ? userNameOfOwner : "Người dùng");
         }
 
-        // --- 4. IMAGE LOADING ---
+        // --- 5. IMAGE LOADING ---
         ImageView postImageView = getView().findViewById(R.id.postImageView);
         if (imageUrl != null && !imageUrl.isEmpty()) {
             postImageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
@@ -241,7 +288,6 @@ public class PostFragment extends Fragment {
             if (userAvatarOfOwner != null && !userAvatarOfOwner.isEmpty()) {
                 Glide.with(this).load(userAvatarOfOwner).into(imgInviterAvatar);
             }
-            // Logic Join...
             updateJoinButtonState(false);
             btnJoinActivity.setOnClickListener(v -> {
                 Toast.makeText(getContext(), "Đã tham gia Activity!", Toast.LENGTH_SHORT).show();
@@ -266,7 +312,7 @@ public class PostFragment extends Fragment {
     }
 
     private void setupEvents() {
-        // --- TIM ---
+        // ... (Giữ nguyên logic TIM và REPLY như cũ)
         btnHeartOverlay.setOnClickListener(v -> {
             boolean isLiked = !btnHeartOverlay.isSelected();
             btnHeartOverlay.setSelected(isLiked);
@@ -285,7 +331,6 @@ public class PostFragment extends Fragment {
             }
         });
 
-        // --- REPLY ---
         edtTrigger.setOnClickListener(v -> animateReplyOverlay(true));
         btnCancelReply.setOnClickListener(v -> animateReplyOverlay(false));
         overlayContainer.setOnClickListener(v -> animateReplyOverlay(false));
