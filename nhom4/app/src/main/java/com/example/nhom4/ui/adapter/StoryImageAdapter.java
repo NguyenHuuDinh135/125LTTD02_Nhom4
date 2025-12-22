@@ -1,5 +1,6 @@
 package com.example.nhom4.ui.adapter;
 
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,22 +18,12 @@ import com.example.nhom4.data.bean.Post;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Adapter cho ViewPager2 hiển thị từng story image.
- * Tối ưu với DiffUtil và Glide caching.
- */
 public class StoryImageAdapter extends RecyclerView.Adapter<StoryImageAdapter.StoryImageViewHolder> {
 
     private List<Post> storyList = new ArrayList<>();
 
-    /**
-     * Cập nhật danh sách story với DiffUtil để tối ưu performance.
-     */
     public void setStoryList(List<Post> newStories) {
-        if (newStories == null) {
-            newStories = new ArrayList<>();
-        }
-
+        if (newStories == null) newStories = new ArrayList<>();
         DiffUtil.DiffResult diffResult = DiffUtil.calculateDiff(
                 new StoryDiffCallback(this.storyList, newStories)
         );
@@ -60,16 +51,6 @@ public class StoryImageAdapter extends RecyclerView.Adapter<StoryImageAdapter.St
         return storyList.size();
     }
 
-    public Post getItem(int position) {
-        if (position >= 0 && position < storyList.size()) {
-            return storyList.get(position);
-        }
-        return null;
-    }
-
-    /**
-     * ViewHolder với logic bind tách riêng để dễ maintain.
-     */
     static class StoryImageViewHolder extends RecyclerView.ViewHolder {
         private final ImageView imgStory;
 
@@ -78,27 +59,45 @@ public class StoryImageAdapter extends RecyclerView.Adapter<StoryImageAdapter.St
             imgStory = itemView.findViewById(R.id.img_story);
         }
 
-        /**
-         * Bind dữ liệu Post vào view. Tách riêng để dễ test và maintain.
-         */
         void bind(Post post) {
-            if (post != null && post.getPhotoUrl() != null && !post.getPhotoUrl().isEmpty()) {
-                Glide.with(itemView.getContext())
-                        .load(post.getPhotoUrl())
-                        .centerCrop()
-                        .diskCacheStrategy(DiskCacheStrategy.ALL) // Cache để tối ưu
-                        .placeholder(R.drawable.ic_launcher_background)
-                        .error(R.drawable.ic_launcher_background)
-                        .into(imgStory);
+            if (post == null) return;
+
+            String urlToLoad;
+            boolean isMoodOnly;
+
+            // Kiểm tra: Có ảnh chụp không? Nếu không thì lấy icon mood
+            if (post.getPhotoUrl() != null && !post.getPhotoUrl().isEmpty()) {
+                urlToLoad = post.getPhotoUrl();
+                isMoodOnly = false;
+            } else if (post.getMoodIconUrl() != null && !post.getMoodIconUrl().isEmpty()) {
+                urlToLoad = post.getMoodIconUrl();
+                isMoodOnly = true;
             } else {
                 imgStory.setImageResource(R.drawable.ic_launcher_background);
+                return;
+            }
+
+            // Cấu hình hiển thị Glide
+            if (isMoodOnly) {
+                // MOOD: Màu nền nhẹ + Icon giữ nguyên tỉ lệ (không cắt)
+                imgStory.setBackgroundColor(Color.parseColor("#FFF59D")); // Màu vàng nhạt
+                Glide.with(itemView.getContext())
+                        .load(urlToLoad)
+                        .fitCenter() // Giữ nguyên hình dáng icon
+                        .diskCacheStrategy(DiskCacheStrategy.ALL)
+                        .into(imgStory);
+            } else {
+                // ẢNH CHỤP: Nền đen + Crop full màn hình
+                imgStory.setBackgroundColor(Color.BLACK);
+                Glide.with(itemView.getContext())
+                        .load(urlToLoad)
+                        .centerCrop() // Cắt để lấp đầy
+                        .diskCacheStrategy(DiskCacheStrategy.ALL)
+                        .into(imgStory);
             }
         }
     }
 
-    /**
-     * DiffUtil.Callback để so sánh và cập nhật hiệu quả.
-     */
     private static class StoryDiffCallback extends DiffUtil.Callback {
         private final List<Post> oldList;
         private final List<Post> newList;
@@ -109,34 +108,24 @@ public class StoryImageAdapter extends RecyclerView.Adapter<StoryImageAdapter.St
         }
 
         @Override
-        public int getOldListSize() {
-            return oldList.size();
-        }
-
+        public int getOldListSize() { return oldList.size(); }
         @Override
-        public int getNewListSize() {
-            return newList.size();
-        }
+        public int getNewListSize() { return newList.size(); }
 
         @Override
         public boolean areItemsTheSame(int oldItemPosition, int newItemPosition) {
-            Post oldPost = oldList.get(oldItemPosition);
-            Post newPost = newList.get(newItemPosition);
-            // So sánh bằng postId nếu có, hoặc photoUrl
-            if (oldPost.getPostId() != null && newPost.getPostId() != null) {
-                return oldPost.getPostId().equals(newPost.getPostId());
-            }
-            return oldPost.getPhotoUrl() != null && 
-                   oldPost.getPhotoUrl().equals(newPost.getPhotoUrl());
+            return oldList.get(oldItemPosition).getPostId().equals(newList.get(newItemPosition).getPostId());
         }
 
         @Override
         public boolean areContentsTheSame(int oldItemPosition, int newItemPosition) {
             Post oldPost = oldList.get(oldItemPosition);
             Post newPost = newList.get(newItemPosition);
-            // So sánh photoUrl vì đây là dữ liệu chính để hiển thị
-            return oldPost.getPhotoUrl() != null && 
-                   oldPost.getPhotoUrl().equals(newPost.getPhotoUrl());
+
+            String oldUrl = oldPost.getPhotoUrl() != null ? oldPost.getPhotoUrl() : oldPost.getMoodIconUrl();
+            String newUrl = newPost.getPhotoUrl() != null ? newPost.getPhotoUrl() : newPost.getMoodIconUrl();
+
+            return (oldUrl != null && oldUrl.equals(newUrl));
         }
     }
 }

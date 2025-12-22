@@ -133,4 +133,45 @@ public class PostRepository {
                 .addOnSuccessListener(doc -> result.postValue(Resource.success(true)))
                 .addOnFailureListener(e -> result.postValue(Resource.error(e.getMessage(), false)));
     }
+    // --- 3. GET ALL USER POSTS (Dùng cho Story/Streak/Calendar) ---
+    public void getAllUserPosts(MutableLiveData<Resource<List<Post>>> result) {
+        if (auth.getCurrentUser() == null) {
+            result.postValue(Resource.error("Chưa đăng nhập", null));
+            return;
+        }
+
+        String currentUserId = auth.getCurrentUser().getUid();
+
+        // Chỉ lấy bài của User hiện tại
+        db.collection("posts")
+                .whereEqualTo("userId", currentUserId)
+                .orderBy("createdAt", Query.Direction.DESCENDING)
+                .get()
+                .addOnSuccessListener(snapshots -> {
+                    List<Post> userPosts = new ArrayList<>();
+                    for (DocumentSnapshot doc : snapshots) {
+                        Post post = doc.toObject(Post.class);
+                        if (post != null) {
+                            post.setPostId(doc.getId());
+
+                            // [DEBUG QUAN TRỌNG] In log để kiểm tra xem có lấy được không
+                            Log.d("DEBUG_STORY", "Lấy được post: " + post.getPostId() + " - Photo: " + post.getPhotoUrl());
+
+                            userPosts.add(post);
+                        }
+                    }
+
+                    if (userPosts.isEmpty()) {
+                        Log.d("DEBUG_STORY", "Query thành công nhưng list rỗng (User chưa đăng bài nào)");
+                    }
+
+                    // Không cần load thông tin User vì đây là bài của chính mình
+                    // Có thể set cứng thông tin user hiện tại nếu cần
+                    result.postValue(Resource.success(userPosts));
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("DEBUG_STORY", "Lỗi query: " + e.getMessage());
+                    result.postValue(Resource.error(e.getMessage(), null));
+                });
+    }
 }
