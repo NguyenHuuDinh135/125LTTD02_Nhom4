@@ -48,6 +48,7 @@ public class ProfileActivity extends AppCompatActivity {
 
     private Uri selectedImageUri = null;
 
+    private ImageView btnBack;
     private final ActivityResultLauncher<String> pickImageLauncher = registerForActivityResult(
             new ActivityResultContracts.GetContent(),
             uri -> {
@@ -86,6 +87,9 @@ public class ProfileActivity extends AppCompatActivity {
             finish();
         });
 
+        // Back
+        btnBack.setOnClickListener(v -> finish());
+
         // Click icon thêm widget
         ivAddWidgetIcon.setOnClickListener(v -> addWidgetToHomeScreen());
     }
@@ -108,6 +112,7 @@ public class ProfileActivity extends AppCompatActivity {
         btnLogout = findViewById(R.id.buttonSettings);
         btnLogout.setText("Đăng xuất");
         btnLogout.setIconResource(R.drawable.outline_logout_24);
+        btnBack = findViewById(R.id.btn_back);
     }
 
     // -----------------------------

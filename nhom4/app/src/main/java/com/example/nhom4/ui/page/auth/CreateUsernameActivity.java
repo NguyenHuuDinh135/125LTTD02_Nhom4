@@ -36,6 +36,15 @@ public class CreateUsernameActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_create_username);
 
+        View root = findViewById(android.R.id.content);
+        root.setAlpha(0f);
+        root.setTranslationY(40f);
+        root.animate()
+                .alpha(1f)
+                .translationY(0f)
+                .setDuration(350)
+                .start();
+
         // 1. Init ViewModel
         viewModel = new ViewModelProvider(this).get(AuthViewModel.class);
 
@@ -50,9 +59,22 @@ public class CreateUsernameActivity extends AppCompatActivity {
         setupTextWatcher();
 
         btnContinue.setOnClickListener(v -> {
-            String username = etUsername.getText().toString().trim();
-            // Lúc này nút chỉ enable khi username đã được xác thực unique
-            viewModel.createUserProfile(username);
+            btnContinue.animate()
+                    .scaleX(0.97f)
+                    .scaleY(0.97f)
+                    .setDuration(80)
+                    .withEndAction(() -> {
+                        String username = etUsername.getText().toString().trim();
+                        viewModel.createUserProfile(username);
+
+                        // Trả lại scale bình thường
+                        btnContinue.animate()
+                                .scaleX(1f)
+                                .scaleY(1f)
+                                .setDuration(120)
+                                .start();
+                    })
+                    .start();
         });
 
         // 4. Observe ViewModel
@@ -141,6 +163,12 @@ public class CreateUsernameActivity extends AppCompatActivity {
      */
     private void setButtonEnabled(boolean enabled) {
         btnContinue.setEnabled(enabled);
+        btnContinue.animate()
+                .alpha(enabled ? 1f : 0.5f)
+                .scaleX(enabled ? 1f : 0.95f)
+                .scaleY(enabled ? 1f : 0.95f)
+                .setDuration(200)
+                .start();
         btnContinue.setAlpha(enabled ? 1.0f : 0.5f);
     }
 }

@@ -24,35 +24,29 @@
     <!-- 2. Nút Tiếp tục (Floating Button style) -->
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btn_continue"
-        style="@style/Widget.Material3.Button.TonalButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_margin="26dp"
-        android:paddingHorizontal="46dp"
-        android:paddingVertical="14dp"
-        android:text="@string/ti_p_t_c"
-        android:textColor="?attr/colorOnPrimary"
-        android:textSize="16sp"
-        app:backgroundTint="?attr/colorPrimary"
+        android:layout_margin="24dp"
+        android:text="Tiếp tục"
         app:cornerRadius="50dp"
         app:icon="@drawable/ic_arrow_forward"
         app:iconGravity="textEnd"
-        app:iconTint="?attr/colorOnPrimary"
+        app:backgroundTint="?attr/colorPrimary"
         app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        android:elevation="8dp"/>
 
     <!-- 3. Nội dung chính -->
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_marginTop="8dp"
+        android:paddingBottom="120dp"
         android:clipToPadding="false"
-        android:paddingBottom="100dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/toolbar">
+        app:layout_constraintTop_toBottomOf="@id/toolbar"
+        app:layout_constraintBottom_toTopOf="@id/btn_continue">
 
-        <LinearLayout
+    <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
