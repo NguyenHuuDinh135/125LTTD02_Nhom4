@@ -2,92 +2,161 @@
 <androidx.coordinatorlayout.widget.CoordinatorLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="?attr/colorSurface"
-    android:paddingTop="100dp">
+    android:paddingTop="30dp">
 
-    <!-- Container chính có hành vi cuộn -->
-    <LinearLayout
+    <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-        <!-- 2. Header Info: Icon và Text thông báo -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:gravity="center"
             android:orientation="vertical"
-            android:paddingHorizontal="24dp"
-            android:paddingTop="8dp"
-            android:paddingBottom="16dp">
+            android:paddingBottom="24dp">
 
-            <ImageView
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:contentDescription="@null"
-                android:padding="8dp"
-                android:src="@drawable/ic_calendar"
-                app:tint="?attr/colorPrimary" />
-
-            <com.google.android.material.textview.MaterialTextView
-                android:id="@+id/tv_header_info"
-                style="@style/TextAppearance.Material3.BodyMedium"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:textAlignment="center"
-                android:text="@string/kho_nh_kh_c_u_ti_n_c_a_b_n_c_ghi_nh_n_v_o_ng_y_3_thg_3_2025"
-                android:textColor="?attr/colorOnSurfaceVariant" />
-        </LinearLayout>
-
-        <!-- 3. TabLayout dạng Segmented (Viên thuốc) -->
-        <!-- Bọc trong CardView để tạo nền xám bo tròn -->
-        <com.google.android.material.card.MaterialCardView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginHorizontal="24dp"
-            android:layout_marginBottom="16dp"
-            app:cardBackgroundColor="?attr/colorSurfaceContainerHigh"
-            app:cardCornerRadius="24dp"
-            app:cardElevation="0dp"
-            app:strokeWidth="0dp">
-
-            <com.google.android.material.tabs.TabLayout
-                android:id="@+id/tab_layout"
+            <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="48dp"
-                android:background="@android:color/transparent"
-                app:tabGravity="fill"
-                app:tabIndicatorFullWidth="true"
-                app:tabIndicatorGravity="stretch"
-                app:tabIndicatorAnimationMode="elastic"
-                app:tabIndicatorColor="?attr/colorSurface"
-                app:tabIndicatorHeight="40dp"
-                app:tabMode="fixed"
-                app:tabRippleColor="@null"
-                app:tabSelectedTextColor="?attr/colorOnSurface"
-                app:tabTextColor="?attr/colorOnSurfaceVariant">
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:paddingHorizontal="24dp"
+                android:paddingTop="8dp"
+                android:paddingBottom="16dp">
 
-                <!--
-                   Mẹo: app:tabIndicatorGravity="stretch" + tabIndicatorColor="Surface"
-                   sẽ tạo hiệu ứng "nút được chọn nổi lên trên nền xám".
-                   Nếu bạn muốn màu nút chọn là Primary (xanh/tím), hãy đổi tabIndicatorColor="?attr/colorPrimary"
-                   và tabSelectedTextColor="?attr/colorOnPrimary".
-                -->
+                <ImageView
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:contentDescription="@null"
+                    android:padding="8dp"
+                    android:src="@drawable/ic_calendar"
+                    app:tint="?attr/colorPrimary" />
 
-            </com.google.android.material.tabs.TabLayout>
-        </com.google.android.material.card.MaterialCardView>
+                <com.google.android.material.textview.MaterialTextView
+                    android:id="@+id/tv_header_info"
+                    style="@style/TextAppearance.Material3.BodyMedium"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:textAlignment="center"
+                    android:text="@string/kho_nh_kh_c_u_ti_n_c_a_b_n_c_ghi_nh_n_v_o_ng_y_3_thg_3_2025"
+                    android:textColor="?attr/colorOnSurfaceVariant" />
+            </LinearLayout>
 
-        <!-- 4. ViewPager2 -->
-        <androidx.viewpager2.widget.ViewPager2
-            android:id="@+id/view_pager"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1" />
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="24dp"
+                app:cardBackgroundColor="?attr/colorSurfaceContainerHigh"
+                app:cardCornerRadius="24dp"
+                app:cardElevation="0dp"
+                app:strokeWidth="0dp">
 
-    </LinearLayout>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:paddingBottom="12dp">
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btn_prev_month"
+                            style="@style/Widget.Material3.Button.IconButton"
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            app:icon="@drawable/outline_arrow_back_ios_24"
+                            app:iconTint="?attr/colorOnSurface" />
+
+                        <com.google.android.material.textview.MaterialTextView
+                            android:id="@+id/tv_current_month"
+                            style="@style/TextAppearance.Material3.TitleMedium"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:gravity="center"
+                            android:text="Tháng 3 2025"
+                            android:textColor="?attr/colorOnSurface"
+                            android:textStyle="bold" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btn_next_month"
+                            style="@style/Widget.Material3.Button.IconButton"
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            android:rotation="180"
+                            app:icon="@drawable/outline_arrow_back_ios_24"
+                            app:iconTint="?attr/colorOnSurface" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:weightSum="7">
+
+                        <TextView android:text="@string/t2" style="@style/CalendarDayLabel"/>
+                        <TextView android:text="@string/t3" style="@style/CalendarDayLabel"/>
+                        <TextView android:text="@string/t4" style="@style/CalendarDayLabel"/>
+                        <TextView android:text="@string/t5" style="@style/CalendarDayLabel"/>
+                        <TextView android:text="@string/t6" style="@style/CalendarDayLabel"/>
+                        <TextView android:text="@string/t7" style="@style/CalendarDayLabel"/>
+                        <TextView android:text="@string/cn" style="@style/CalendarDayLabel"/>
+                    </LinearLayout>
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/calendar_recycler_view"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:nestedScrollingEnabled="false"
+                        app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
+                        app:spanCount="7"
+                        tools:itemCount="31"
+                        tools:listitem="@layout/item_calendar_day" />
+
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/card_stats"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="24dp"
+                android:layout_marginTop="20dp"
+                app:cardBackgroundColor="?attr/colorSurfaceContainer"
+                app:cardCornerRadius="20dp"
+                app:cardElevation="0dp"
+                app:strokeWidth="0dp">
+
+                <LinearLayout
+                    android:id="@+id/stats_container"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="20dp"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:text="@string/th_ng_k"
+                        android:textStyle="bold"
+                        android:textColor="?attr/colorSurfaceBright"
+                        android:textSize="18sp"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"/>
+
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

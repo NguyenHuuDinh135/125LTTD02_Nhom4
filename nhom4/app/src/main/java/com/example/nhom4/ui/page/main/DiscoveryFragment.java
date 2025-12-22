@@ -16,7 +16,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.nhom4.R;
 import com.example.nhom4.data.Resource;
 import com.example.nhom4.ui.adapter.ChatListAdapter;
-import com.example.nhom4.ui.adapter.OperatorAdapter; // Import Adapter mới
+import com.example.nhom4.ui.adapter.OperatorAdapter;
 import com.example.nhom4.ui.viewmodel.DiscoveryViewModel;
 
 /**
@@ -25,10 +25,10 @@ import com.example.nhom4.ui.viewmodel.DiscoveryViewModel;
 public class DiscoveryFragment extends Fragment {
 
     private RecyclerView chatRecyclerView;
-    private RecyclerView activityRecyclerView; // [MỚI] RecyclerView cho Activity
+    private RecyclerView activityRecyclerView;
 
     private ChatListAdapter chatAdapter;
-    private OperatorAdapter activityAdapter;   // [MỚI] Adapter cho Activity
+    private OperatorAdapter activityAdapter;
 
     private DiscoveryViewModel viewModel;
 
@@ -46,10 +46,10 @@ public class DiscoveryFragment extends Fragment {
         viewModel = new ViewModelProvider(this).get(DiscoveryViewModel.class);
 
         chatRecyclerView = view.findViewById(R.id.chatRecyclerView);
-        activityRecyclerView = view.findViewById(R.id.OperatorRecyclerView); // Ánh xạ ID trong XML
+        activityRecyclerView = view.findViewById(R.id.OperatorRecyclerView);
 
         setupChatRecyclerView();
-        setupActivityRecyclerView(); // [MỚI] Setup
+        setupActivityRecyclerView();
 
         observeViewModel();
     }
@@ -63,9 +63,16 @@ public class DiscoveryFragment extends Fragment {
         chatRecyclerView.setAdapter(chatAdapter);
     }
 
-    // [MỚI] Setup Activity RecyclerView
+    /**
+     * [CẬP NHẬT] Setup Activity RecyclerView với Adapter mới (có listener).
+     */
     private void setupActivityRecyclerView() {
-        activityAdapter = new OperatorAdapter(getContext());
+        // Thêm listener xử lý sự kiện click vào item activity
+        activityAdapter = new OperatorAdapter(getContext(), activity -> {
+            // Xử lý khi click vào activity (Ví dụ: Chuyển sang trang chi tiết hoặc check-in)
+            Toast.makeText(getContext(), "Đã chọn: " + activity.getTitle(), Toast.LENGTH_SHORT).show();
+        });
+
         activityRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         activityRecyclerView.setAdapter(activityAdapter);
     }
@@ -78,7 +85,7 @@ public class DiscoveryFragment extends Fragment {
         viewModel.getConversations().observe(getViewLifecycleOwner(), resource -> {
             switch (resource.status) {
                 case SUCCESS:
-                    if (resource.data != null) chatAdapter.setList(resource.data); // Cập nhật danh sách hội thoại
+                    if (resource.data != null) chatAdapter.setList(resource.data);
                     break;
                 case ERROR:
                     Toast.makeText(getContext(), resource.message, Toast.LENGTH_SHORT).show();
@@ -87,7 +94,7 @@ public class DiscoveryFragment extends Fragment {
             }
         });
 
-        // 2. [MỚI] Lắng nghe danh sách Activity
+        // 2. Lắng nghe danh sách Activity
         viewModel.getActivities().observe(getViewLifecycleOwner(), resource -> {
             switch (resource.status) {
                 case SUCCESS:
@@ -106,7 +113,7 @@ public class DiscoveryFragment extends Fragment {
         super.onResume();
         if (viewModel != null) {
             viewModel.loadConversations();
-            viewModel.loadJoinedActivities(); // [MỚI] Gọi load activity
+            viewModel.loadJoinedActivities();
         }
     }
 }

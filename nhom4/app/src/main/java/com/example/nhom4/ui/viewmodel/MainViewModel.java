@@ -1,190 +1,220 @@
 package com.example.nhom4.ui.viewmodel;
 
 import android.net.Uri;
+
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
 import com.example.nhom4.data.Resource;
 import com.example.nhom4.data.bean.Activity;
+import com.example.nhom4.data.bean.ActivityLog;
 import com.example.nhom4.data.bean.Mood;
 import com.example.nhom4.data.bean.Post;
 import com.example.nhom4.data.repository.AuthRepository;
 import com.example.nhom4.data.repository.PostRepository;
+import com.google.firebase.Timestamp;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
+import java.util.UUID;
 
-/**
- * ViewModel trung tâm cho MainFragment/CenterFragment:
- * - Lấy feed bài viết, mood, activity tham gia
- * - Tạo bài post mới và xử lý mở khóa phần thưởng.
- */
 public class MainViewModel extends ViewModel {
 
-    private final PostRepository postRepository;
-    private final AuthRepository authRepository;
+    private final PostRepository postRepository = new PostRepository();
+    private final AuthRepository authRepository = new AuthRepository();
     private final FirebaseFirestore db = FirebaseFirestore.getInstance();
+    private final FirebaseStorage storage = FirebaseStorage.getInstance();
+    private final FirebaseAuth auth = FirebaseAuth.getInstance();
 
+    // LiveData
     private final MutableLiveData<Resource<List<Post>>> posts = new MutableLiveData<>();
     private final MutableLiveData<Resource<List<Mood>>> moods = new MutableLiveData<>();
+    private final MutableLiveData<Resource<List<Activity>>> joinedActivities = new MutableLiveData<>();
     private final MutableLiveData<Resource<Boolean>> uploadStatus = new MutableLiveData<>();
 
-    // [MỚI] LiveData chứa danh sách Activity đã tham gia
-    private final MutableLiveData<Resource<List<Activity>>> joinedActivities = new MutableLiveData<>();
-
-    // [MỚI] LiveData báo hiệu vừa mở khóa Mood mới
-    private final MutableLiveData<Resource<Mood>> unlockedReward = new MutableLiveData<>();
-
     public MainViewModel() {
-        postRepository = new PostRepository();
-        authRepository = new AuthRepository();
-
         loadPosts();
         loadMoods();
-        loadJoinedActivities(); // Tự động load activity khi khởi tạo
+        loadJoinedActivities();
     }
 
+    // ====================== GETTERS ======================
     public LiveData<Resource<List<Post>>> getPosts() { return posts; }
     public LiveData<Resource<List<Mood>>> getMoods() { return moods; }
+    public LiveData<Resource<List<Activity>>> getJoinedActivities() { return joinedActivities; }
     public LiveData<Resource<Boolean>> getUploadStatus() { return uploadStatus; }
 
-    // Getters mới
-    public LiveData<Resource<List<Activity>>> getJoinedActivities() { return joinedActivities; }
-    public LiveData<Resource<Mood>> getUnlockedReward() { return unlockedReward; }
-
+    // ====================== LOAD DATA ======================
     private void loadPosts() {
-        postRepository.getPosts(posts); // Snapshot listener trả dữ liệu feed
+        postRepository.getPosts(posts);
     }
 
     private void loadMoods() {
-        db.collection("Mood").get()
+        db.collection("Mood")
+                .get()
                 .addOnSuccessListener(snapshots -> {
                     List<Mood> list = new ArrayList<>();
                     for (DocumentSnapshot doc : snapshots) {
-                        // Fix lỗi null iconUrl nếu có
-                        String iconUrl = doc.getString("iconUrl");
-                        if (iconUrl == null) iconUrl = "";
-
-                        list.add(new Mood(doc.getString("name"), iconUrl, Boolean.TRUE.equals(doc.getBoolean("isPremium"))));
+                        list.add(new Mood(
+                                doc.getString("name"),
+                                doc.getString("iconUrl"),
+                                Boolean.TRUE.equals(doc.getBoolean("isPremium"))
+                        ));
                     }
                     moods.postValue(Resource.success(list));
                 })
                 .addOnFailureListener(e -> moods.postValue(Resource.error(e.getMessage(), null)));
     }
 
-    // [MỚI] Load Activity User đang tham gia
     public void loadJoinedActivities() {
-        if (authRepository.getCurrentUser() == null) return;
-        String uid = authRepository.getCurrentUser().getUid();
+        if (auth.getCurrentUser() == null) return;
 
-        // Lắng nghe realtime để UI tự cập nhật khi có activity mới
+        String uid = auth.getCurrentUser().getUid();
+
         db.collection("activities")
                 .whereArrayContains("participants", uid)
-                .addSnapshotListener((value, error) -> {
+                .addSnapshotListener((snapshots, error) -> {
                     if (error != null) {
                         joinedActivities.postValue(Resource.error(error.getMessage(), null));
                         return;
                     }
-                    if (value != null) {
-                        List<Activity> list = value.toObjects(Activity.class);
-                        joinedActivities.postValue(Resource.success(list));
+                    if (snapshots != null) {
+                        List<Activity> activities = snapshots.toObjects(Activity.class);
+                        joinedActivities.postValue(Resource.success(activities));
                     }
                 });
     }
 
-    // [CẬP NHẬT] Hàm createPost nhận object Activity thay vì string title
-    public void createPost(String caption, String imagePath, Mood mood, Activity activity) {
-        if (authRepository.getCurrentUser() == null) return;
+    // ====================== TẠO ACTIVITY ======================
+    public void createActivity(String title,
+                               boolean isDaily,
+                               int target,
+                               long durationSeconds,
+                               Timestamp scheduledTime,
+                               Uri imageUri) {
+
+        if (auth.getCurrentUser() == null) return;
+
+        String uid = auth.getCurrentUser().getUid();
+        String activityId = db.collection("activities").document().getId();
+
+        if (imageUri != null) {
+            String fileName = "activity_covers/" + UUID.randomUUID() + ".jpg";
+            StorageReference ref = storage.getReference().child(fileName);
+
+            ref.putFile(imageUri)
+                    .addOnSuccessListener(task -> ref.getDownloadUrl()
+                            .addOnSuccessListener(uri -> saveActivity(activityId, uid, title, isDaily, target, durationSeconds, scheduledTime, uri.toString()))
+                            .addOnFailureListener(e -> saveActivity(activityId, uid, title, isDaily, target, durationSeconds, scheduledTime, null)))
+                    .addOnFailureListener(e -> saveActivity(activityId, uid, title, isDaily, target, durationSeconds, scheduledTime, null));
+        } else {
+            saveActivity(activityId, uid, title, isDaily, target, durationSeconds, scheduledTime, null);
+        }
+    }
+
+    private void saveActivity(String id, String uid, String title, boolean isDaily, int target,
+                              long durationSeconds, Timestamp scheduledTime, String imageUrl) {
+
+        Activity activity = new Activity(uid, title, isDaily, target, durationSeconds, scheduledTime);
+        activity.setId(id);
+        if (imageUrl != null) activity.setImageUrl(imageUrl);
+
+        List<String> participants = new ArrayList<>();
+        participants.add(uid);
+        activity.setParticipants(participants);
+        activity.setProgress(0);
+
+        db.collection("activities").document(id).set(activity);
+    }
+
+    // ====================== CHECK-IN ACTIVITY ======================
+    public void checkInActivity(Activity activity, String localImagePath, String note) {
+        if (auth.getCurrentUser() == null || activity == null) return;
+
+        String uid = auth.getCurrentUser().getUid();
+        uploadStatus.postValue(Resource.loading(null));
+
+        if (localImagePath != null) {
+            Uri fileUri = Uri.parse("file://" + localImagePath);
+            String fileName = "logs/" + activity.getId() + "_" + System.currentTimeMillis() + ".jpg";
+            StorageReference ref = storage.getReference().child(fileName);
+
+            ref.putFile(fileUri)
+                    .addOnSuccessListener(taskSnapshot -> ref.getDownloadUrl()
+                            .addOnSuccessListener(uri -> saveCheckInLogAndCreatePost(activity, uid, uri.toString(), note))
+                            .addOnFailureListener(e -> uploadStatus.postValue(Resource.error("Lỗi lấy link ảnh", false))))
+                    .addOnFailureListener(e -> uploadStatus.postValue(Resource.error("Lỗi upload ảnh", false)));
+        } else {
+            saveCheckInLogAndCreatePost(activity, uid, null, note);
+        }
+    }
+
+    private void saveCheckInLogAndCreatePost(Activity activity, String uid, String imageUrl, String note) {
+        ActivityLog log = new ActivityLog(activity.getId(), uid, imageUrl, note, Timestamp.now());
+
+        db.collection("activities")
+                .document(activity.getId())
+                .collection("logs")
+                .add(log)
+                .addOnSuccessListener(documentReference -> {
+                    // Tăng progress
+                    db.collection("activities")
+                            .document(activity.getId())
+                            .update("progress", FieldValue.increment(1));
+
+                    // Tạo Post để hiện trong Story và Feed
+                    createCheckInPost(activity, uid, imageUrl, note);
+
+                    uploadStatus.postValue(Resource.success(true));
+                })
+                .addOnFailureListener(e -> uploadStatus.postValue(Resource.error("Lỗi lưu log", false)));
+    }
+
+    private void createCheckInPost(Activity activity, String uid, String imageUrl, String note) {
+        Post post = new Post();
+        post.setUserId(uid);
+        post.setType("activity"); // Phân biệt với mood
+        post.setActivityId(activity.getId());
+        post.setActivityTitle(activity.getTitle()); // Dùng để hiển thị tên activity trong Story
+        post.setPhotoUrl(imageUrl);
+        post.setCaption(note != null ? note : "");
+        post.setCreatedAt(Timestamp.now());
+
+        // Tạo post trong collection posts → sẽ realtime hiện trong Story/Feed
+        postRepository.createPost(post, null, new MutableLiveData<>());
+    }
+
+    // ====================== ĐĂNG MOOD ======================
+    public void createPost(String caption, Mood mood) {
+        if (auth.getCurrentUser() == null) return;
 
         Post post = new Post();
-        post.setUserId(authRepository.getCurrentUser().getUid());
+        post.setUserId(auth.getCurrentUser().getUid());
         post.setCaption(caption);
-        post.setCreatedAt(com.google.firebase.Timestamp.now());
+        post.setCreatedAt(Timestamp.now());
 
         if (mood != null) {
             post.setType("mood");
             post.setMoodName(mood.getName());
             post.setMoodIconUrl(mood.getIconUrl());
-        } else if (activity != null) {
-            // Nếu là Activity Post
-            post.setType("activity");
-            post.setActivityId(activity.getId()); // Lưu ID để query sau này
-            post.setActivityTitle(activity.getTitle());
-        } else {
-            // Fallback nếu không chọn gì (tránh crash)
-            post.setType("activity");
-            post.setActivityTitle("Hoạt động khác");
         }
 
-        Uri uri = imagePath != null ? Uri.parse("file://" + imagePath) : null;
-
-        // Gọi repository để upload
-        // Chúng ta cần wrap uploadStatus để hứng sự kiện Success và cập nhật Progress
-        MutableLiveData<Resource<Boolean>> internalStatus = new MutableLiveData<>();
-        internalStatus.observeForever(resource -> {
-            uploadStatus.setValue(resource); // Chuyển tiếp trạng thái ra UI
-
-            if (resource.status == Resource.Status.SUCCESS && activity != null) {
-                // Nếu upload thành công và đây là bài post Activity -> Tăng điểm
-                incrementActivityProgress(activity.getId());
-            }
-        });
-
-        postRepository.createPost(post, uri, internalStatus);
+        postRepository.createPost(post, null, uploadStatus);
     }
 
-    // [MỚI] Tăng Progress và Kiểm tra quà
-    private void incrementActivityProgress(String activityId) {
-        if (activityId == null) return;
-
-        db.collection("activities").document(activityId).get().addOnSuccessListener(doc -> {
-            Activity act = doc.toObject(Activity.class);
-
-            // Chỉ tăng nếu chưa nhận quà
-            if (act != null && !act.isRewardClaimed()) {
-                int newProgress = act.getProgress() + 1;
-
-                // Cập nhật progress mới lên Firestore
-                db.collection("activities").document(activityId).update("progress", newProgress);
-
-                // Kiểm tra đủ target (ví dụ 10) chưa
-                if (newProgress >= act.getTarget()) {
-                    unlockRandomPremiumMood(activityId);
-                }
-            }
-        });
+    // ====================== REFRESH ======================
+    public void refreshPosts() {
+        loadPosts();
     }
 
-    // [MỚI] Mở khóa Mood Premium ngẫu nhiên
-    /**
-     * Random một mood premium và ghi nhận vào user khi hoàn thành target.
-     */
-    private void unlockRandomPremiumMood(String activityId) {
-        if (authRepository.getCurrentUser() == null) return;
-        String uid = authRepository.getCurrentUser().getUid();
-
-        // List Mood Premium mẫu (Thực tế nên fetch từ collection 'PremiumMoods')
-        List<Mood> premiums = new ArrayList<>();
-        premiums.add(new Mood("Vua Hề", "https://img.icons8.com/emoji/96/clown-face.png", true));
-        premiums.add(new Mood("Rich Kid", "https://img.icons8.com/emoji/96/money-mouth-face.png", true));
-        premiums.add(new Mood("Siêu Nhân", "https://img.icons8.com/emoji/96/superhero.png", true));
-
-        // Random
-        if (premiums.isEmpty()) return;
-        Mood reward = premiums.get(new Random().nextInt(premiums.size()));
-
-        // 1. Đánh dấu activity đã nhận quà (để không nhận lại)
-        db.collection("activities").document(activityId).update("isRewardClaimed", true);
-
-        // 2. Lưu mood vào collection của user
-        db.collection("users").document(uid).collection("unlockedMoods").add(reward)
-                .addOnSuccessListener(v -> {
-                    // Báo ra UI để hiện Dialog chúc mừng
-                    unlockedReward.postValue(Resource.success(reward));
-                });
+    public void refreshActivities() {
+        loadJoinedActivities();
     }
 }

@@ -182,14 +182,24 @@ public class StoryAllActivity extends AppCompatActivity {
         if (position < 0 || position >= storyList.size()) return;
         Post post = storyList.get(position);
 
-        // Cập nhật Mood Title
-        String moodText = (post.getMoodName() != null) ? post.getMoodName() : "Story";
-        if (post.getCaption() != null && !post.getCaption().isEmpty()) {
-            moodText += " - " + post.getCaption();
-        }
-        tvMoodTitle.setText(moodText);
+        String title = "";
 
-        // Cập nhật Thời gian
+        if ("activity".equals(post.getType()) && post.getActivityTitle() != null) {
+            title = post.getActivityTitle(); // Hiển thị tên Activity
+        } else if ("mood".equals(post.getType()) && post.getMoodName() != null) {
+            title = post.getMoodName(); // Hiển thị tên Mood
+        } else {
+            title = "Story";
+        }
+
+        // Thêm caption nếu có
+        if (post.getCaption() != null && !post.getCaption().isEmpty()) {
+            title += " - " + post.getCaption();
+        }
+
+        tvMoodTitle.setText(title);
+
+        // Cập nhật thời gian và ngày (giữ nguyên)
         if (post.getCreatedAt() != null) {
             Date date = post.getCreatedAt().toDate();
             tvTimestamp.setText(new SimpleDateFormat("HH:mm", Locale.getDefault()).format(date));
@@ -197,7 +207,7 @@ public class StoryAllActivity extends AppCompatActivity {
             Calendar cal = Calendar.getInstance();
             cal.setTime(date);
             tvYear.setText(String.valueOf(cal.get(Calendar.YEAR)));
-            tvDate.setText(new SimpleDateFormat("'Ngày' d 'tháng' M", Locale.getDefault()).format(date));
+            tvDate.setText(new SimpleDateFormat("'tháng' M 'ngày' d", Locale.getDefault()).format(date));
         }
     }
 

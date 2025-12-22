@@ -1,15 +1,47 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools">
+    package="com.example.nhom4"
+    android:versionCode="1"
+    android:versionName="1.0">
+
+    <uses-sdk
+        android:minSdkVersion="24"
+        android:targetSdkVersion="36" />
+
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.CAMERA" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
-        android:maxSdkVersion="28"/>
+    <!-- Chỉ cần WRITE_EXTERNAL_STORAGE cho Android < 10 -->
+    <uses-permission
+        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="28" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
 
-    <uses-feature android:name="android.hardware.camera" android:required="true" />
+    <!-- Cho Google services (nếu dùng) -->
+    <uses-permission android:name="com.google.android.gms.permission.AD_ID" />
+    <uses-permission android:name="android.permission.ACCESS_ADSERVICES_ATTRIBUTION" />
+    <uses-permission android:name="android.permission.ACCESS_ADSERVICES_AD_ID" />
+    <uses-permission android:name="com.google.android.finsky.permission.BIND_GET_INSTALL_REFERRER_SERVICE" />
+    <uses-permission android:name="com.google.android.providers.gsf.permission.READ_GSERVICES" />
+
+    <uses-feature
+        android:name="android.hardware.camera"
+        android:required="true" />
+
+
+
+    <permission
+        android:name="com.example.nhom4.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
+        android:protectionLevel="signature" />
+
+    <uses-permission android:name="com.example.nhom4.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION" />
 
     <application
         android:allowBackup="true"
+        android:name=".MyApplication"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
         android:icon="@mipmap/ic_launcher"
@@ -17,8 +49,19 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+        <!-- FileProvider cho share ảnh -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="com.example.nhom4.provider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
+        <!-- Splash / Launcher -->
         <activity
-            android:name=".ui.page.SplashActivity"
+            android:name="com.example.nhom4.ui.page.SplashActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -26,40 +69,87 @@
             </intent-filter>
         </activity>
 
-        <!-- LoginActivity không còn là Activity khởi chạy -->
-        <activity
-            android:name=".ui.page.auth.LoginActivity"
-            android:exported="false" />
+        <!-- Các Activity khác -->
+        <activity android:name="com.example.nhom4.ui.page.auth.LoginActivity" android:exported="false" />
+        <activity android:name="com.example.nhom4.MainActivity" android:exported="false" />
+        <activity android:name="com.example.nhom4.ui.page.auth.AddFriendActivity" android:exported="false" />
+        <activity android:name="com.example.nhom4.ui.page.calendar.ProfileActivity" android:exported="false" />
+        <activity android:name="com.example.nhom4.ui.page.auth.CreateUsernameActivity" android:exported="false" />
+        <activity android:name="com.example.nhom4.ui.page.auth.RegisterActivity" android:exported="false" />
+        <activity android:name="com.example.nhom4.ui.page.chat.ChatActivity" android:windowSoftInputMode="adjustResize" android:exported="false" />
+        <activity android:name="com.example.nhom4.ui.page.calendar.StoryAllActivity" android:windowSoftInputMode="adjustResize" android:exported="false" />
+        <activity android:name="com.example.nhom4.ui.page.main.FocusActivity" android:windowSoftInputMode="adjustResize" android:exported="false" />
 
-        <activity
-            android:name=".MainActivity"
-            android:exported="false" />
-        <activity android:name=".ui.page.auth.AddFriendActivity" android:exported="false" />
-        <activity android:name=".ui.page.calendar.ProfileActivity" android:exported="false" />
-        <activity android:name=".ui.page.auth.CreateUsernameActivity" android:exported="false" />
-        <!-- Các activity khác... -->
-        <activity android:name=".ui.page.auth.RegisterActivity" android:exported="false" />
-        <activity android:name=".ui.page.chat.ChatActivity" android:exported="false" android:windowSoftInputMode="adjustResize" />/>
-        <activity android:name=".ui.page.calendar.StoryAllActivity" android:exported="false" android:windowSoftInputMode="adjustResize" />/>
-
-        <!-- Widget Provider -->
-        <receiver
-            android:name=".ui.page.widget.ActivityWidgetProvider"
-            android:exported="false">
-
+        <!-- Widget -->
+        <receiver android:name="com.example.nhom4.ui.page.widget.ActivityWidgetProvider" android:exported="false">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
-
             <meta-data
                 android:name="android.appwidget.provider"
                 android:resource="@xml/activity_widget_info" />
         </receiver>
-        <service
-            android:name=".ui.page.widget.ActivityWidgetService"
-            android:permission="android.permission.BIND_JOB_SERVICE"
-            android:exported="false" />
+
+        <service android:name="com.example.nhom4.ui.page.widget.ActivityWidgetService" android:exported="false" android:permission="android.permission.BIND_JOB_SERVICE" />
+
+        <!-- Firebase & Google Services -->
+        <activity
+            android:name="com.google.firebase.auth.internal.GenericIdpActivity"
+            android:excludeFromRecents="true"
+            android:exported="true"
+            android:launchMode="singleTask"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="genericidp" android:host="firebase.auth" android:path="/" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name="com.google.firebase.auth.internal.RecaptchaActivity"
+            android:excludeFromRecents="true"
+            android:exported="true"
+            android:launchMode="singleTask"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="recaptcha" android:host="firebase.auth" android:path="/" />
+            </intent-filter>
+        </activity>
+
+        <service android:name="com.google.firebase.components.ComponentDiscoveryService" android:directBootAware="true" android:exported="false">
+            <!-- Các meta-data Firebase giữ nguyên nếu cần -->
+        </service>
+
+        <provider
+            android:name="com.google.firebase.provider.FirebaseInitProvider"
+            android:authorities="com.example.nhom4.firebaseinitprovider"
+            android:directBootAware="true"
+            android:exported="false"
+            android:initOrder="100" />
+
+        <!-- Analytics, WorkManager, Glance, v.v. giữ nguyên như cũ của bạn -->
+
+        <!-- ARCore nếu dùng -->
+        <meta-data android:name="com.google.ar.core.min_apk_version" android:value="191106000" />
+        <activity
+            android:name="com.google.ar.core.InstallActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:excludeFromRecents="true"
+            android:exported="false"
+            android:launchMode="singleTop"
+            android:theme="@android:style/Theme.Material.Light.Dialog.Alert" />
+
+        <!-- Play Core -->
+        <activity
+            android:name="com.google.android.play.core.common.PlayCoreDialogWrapperActivity"
+            android:exported="false"
+            android:stateNotNeeded="true"
+            android:theme="@style/Theme.PlayCore.Transparent" />
 
     </application>
-
 </manifest>

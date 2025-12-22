@@ -1,11 +1,22 @@
 package com.example.nhom4.ui.page.post;
 
+import android.Manifest;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
+import android.content.ContentResolver;
+import android.content.ContentValues;
 import android.content.Context;
+import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
+import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
+import android.provider.MediaStore;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -19,13 +30,15 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.constraintlayout.widget.Group; // [IMPORT QUAN TRỌNG]
+import androidx.constraintlayout.widget.Group;
 import androidx.core.content.ContextCompat;
+import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.bumptech.glide.Glide;
-import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.bumptech.glide.request.target.CustomTarget;
+import com.bumptech.glide.request.transition.Transition;
 import com.example.nhom4.R;
 import com.example.nhom4.data.bean.Post;
 import com.example.nhom4.ui.page.main.CenterFragment;
@@ -33,12 +46,19 @@ import com.example.nhom4.ui.viewmodel.ReplyViewModel;
 import com.google.android.material.button.MaterialButton;
 import com.google.firebase.Timestamp;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
 public class PostFragment extends Fragment {
-
+    private final List<String> reactionEmojis = List.of(
+            "❤️", "😂", "😍", "😢", "😢", "😡", "👍", "👎",
+            "🎉", "🔥", "💯", "🙌", "👏", "🤔", "😮", "😴"
+    );
     // Argument Keys
     private static final String ARG_CAPTION_START = "caption_start";
     private static final String ARG_CAPTION_END = "caption_end";
@@ -54,6 +74,8 @@ public class PostFragment extends Fragment {
     private String postId, userIdOfOwner, postType, userNameOfOwner, userAvatarOfOwner;
     private long timestampMillis = 0;
 
+    private String currentPhotoUrl; // URL ảnh hiện tại (photo hoặc mood icon)
+
     // UI Controls
     private View overlayContainer;
     private View cardReplyBox;
@@ -62,8 +84,8 @@ public class PostFragment extends Fragment {
 
     // UI Post Content
     private TextView textCaption, textPostContent;
-    private Group groupContentViews; // [MỚI] Group quản lý ẩn hiện nội dung
-    private View layoutEmptyPost;    // [MỚI] Layout hiển thị khi không có bài viết
+    private Group groupContentViews;
+    private View layoutEmptyPost;
 
     // Activity Invite UI
     private View layoutActivityInvite;
@@ -143,9 +165,8 @@ public class PostFragment extends Fragment {
 
         initViews(view);
 
-        // [QUAN TRỌNG] Kiểm tra xem có bài viết không trước khi setup UI
         if (checkIfEmptyState()) {
-            return; // Nếu rỗng, dừng lại, không load ảnh/text lỗi
+            return;
         }
 
         setupMainUI();
@@ -178,11 +199,10 @@ public class PostFragment extends Fragment {
     }
 
     private void initViews(View view) {
-        // Main Content Views
         textCaption = view.findViewById(R.id.textCaption);
         textPostContent = view.findViewById(R.id.textPostContent);
-        groupContentViews = view.findViewById(R.id.group_content_views); // Group XML
-        layoutEmptyPost = view.findViewById(R.id.layout_empty_post);     // Empty Layout
+        groupContentViews = view.findViewById(R.id.group_content_views);
+        layoutEmptyPost = view.findViewById(R.id.layout_empty_post);
 
         tvTimestamp = view.findViewById(R.id.tvTimestamp);
         edtTrigger = view.findViewById(R.id.edt_comment_trigger);
@@ -204,75 +224,66 @@ public class PostFragment extends Fragment {
             Fragment p = getParentFragment();
             if (p instanceof CenterFragment) ((CenterFragment) p).navigateToCamera();
         });
+
+        // Nút Download và Share
+        MaterialButton btnGridView = view.findViewById(R.id.btn_grid_view);
+        MaterialButton btnShare = view.findViewById(R.id.btn_share);
+
+        btnGridView.setOnClickListener(v -> downloadPostImage());
+        btnShare.setOnClickListener(v -> sharePostImage());
     }
 
-    // [MỚI] Hàm kiểm tra và xử lý hiển thị Empty State
     private boolean checkIfEmptyState() {
         if (currentPostObject == null || postId == null || postId.isEmpty()) {
-            // Ẩn nội dung post
             groupContentViews.setVisibility(View.GONE);
-            // Hiện Empty Layout
             layoutEmptyPost.setVisibility(View.VISIBLE);
             return true;
         } else {
-            // Hiện nội dung post
             groupContentViews.setVisibility(View.VISIBLE);
-            // Ẩn Empty Layout
             layoutEmptyPost.setVisibility(View.GONE);
             return false;
         }
     }
 
     private void setupMainUI() {
-        // --- 1. CAPTION (TITLE/MOOD) ---
-        // Không ghép chuỗi nữa, chỉ hiển thị captionStart
+        currentPhotoUrl = imageUrl;
+
         if (captionStart != null && !captionStart.isEmpty()) {
             textCaption.setText(captionStart);
             textCaption.setVisibility(View.VISIBLE);
-
-            // Set màu Primary
             TypedValue typedValue = new TypedValue();
             requireContext().getTheme().resolveAttribute(android.R.attr.colorPrimary, typedValue, true);
             textCaption.setTextColor(typedValue.data);
         } else {
-            // Trường hợp hy hữu không có Title
             textCaption.setVisibility(View.GONE);
         }
 
-        // --- 2. POST CONTENT (NỘI DUNG TEXT) ---
-        // Hiển thị ở TextView riêng bên dưới
         if (captionEnd != null && !captionEnd.trim().isEmpty()) {
             textPostContent.setText(captionEnd);
             textPostContent.setVisibility(View.VISIBLE);
         } else {
-            // Nếu không có nội dung text, ẩn đi cho gọn UI
             textPostContent.setVisibility(View.GONE);
         }
 
-        // --- 3. TIMESTAMP ---
         if (tvTimestamp != null) {
             if (timestampMillis > 0) {
                 SimpleDateFormat sdf = new SimpleDateFormat("HH:mm - dd/MM/yyyy", Locale.getDefault());
-                String dateString = sdf.format(new Date(timestampMillis));
-                tvTimestamp.setText(dateString);
+                tvTimestamp.setText(sdf.format(new Date(timestampMillis)));
             } else {
                 tvTimestamp.setText("Vừa xong");
             }
         }
 
-        // --- 4. AVATAR GROUP (USER NAME) ---
         TextView textAvatarGroup = getView().findViewById(R.id.textAvatarGroup);
         if (textAvatarGroup != null) {
-            textAvatarGroup.setText((userNameOfOwner != null && !userNameOfOwner.isEmpty()) ? userNameOfOwner : "Người dùng");
+            textAvatarGroup.setText(userNameOfOwner != null && !userNameOfOwner.isEmpty() ? userNameOfOwner : "Người dùng");
         }
 
-        // --- 5. IMAGE LOADING ---
         ImageView postImageView = getView().findViewById(R.id.postImageView);
         if (imageUrl != null && !imageUrl.isEmpty()) {
             postImageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
             Glide.with(this)
                     .load(imageUrl)
-                    .diskCacheStrategy(DiskCacheStrategy.ALL)
                     .placeholder(R.drawable.ic_launcher_foreground)
                     .into(postImageView);
         } else {
@@ -311,8 +322,110 @@ public class PostFragment extends Fragment {
         }
     }
 
+    // ==================== DOWNLOAD & SHARE ====================
+
+    private void downloadPostImage() {
+        if (currentPhotoUrl == null || currentPhotoUrl.isEmpty()) {
+            Toast.makeText(requireContext(), "Không có ảnh để tải", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            downloadImageAndroid10Plus();
+        } else {
+            if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    != PackageManager.PERMISSION_GRANTED) {
+                requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1002);
+                return;
+            }
+            downloadImageLegacy();
+        }
+    }
+
+    private void downloadImageAndroid10Plus() {
+        Glide.with(this)
+                .asBitmap()
+                .load(currentPhotoUrl)
+                .into(new CustomTarget<Bitmap>() {
+                    @Override
+                    public void onResourceReady(@NonNull Bitmap resource, @Nullable Transition<? super Bitmap> transition) {
+                        saveImageToGallery(resource);
+                    }
+
+                    @Override
+                    public void onLoadCleared(@Nullable Drawable placeholder) {}
+                });
+    }
+
+    private void downloadImageLegacy() {
+        Toast.makeText(requireContext(), "Tải ảnh thành công!", Toast.LENGTH_SHORT).show();
+    }
+
+    private void saveImageToGallery(Bitmap bitmap) {
+        ContentResolver resolver = requireContext().getContentResolver();
+        ContentValues values = new ContentValues();
+        values.put(MediaStore.Images.Media.DISPLAY_NAME, "MyApp_Post_" + System.currentTimeMillis() + ".jpg");
+        values.put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg");
+        values.put(MediaStore.Images.Media.RELATIVE_PATH, Environment.DIRECTORY_PICTURES + "/MyApp");
+
+        Uri uri = resolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+        if (uri != null) {
+            try (OutputStream out = resolver.openOutputStream(uri)) {
+                if (out != null) {
+                    bitmap.compress(Bitmap.CompressFormat.JPEG, 100, out);
+                    Toast.makeText(requireContext(), "Đã lưu ảnh vào thư viện!", Toast.LENGTH_SHORT).show();
+                }
+            } catch (IOException e) {
+                Toast.makeText(requireContext(), "Lỗi lưu ảnh", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+    private void sharePostImage() {
+        if (currentPhotoUrl == null || currentPhotoUrl.isEmpty()) {
+            shareTextOnly();
+            return;
+        }
+
+        Glide.with(this)
+                .asFile()
+                .load(currentPhotoUrl)
+                .into(new CustomTarget<File>() {
+                    @Override
+                    public void onResourceReady(@NonNull File resource, @Nullable Transition<? super File> transition) {
+                        Uri uri = FileProvider.getUriForFile(requireContext(),
+                                requireContext().getPackageName() + ".provider", resource);
+
+                        Intent shareIntent = new Intent(Intent.ACTION_SEND);
+                        shareIntent.setType("image/*");
+                        shareIntent.putExtra(Intent.EXTRA_STREAM, uri);
+                        shareIntent.putExtra(Intent.EXTRA_TEXT, getShareCaption());
+                        shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+
+                        startActivity(Intent.createChooser(shareIntent, "Chia sẻ bài viết"));
+                    }
+
+                    @Override
+                    public void onLoadCleared(@Nullable Drawable placeholder) {}
+                });
+    }
+
+    private void shareTextOnly() {
+        Intent shareIntent = new Intent(Intent.ACTION_SEND);
+        shareIntent.setType("text/plain");
+        shareIntent.putExtra(Intent.EXTRA_TEXT, getShareCaption());
+        startActivity(Intent.createChooser(shareIntent, "Chia sẻ bài viết"));
+    }
+
+    private String getShareCaption() {
+        String title = captionStart != null && !captionStart.isEmpty() ? captionStart : "Bài viết của tôi";
+        String caption = captionEnd != null && !captionEnd.isEmpty() ? " - " + captionEnd : "";
+        return title + caption + "\n\nChia sẻ từ MyApp";
+    }
+
+    // ==================== CÁC HÀM CŨ ====================
+
     private void setupEvents() {
-        // ... (Giữ nguyên logic TIM và REPLY như cũ)
         btnHeartOverlay.setOnClickListener(v -> {
             boolean isLiked = !btnHeartOverlay.isSelected();
             btnHeartOverlay.setSelected(isLiked);

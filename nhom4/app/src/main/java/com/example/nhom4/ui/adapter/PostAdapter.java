@@ -33,15 +33,12 @@ public class PostAdapter extends FragmentStateAdapter {
 
     /**
      * Tạo Fragment cho một bài đăng tại vị trí nhất định.
-     * @param position
-     * @return
      */
     @NonNull
     @Override
     public Fragment createFragment(int position) {
         Post post = postList.get(position);
-        // [FIX] Sử dụng phương thức newInstance mới nhận vào object Post
-        return PostFragment.newInstance(post); // Truyền đủ dữ liệu post sang fragment
+        return PostFragment.newInstance(post);
     }
 
     /**
@@ -49,6 +46,37 @@ public class PostAdapter extends FragmentStateAdapter {
      */
     @Override
     public int getItemCount() {
-        return postList.size(); // ViewPager render đúng số bài
+        return postList.size();
+    }
+
+    // =========================================================================
+    // [FIX CRASH] QUAN TRỌNG: Cần override 2 hàm này để ViewPager2 định danh được Fragment
+    // Nguyên nhân lỗi "Page can only be offset...": Do ID mặc định là position,
+    // khi list thay đổi (load thêm/xóa), position lệch làm ViewPager2 bị crash.
+    // =========================================================================
+
+    @Override
+    public long getItemId(int position) {
+        // Trả về một ID duy nhất cho Post (sử dụng hashCode của String PostID)
+        // Thay vì trả về position (0,1,2...) mặc định
+        if (position >= 0 && position < postList.size()) {
+            Post post = postList.get(position);
+            if (post.getPostId() != null) {
+                return post.getPostId().hashCode();
+            }
+        }
+        return position; // Fallback nếu không có ID
+    }
+
+    @Override
+    public boolean containsItem(long itemId) {
+        // Kiểm tra xem ID này còn tồn tại trong list mới không
+        // Nếu không có hàm này, ViewPager2 sẽ không biết fragment nào cần giữ lại/xóa đi
+        for (Post post : postList) {
+            if (post.getPostId() != null && post.getPostId().hashCode() == itemId) {
+                return true;
+            }
+        }
+        return false;
     }
 }

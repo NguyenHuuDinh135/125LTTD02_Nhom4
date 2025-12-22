@@ -13,7 +13,7 @@
         android:layout_marginStart="24dp"
         android:background="?attr/selectableItemBackgroundBorderless"
         android:padding="10dp"
-        android:src="@drawable/outline_apps_24"
+        android:src="@drawable/outline_dark_mode_24"
         app:tint="?attr/colorOnSurface"
         app:layout_constraintBottom_toBottomOf="@+id/container_shutter"
         app:layout_constraintStart_toStartOf="parent"

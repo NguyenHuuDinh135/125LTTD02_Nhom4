@@ -5,8 +5,10 @@
     android:id="@+id/top_bar_container"
     android:layout_width="match_parent"
     android:layout_height="?attr/actionBarSize"
+    android:background="@android:color/transparent"
     android:paddingHorizontal="16dp">
 
+    <!-- AVATAR -->
     <com.google.android.material.imageview.ShapeableImageView
         android:id="@+id/img_avatar"
         android:layout_width="40dp"
@@ -16,10 +18,11 @@
         app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.Full"
         app:strokeColor="?attr/colorOutline"
         app:strokeWidth="1dp"
-        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent" />
 
+    <!-- FRIENDS PILL -->
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/card_friends_pill"
         android:layout_width="wrap_content"
@@ -27,38 +30,37 @@
         app:cardBackgroundColor="?attr/colorSecondaryContainer"
         app:cardCornerRadius="18dp"
         app:cardElevation="0dp"
-        app:strokeWidth="0dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent">
 
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:gravity="center"
             android:orientation="horizontal"
+            android:gravity="center"
             android:paddingHorizontal="16dp">
 
             <ImageView
                 android:layout_width="20dp"
                 android:layout_height="20dp"
                 android:layout_marginEnd="8dp"
-                android:contentDescription="@string/todo"
                 android:src="@drawable/outline_person_add_24"
-                app:tint="?attr/colorOnSecondaryContainer"/>
+                app:tint="?attr/colorOnSecondaryContainer" />
 
             <TextView
                 android:id="@+id/tv_friend_count"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/_10_b_n_b"
-                android:textColor="?attr/colorOnSecondaryContainer"
+                android:text="10 bạn bè"
+                android:textSize="14sp"
                 android:textStyle="bold"
-                android:textSize="14sp" />
+                android:textColor="?attr/colorOnSecondaryContainer" />
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
 
+    <!-- BUTTON RIGHT -->
     <ImageView
         android:id="@+id/btn_chat"
         android:layout_width="40dp"
@@ -66,34 +68,36 @@
         android:padding="8dp"
         android:src="@drawable/outline_chat_24"
         app:tint="?attr/colorOnSurface"
-        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent" />
 
+    <!-- BUTTON LEFT (BACK / PROFILE) -->
     <ImageView
         android:id="@+id/btn_nav_icon"
         android:layout_width="40dp"
         android:layout_height="40dp"
         android:padding="8dp"
-        android:src="@drawable/ic_launcher_background"
         android:visibility="gone"
+        android:src="@drawable/outline_arrow_back_ios_24"
         app:tint="?attr/colorOnSurface"
-        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent" />
 
+    <!-- TITLE -->
     <TextView
         android:id="@+id/tv_screen_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Lịch sử"
-        style="@style/TextAppearance.Material3.TitleMedium"
+        android:visibility="gone"
+        android:text="Title"
         android:textStyle="bold"
         android:textColor="?attr/colorOnSurface"
-        android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
+        style="@style/TextAppearance.Material3.TitleMedium"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

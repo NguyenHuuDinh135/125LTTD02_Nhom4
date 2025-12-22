@@ -6,6 +6,7 @@ import android.util.Log;
 import androidx.lifecycle.MutableLiveData;
 
 import com.example.nhom4.data.Resource;
+import com.example.nhom4.data.bean.Activity;
 import com.example.nhom4.data.bean.Post;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
@@ -32,56 +33,65 @@ public class PostRepository {
             return;
         }
         String currentUserId = auth.getCurrentUser().getUid();
-        result.postValue(Resource.loading(null));
+        List<String> validUserIds = new ArrayList<>();
+        validUserIds.add(currentUserId);
 
-        // B1: Lấy danh sách ID bạn bè
+        // Lấy bạn bè
         db.collection("relationships")
                 .whereArrayContains("members", currentUserId)
                 .whereEqualTo("status", "accepted")
                 .get()
-                .addOnSuccessListener(snapshots -> {
-                    List<String> friendIds = new ArrayList<>();
-                    friendIds.add(currentUserId); // Thêm mình
-
-                    for (DocumentSnapshot doc : snapshots) {
-                        List<String> members = (List<String>) doc.get("members");
-                        if (members != null) {
-                            for (String memberId : members) {
-                                if (!memberId.equals(currentUserId)) friendIds.add(memberId);
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful() && task.getResult() != null) {
+                        for (DocumentSnapshot doc : task.getResult()) {
+                            List<String> members = (List<String>) doc.get("members");
+                            if (members != null) {
+                                for (String memberId : members) {
+                                    if (!memberId.equals(currentUserId)) {
+                                        validUserIds.add(memberId);
+                                    }
+                                }
                             }
                         }
                     }
+                    // Dù có bạn hay không → bắt đầu listen realtime
+                    listenToPosts(validUserIds, result);
+                });
+    }
 
-                    // B2: Lắng nghe Realtime -> Tự động cập nhật khi có bài mới
-                    db.collection("posts")
-                            .orderBy("createdAt", Query.Direction.DESCENDING)
-                            .addSnapshotListener((postSnapshots, e) -> {
-                                if (e != null) {
-                                    result.postValue(Resource.error(e.getMessage(), null));
-                                    return;
-                                }
+    private void listenToPosts(List<String> validUserIds, MutableLiveData<Resource<List<Post>>> result) {
+        result.postValue(Resource.loading(null));
 
-                                if (postSnapshots != null) {
-                                    List<Post> tempPosts = new ArrayList<>();
-                                    for (DocumentSnapshot doc : postSnapshots) {
-                                        Post post = doc.toObject(Post.class);
-                                        if (post != null && friendIds.contains(post.getUserId())) {
-                                            post.setPostId(doc.getId());
-                                            tempPosts.add(post);
-                                        }
-                                    }
+        db.collection("posts")
+                .whereIn("userId", validUserIds)
+                .orderBy("createdAt", Query.Direction.DESCENDING)
+                .addSnapshotListener((snapshots, error) -> {
+                    if (error != null) {
+                        Log.e("PostRepo", "Listen failed.", error);
+                        result.postValue(Resource.error("Lỗi kết nối", null));
+                        return;
+                    }
 
-                                    if (tempPosts.isEmpty()) {
-                                        result.postValue(Resource.success(new ArrayList<>()));
-                                        return;
-                                    }
+                    if (snapshots == null || snapshots.isEmpty()) {
+                        result.postValue(Resource.success(new ArrayList<>()));
+                        return;
+                    }
 
-                                    // B3: Load User Info Song Song
-                                    fetchUsersForPostsParallel(tempPosts, result);
-                                }
-                            });
-                })
-                .addOnFailureListener(e -> result.postValue(Resource.error(e.getMessage(), null)));
+                    List<Post> tempPosts = new ArrayList<>();
+                    for (DocumentSnapshot doc : snapshots.getDocuments()) {
+                        Post post = doc.toObject(Post.class);
+                        if (post != null) {
+                            post.setPostId(doc.getId());
+                            if (post.getCreatedAt() == null) {
+                                post.setCreatedAt(com.google.firebase.Timestamp.now());
+                            }
+                            tempPosts.add(post);
+                        }
+                    }
+
+                    // Trực tiếp fetch user info và emit → realtime nhanh, không delay
+                    fetchUsersForPostsParallel(tempPosts, result);
+                });
     }
 
     private void fetchUsersForPostsParallel(List<Post> posts, MutableLiveData<Resource<List<Post>>> result) {

@@ -79,5 +79,7 @@ dependencies {
     implementation("androidx.glance:glance-appwidget:1.1.0")
 
     // Icon
-    implementation("androidx.emoji2:emoji2-emojipicker:1.4.0")
+    implementation("androidx.emoji2:emoji2:1.4.0") // Đủ dùng, không cần emojipicker nếu chỉ hiển thị
+    implementation("androidx.emoji2:emoji2-views:1.4.0") // Nếu dùng EmojiTextView
+    implementation("com.google.code.gson:gson:2.10.1")
 }

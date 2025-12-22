@@ -145,10 +145,10 @@
         android:id="@+id/control_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
+        android:orientation="horizontal"
         android:paddingHorizontal="24dp"
         android:paddingBottom="12dp"
-        android:gravity="center_horizontal"
+        android:gravity="center"
         app:layout_constraintBottom_toTopOf="@+id/bottom_bar">
 
         <com.google.android.material.button.MaterialButtonToggleGroup
@@ -173,6 +173,18 @@
                 android:layout_height="wrap_content"
                 android:text="Hoạt động" />
         </com.google.android.material.button.MaterialButtonToggleGroup>
+
+        <ImageButton
+            android:id="@+id/btnAddActivity"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginStart="16dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/baseline_add_circle_24"
+            app:tint="?attr/colorPrimary"
+            android:visibility="gone"
+            android:contentDescription="Thêm hoạt động" />
+
     </LinearLayout>
 
     <include
