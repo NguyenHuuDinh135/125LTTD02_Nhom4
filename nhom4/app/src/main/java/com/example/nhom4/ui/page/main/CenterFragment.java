@@ -5,7 +5,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -37,31 +36,56 @@ public class CenterFragment extends Fragment {
 
         viewPagerVertical = view.findViewById(R.id.viewPagerVertical);
         setupAdapter();
-        observeViewModel();
+        observePosts();
+        observeOpenPostId(); // Quan trọng: lắng nghe yêu cầu mở post từ widget
     }
 
     private void setupAdapter() {
         adapter = new VerticalPagerAdapter(this);
         viewPagerVertical.setAdapter(adapter);
         viewPagerVertical.setOrientation(ViewPager2.ORIENTATION_VERTICAL);
-
-        // Tùy chọn: Tắt hiệu ứng overscroll để mượt hơn
         viewPagerVertical.setOverScrollMode(View.OVER_SCROLL_NEVER);
     }
 
-    private void observeViewModel() {
+    // Observe danh sách bài viết
+    private void observePosts() {
         viewModel.getPosts().observe(getViewLifecycleOwner(), resource -> {
             if (resource.status == Resource.Status.SUCCESS && resource.data != null) {
-                // Log để kiểm tra xem có nhận được list mới không
-                Log.d("CenterFragment", "New Posts received: " + resource.data.size());
-
-                // Cập nhật list vào adapter.
-                // Nhờ hàm getItemId đã sửa, ViewPager sẽ tự biết bài nào mới để hiện ra.
                 adapter.setPostList(resource.data);
-            } else if (resource.status == Resource.Status.ERROR) {
-                Toast.makeText(getContext(), "Lỗi: " + resource.message, Toast.LENGTH_SHORT).show();
+                tryScrollToOpenPost(); // Sau khi cập nhật data → thử mở post nếu cần
             }
         });
+    }
+
+    // Observe yêu cầu mở một post cụ thể (từ widget)
+    private void observeOpenPostId() {
+        viewModel.getOpenPostId().observe(getViewLifecycleOwner(), postId -> {
+            if (postId != null) {
+                tryScrollToOpenPost(); // Mỗi khi có postId mới → thử scroll ngay
+            }
+        });
+    }
+
+    // Hàm chung: thử scroll đến post nếu có trong adapter
+    private void tryScrollToOpenPost() {
+        String postId = viewModel.getOpenPostId().getValue();
+        if (postId == null || adapter == null || adapter.getItemCount() <= 1) {  // <=1: chỉ có Camera hoặc chưa có data
+            return;
+        }
+
+        // Duyệt qua các position trong ViewPager
+        for (int viewPagerPosition = 1; viewPagerPosition < adapter.getItemCount(); viewPagerPosition++) {
+            String currentPostId = adapter.getPostIdAt(viewPagerPosition - 1);  // -1 để chuyển sang index list
+
+            if (postId.equals(currentPostId)) {
+                Log.d("CenterFragment", "Scrolling to post: " + postId + " at ViewPager position " + viewPagerPosition);
+                viewPagerVertical.setCurrentItem(viewPagerPosition, false);
+                viewModel.clearOpenPostId();
+                return;
+            }
+        }
+
+        Log.d("CenterFragment", "Post " + postId + " not found yet – waiting for next data update");
     }
 
     public void navigateToCamera() {

@@ -138,11 +138,25 @@ public class PostRepository {
     }
 
     private void savePostToFirestore(Post post, MutableLiveData<Resource<Boolean>> result) {
-        // Khi lưu thành công, Listener ở trên (getPosts) sẽ tự nhận tín hiệu và update UI
-        db.collection("posts").add(post)
-                .addOnSuccessListener(doc -> result.postValue(Resource.success(true)))
-                .addOnFailureListener(e -> result.postValue(Resource.error(e.getMessage(), false)));
+
+        // 🔥 TẠO DOCUMENT TRƯỚC → LẤY postId
+        String postId = db.collection("posts").document().getId();
+
+        // 🔥 GÁN postId VÀO POST
+        post.setPostId(postId);
+
+        // 🔥 LƯU VỚI ID ĐÃ BIẾT
+        db.collection("posts")
+                .document(postId)
+                .set(post)
+                .addOnSuccessListener(unused -> {
+                    result.postValue(Resource.success(true));
+                })
+                .addOnFailureListener(e -> {
+                    result.postValue(Resource.error(e.getMessage(), false));
+                });
     }
+
     // --- 3. GET ALL USER POSTS (Dùng cho Story/Streak/Calendar) ---
     public void getAllUserPosts(MutableLiveData<Resource<List<Post>>> result) {
         if (auth.getCurrentUser() == null) {
@@ -182,6 +196,25 @@ public class PostRepository {
                 .addOnFailureListener(e -> {
                     Log.e("DEBUG_STORY", "Lỗi query: " + e.getMessage());
                     result.postValue(Resource.error(e.getMessage(), null));
+                });
+    }
+    // Lấy post mới nhất
+    public void getLatestPost(MutableLiveData<Post> result) {
+        if (auth.getCurrentUser() == null) return;
+
+        db.collection("posts")
+                .orderBy("createdAt", Query.Direction.DESCENDING)
+                .limit(1)
+                .get()
+                .addOnSuccessListener(snapshot -> {
+                    if (!snapshot.isEmpty()) {
+                        DocumentSnapshot doc = snapshot.getDocuments().get(0);
+                        Post post = doc.toObject(Post.class);
+                        if (post != null) {
+                            post.setPostId(doc.getId());
+                            result.postValue(post);
+                        }
+                    }
                 });
     }
 }

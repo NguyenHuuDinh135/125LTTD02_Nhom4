@@ -14,5 +14,17 @@ public class ActivityWidgetProvider extends AppWidgetProvider {
         // Gọi JobIntentService
         Intent intent = new Intent(context, ActivityWidgetService.class);
         ActivityWidgetService.enqueueWork(context, intent);
+        // Bật auto update
+        WidgetUpdateScheduler.schedule(context);
+    }
+    //    Nhận TẤT CẢ broadcast gửi tới widget
+    //     * (bao gồm cả broadcast từ AlarmManager)
+    @Override
+    public void onReceive(Context context, Intent intent) {
+        super.onReceive(context, intent);
+
+        if (AppWidgetManager.ACTION_APPWIDGET_UPDATE.equals(intent.getAction())) {
+            ActivityWidgetService.enqueueWork(context, intent);
+        }
     }
 }

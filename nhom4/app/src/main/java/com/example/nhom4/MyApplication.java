@@ -2,6 +2,8 @@ package com.example.nhom4;
 
 import android.app.Application;
 import androidx.appcompat.app.AppCompatDelegate;
+import androidx.emoji2.bundled.BundledEmojiCompatConfig;
+import androidx.emoji2.text.EmojiCompat;
 
 public class MyApplication extends Application {
     @Override

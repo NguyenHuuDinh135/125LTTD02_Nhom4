@@ -1,7 +1,5 @@
 package com.example.nhom4.ui.page.calendar;
 
-import android.annotation.SuppressLint;
-import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
 import android.content.ComponentName;
 import android.content.Intent;
@@ -17,8 +15,8 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.bumptech.glide.Glide;
 import com.example.nhom4.R;
-import com.example.nhom4.data.bean.UserProfile;
 import com.example.nhom4.ui.page.SplashActivity;
+import com.example.nhom4.ui.page.widget.ActivityListWidgetProvider;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.imageview.ShapeableImageView;
 import com.google.android.material.textfield.TextInputEditText;
@@ -37,7 +35,7 @@ import java.util.Map;
 public class ProfileActivity extends AppCompatActivity {
 
     private ShapeableImageView ivProfileAvatar;
-    private ImageView btnChangeAvatar, ivAddWidgetIcon;
+    private ImageView btnChangeAvatar, ivAddWidgetIcon, ivAddAcWidgetIcon;
 
     private TextInputEditText etEmail, etName, etBirthday;
     private MaterialButton btnSave, btnLogout;
@@ -92,6 +90,8 @@ public class ProfileActivity extends AppCompatActivity {
 
         // Click icon thêm widget
         ivAddWidgetIcon.setOnClickListener(v -> addWidgetToHomeScreen());
+        ivAddAcWidgetIcon.setOnClickListener(v -> addActivityWidgetToHomeScreen());
+
     }
 
     /**
@@ -103,6 +103,7 @@ public class ProfileActivity extends AppCompatActivity {
 
         // <-- đây là icon widget mới
         ivAddWidgetIcon = findViewById(R.id.iv_add_widget_icon);
+        ivAddAcWidgetIcon = findViewById(R.id.iv_add_acwidget_icon);
 
         etEmail = findViewById(R.id.item_email).findViewById(R.id.et_value);
         etName = findViewById(R.id.item_name).findViewById(R.id.et_value);
@@ -133,6 +134,32 @@ public class ProfileActivity extends AppCompatActivity {
             Toast.makeText(this, "Yêu cầu Android 8.0 trở lên để thêm widget từ app", Toast.LENGTH_SHORT).show();
         }
     }
+    //widget activity
+    private void addActivityWidgetToHomeScreen() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            AppWidgetManager manager = getSystemService(AppWidgetManager.class);
+            ComponentName provider = new ComponentName(this, ActivityListWidgetProvider.class);
+
+            if (manager.isRequestPinAppWidgetSupported()) {
+                boolean success = manager.requestPinAppWidget(provider, null, null);
+                if (success) {
+                    Toast.makeText(this, "Đang mở dialog thêm Widget Activity...", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+            }
+        }
+
+        // Fallback thủ công
+        Toast.makeText(this,
+                "Launcher hiện tại không hỗ trợ thêm tự động Widget Activity.\n\n" +
+                        "Vui lòng thêm thủ công:\n" +
+                        "• Giữ lâu trên màn hình chính\n" +
+                        "• Chọn 'Widget'\n" +
+                        "• Tìm ứng dụng 'Nhom4'\n" +
+                        "• Kéo 'Widget Activity' ra màn hình",
+                Toast.LENGTH_LONG).show();
+    }
+
 
     private void loadUserProfile() {
         FirebaseUser user = auth.getCurrentUser();
