@@ -8,6 +8,7 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.FieldValue;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -159,8 +160,10 @@ public class ChatRepository {
     private void createConversation(String currentUserId, String targetUserId, MutableLiveData<Resource<String>> result) {
         Map<String, Object> conv = new HashMap<>();
         conv.put("members", Arrays.asList(currentUserId, targetUserId));
-        conv.put("createdAt", com.google.firebase.Timestamp.now());
+        conv.put("createdAt", FieldValue.serverTimestamp());
         conv.put("lastMessage", "Đã gửi một phản hồi");
+        conv.put("lastMessageAt", FieldValue.serverTimestamp());
+        conv.put("lastSenderId", currentUserId);
 
         db.collection("conversations").add(conv)
                 .addOnSuccessListener(doc -> result.postValue(Resource.success(doc.getId())))
@@ -169,7 +172,7 @@ public class ChatRepository {
 
     // 2. Gửi tin nhắn
     // Hành động kép: 1. Thêm tin nhắn vào sub-collection -> 2. Update tin nhắn cuối ở Conversation cha
-    public void sendMessage(String conversationId, Message message, MutableLiveData<Resource<Boolean>> result) {
+    public void sendMessage(String currentUserId, String conversationId, Message message, MutableLiveData<Resource<Boolean>> result) {
         db.collection("conversations").document(conversationId)
                 .collection("messages")
                 .add(message)
@@ -178,16 +181,17 @@ public class ChatRepository {
                     String preview = "post_reply".equals(message.getType()) ? "Đã phản hồi bài viết" : message.getContent();
 
                     // Cập nhật lastMessage để danh sách bên ngoài hiển thị đúng
-                    updateLastMessage(conversationId, preview);
+                    updateLastMessage(currentUserId, conversationId, preview);
                     result.postValue(Resource.success(true));
                 })
                 .addOnFailureListener(e -> result.postValue(Resource.error(e.getMessage(), false)));
     }
 
-    private void updateLastMessage(String conversationId, String lastMessage) {
+    private void updateLastMessage(String currentUserId, String conversationId, String lastMessage) {
         Map<String, Object> update = new HashMap<>();
         update.put("lastMessage", lastMessage);
-        update.put("lastMessageAt", com.google.firebase.Timestamp.now());
+        update.put("lastMessageAt", FieldValue.serverTimestamp());
+        update.put("lastSenderId", currentUserId);
         db.collection("conversations").document(conversationId).update(update);
     }
 
@@ -210,4 +214,28 @@ public class ChatRepository {
                     }
                 });
     }
+
+    // 4. Xóa cuộc trò chuyện
+    // Lưu ý: Việc xóa document cha trong Firestore KHÔNG tự động xóa sub-collection (messages).
+    // Tuy nhiên, xóa document cha là đủ để cuộc trò chuyện biến mất khỏi danh sách UI.
+    public void deleteConversation(String conversationId, MutableLiveData<Resource<Boolean>> result) {
+        result.postValue(Resource.loading(null));
+
+        if (conversationId == null || conversationId.isEmpty()) {
+            result.postValue(Resource.error("Conversation ID không hợp lệ", false));
+            return;
+        }
+
+        db.collection("conversations").document(conversationId)
+            .delete()
+            .addOnSuccessListener(aVoid -> {
+                // Xóa thành công
+                result.postValue(Resource.success(true));
+            })
+            .addOnFailureListener(e -> {
+                // Xóa thất bại
+                result.postValue(Resource.error("Lỗi khi xóa: " + e.getMessage(), false));
+            });
+    }
+
 }

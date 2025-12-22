@@ -77,4 +77,7 @@ dependencies {
     // Widget
     implementation("com.squareup.picasso:picasso:2.71828")
     implementation("androidx.glance:glance-appwidget:1.1.0")
+
+    // Icon
+    implementation("androidx.emoji2:emoji2-emojipicker:1.4.0")
 }

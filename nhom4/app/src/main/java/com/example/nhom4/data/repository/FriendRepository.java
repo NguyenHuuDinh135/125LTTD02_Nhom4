@@ -111,4 +111,35 @@ public class FriendRepository {
                 .addOnSuccessListener(aVoid -> result.postValue(Resource.success(true)))
                 .addOnFailureListener(e -> result.postValue(Resource.error(e.getMessage(), false)));
     }
+
+    public void unfriendUser(String currentUserId, String targetUserId, MutableLiveData<Resource<Boolean>> result) {
+        // Tìm document trong collection "relationships" có chứa cả 2 user trong mảng "members"
+        db.collection("relationships")
+                .whereArrayContains("members", currentUserId)
+                .get()
+                .addOnSuccessListener(snapshots -> {
+                    String relationshipId = null;
+
+                    // Lọc thủ công để tìm document chứa cả targetUserId
+                    for (DocumentSnapshot doc : snapshots) {
+                        List<String> members = (List<String>) doc.get("members");
+                        if (members != null && members.contains(targetUserId)) {
+                            relationshipId = doc.getId();
+                            break;
+                        }
+                    }
+
+                    if (relationshipId != null) {
+                        // Tìm thấy -> Xóa document
+                        db.collection("relationships").document(relationshipId)
+                                .delete()
+                                .addOnSuccessListener(aVoid -> result.postValue(Resource.success(true)))
+                                .addOnFailureListener(e -> result.postValue(Resource.error("Lỗi xóa bạn: " + e.getMessage(), false)));
+                    } else {
+                        // Không tìm thấy quan hệ (có thể đã xóa trước đó) -> Coi như thành công
+                        result.postValue(Resource.success(true));
+                    }
+                })
+                .addOnFailureListener(e -> result.postValue(Resource.error("Lỗi tìm bạn: " + e.getMessage(), false)));
+    }
 }

@@ -84,18 +84,7 @@
         </com.google.android.material.appbar.MaterialToolbar>
     </com.google.android.material.appbar.AppBarLayout>
 
-    <!-- 2. Input Area (Component đã tách) -->
-    <!-- Đặt cái này trước để ConstraintLayout tính toán vị trí -->
-    <include
-        android:id="@+id/layout_input"
-        layout="@layout/component_chat_input"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
-
-    <!-- 3. Messages RecyclerView -->
+    <!-- 2. Messages RecyclerView (Cập nhật ràng buộc bottom) -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvMessages"
         android:layout_width="match_parent"
@@ -108,5 +97,28 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/appBarLayout"
         tools:listitem="@layout/item_message_received" />
+
+    <!-- 3. Input Area (Cập nhật ràng buộc bottom) -->
+    <!-- Thay vì neo vào parent, ta neo nó vào đỉnh của emojiPicker -->
+    <include
+        android:id="@+id/layout_input"
+        layout="@layout/component_chat_input"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toTopOf="@id/emojiPicker"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <!-- 4. THÊM MỚI: Emoji Picker View -->
+    <!-- Đặt ở dưới cùng, mặc định visibility="gone" -->
+    <androidx.emoji2.emojipicker.EmojiPickerView
+        android:id="@+id/emojiPicker"
+        android:layout_width="match_parent"
+        android:layout_height="250dp"
+        android:visibility="gone"
+        app:emojiGridColumns="9"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
