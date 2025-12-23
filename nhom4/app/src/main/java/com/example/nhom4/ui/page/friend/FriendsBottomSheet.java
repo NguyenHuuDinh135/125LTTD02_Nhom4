@@ -1,5 +1,7 @@
 package com.example.nhom4.ui.page.friend;
 
+import android.content.Context;
+import android.content.Intent;
 import android.content.res.Resources;
 import android.os.Bundle;
 import android.text.Editable;
@@ -12,6 +14,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -27,7 +30,6 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.google.android.material.button.MaterialButton;
-import com.google.android.material.color.MaterialColors;
 import com.google.android.material.shape.MaterialShapeDrawable;
 import com.google.android.material.shape.ShapeAppearanceModel;
 import com.google.android.material.textfield.TextInputEditText;
@@ -39,15 +41,13 @@ import java.util.Locale;
 import java.util.Timer;
 import java.util.TimerTask;
 
-/**
- * BottomSheet hiển thị song song danh sách gợi ý kết bạn và lời mời đang chờ xử lý.
- */
 public class FriendsBottomSheet extends BottomSheetDialogFragment {
     private TextInputEditText etSearch;
     private Timer searchTimer;
     private List<User> originalSuggestions = new ArrayList<>();
+    private List<FriendRequest> originalRequests = new ArrayList<>();
 
-    private static final long SEARCH_DEBOUNCE_DELAY = 300; // ms
+    private static final long SEARCH_DEBOUNCE_DELAY = 300;
 
     private RecyclerView rcvSuggestions, rcvRequests;
     private FriendsViewModel viewModel;
@@ -55,14 +55,16 @@ public class FriendsBottomSheet extends BottomSheetDialogFragment {
     private UserSuggestionAdapter suggestionAdapter;
     private FriendRequestAdapter requestAdapter;
 
-    // Thêm 2 nút "Xem tất cả" từ layout
     private MaterialButton btnSeeMoreRequests;
     private MaterialButton btnSeeMoreSuggestions;
-
     private MaterialTextView tvSectionRequests;
     private MaterialTextView tvSectionSuggestions;
+
+    // Views cho phần mời bạn bè
+    private View itemMessenger, itemInstagram, itemTwitter, itemOther;
+    private View inviteMessenger, inviteFacebook, inviteInstagram, inviteOther;
+
     private boolean isSearching = false;
-    private List<FriendRequest> originalRequests = new ArrayList<>();
 
     @Nullable
     @Override
@@ -76,57 +78,76 @@ public class FriendsBottomSheet extends BottomSheetDialogFragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        // 1. Init ViewModel
         viewModel = new ViewModelProvider(this).get(FriendsViewModel.class);
 
+        initViews(view);
+        setupAdapters();
+        setupSeeMoreButtons();
+        setupSearchListener();
+        setupInviteActions(); // <--- MỚI: Cấu hình nút mời
+        observeViewModel();
+    }
+
+    private void initViews(View view) {
         rcvSuggestions = view.findViewById(R.id.rcvSuggestions);
         rcvRequests = view.findViewById(R.id.rcvFriends);
-
-        // Tìm nút "Xem tất cả" trong layout
         btnSeeMoreRequests = view.findViewById(R.id.btn_see_more_1);
         btnSeeMoreSuggestions = view.findViewById(R.id.btn_see_more_2);
-
-        // Tìm ô search trong layout
         etSearch = view.findViewById(R.id.et_search);
         tvSectionRequests = view.findViewById(R.id.tv_section_requests);
         tvSectionSuggestions = view.findViewById(R.id.tv_section_suggestions);
 
-        setupAdapters();
-        setupSeeMoreButtons(); // Xử lý click nút xem thêm
-        setupSearchListener();
-        observeViewModel();
+        // Ánh xạ các nút mời (include)
+        itemMessenger = view.findViewById(R.id.item_messenger);
+        itemInstagram = view.findViewById(R.id.item_instagram);
+        itemTwitter = view.findViewById(R.id.item_twitter);
+        itemOther = view.findViewById(R.id.item_other);
+
+        inviteMessenger = view.findViewById(R.id.invite_messenger);
+        inviteFacebook = view.findViewById(R.id.invite_facebook);
+        inviteInstagram = view.findViewById(R.id.invite_instagram);
+        inviteOther = view.findViewById(R.id.invite_other);
     }
 
-    /**
-     * Khởi tạo 2 adapter cho danh sách gợi ý và lời mời.
-     */
     private void setupAdapters() {
-        // Adapter Gợi ý
-        suggestionAdapter = new UserSuggestionAdapter(new ArrayList<>(), user -> {
-            viewModel.sendFriendRequest(user);
-        });
+        suggestionAdapter = new UserSuggestionAdapter(new ArrayList<>(), user -> viewModel.sendFriendRequest(user));
         rcvSuggestions.setLayoutManager(new LinearLayoutManager(getContext()));
         rcvSuggestions.setAdapter(suggestionAdapter);
 
-        // Adapter Lời mời
         requestAdapter = new FriendRequestAdapter(new ArrayList<>(), new FriendRequestAdapter.OnRequestActionListener() {
-            @Override
-            public void onAccept(FriendRequest request) {
-                viewModel.acceptRequest(request);
-            }
-
-            @Override
-            public void onDecline(FriendRequest request) {
-                viewModel.declineRequest(request);
-            }
+            @Override public void onAccept(FriendRequest request) { viewModel.acceptRequest(request); }
+            @Override public void onDecline(FriendRequest request) { viewModel.declineRequest(request); }
         });
         rcvRequests.setLayoutManager(new LinearLayoutManager(getContext()));
         rcvRequests.setAdapter(requestAdapter);
     }
 
     /**
-     * Thiết lập sự kiện click cho 2 nút "Xem tất cả"
+     * MỚI: Xử lý sự kiện click mời bạn bè
      */
+    private void setupInviteActions() {
+        String inviteMessage = "Tải ngay AppNhom4 để chat với tui nhé! Link: https://example.com/download";
+        View.OnClickListener inviteListener = v -> shareAppInvite(inviteMessage);
+
+        if(itemMessenger != null) itemMessenger.setOnClickListener(inviteListener);
+        if(itemInstagram != null) itemInstagram.setOnClickListener(inviteListener);
+        if(itemTwitter != null) itemTwitter.setOnClickListener(inviteListener);
+        if(itemOther != null) itemOther.setOnClickListener(inviteListener);
+
+        if(inviteMessenger != null) inviteMessenger.setOnClickListener(inviteListener);
+        if(inviteFacebook != null) inviteFacebook.setOnClickListener(inviteListener);
+        if(inviteInstagram != null) inviteInstagram.setOnClickListener(inviteListener);
+        if(inviteOther != null) inviteOther.setOnClickListener(inviteListener);
+    }
+
+    private void shareAppInvite(String message) {
+        Intent intent = new Intent(Intent.ACTION_SEND);
+        intent.setType("text/plain");
+        intent.putExtra(Intent.EXTRA_SUBJECT, "Lời mời kết bạn");
+        intent.putExtra(Intent.EXTRA_TEXT, message);
+        startActivity(Intent.createChooser(intent, "Mời bạn bè qua..."));
+    }
+
     private void setupSeeMoreButtons() {
         btnSeeMoreRequests.setOnClickListener(v -> {
             boolean currentLimited = requestAdapter.isLimitedMode();
@@ -141,10 +162,6 @@ public class FriendsBottomSheet extends BottomSheetDialogFragment {
         });
     }
 
-    /**
-     * Cập nhật hiển thị nút "Xem tất cả" hoặc "Thu gọn"
-     * Ẩn nút nếu tổng số item ≤ 5
-     */
     private void updateSeeMoreButton(MaterialButton button, int totalCount, boolean isLimited) {
         if (totalCount > 5) {
             button.setVisibility(View.VISIBLE);
@@ -154,17 +171,11 @@ public class FriendsBottomSheet extends BottomSheetDialogFragment {
         }
     }
 
-    /**
-     * Lắng nghe luồng dữ liệu từ FriendsViewModel để cập nhật UI và hiển thị toast.
-     */
     private void observeViewModel() {
-        // 1. Lắng nghe danh sách GỢI Ý KẾT BẠN (suggestions)
         viewModel.getSuggestions().observe(getViewLifecycleOwner(), resource -> {
             if (resource.status == Resource.Status.SUCCESS && resource.data != null) {
-                originalSuggestions = new ArrayList<>(resource.data); // Lưu danh sách gốc để tìm kiếm
-
+                originalSuggestions = new ArrayList<>(resource.data);
                 if (!isSearching) {
-                    // FIX: Không tạo mới adapter, chỉ cập nhật dữ liệu để giữ layout
                     suggestionAdapter.setUsers(resource.data);
                     suggestionAdapter.setLimitedMode(true);
                     updateSeeMoreButton(btnSeeMoreSuggestions, resource.data.size(), true);
@@ -172,11 +183,9 @@ public class FriendsBottomSheet extends BottomSheetDialogFragment {
             }
         });
 
-        // 2. Lắng nghe danh sách LỜI MỜI KẾT BẠN (friend requests)
         viewModel.getFriendRequests().observe(getViewLifecycleOwner(), resource -> {
             if (resource.status == Resource.Status.SUCCESS && resource.data != null) {
-                originalRequests = new ArrayList<>(resource.data); // Lưu gốc để khôi phục sau tìm kiếm
-
+                originalRequests = new ArrayList<>(resource.data);
                 if (!isSearching) {
                     requestAdapter.setRequests(resource.data);
                     requestAdapter.setLimitedMode(true);
@@ -185,118 +194,66 @@ public class FriendsBottomSheet extends BottomSheetDialogFragment {
             }
         });
 
-        // 3. Lắng nghe trạng thái hành động (Toast)
         viewModel.getActionStatus().observe(getViewLifecycleOwner(), resource -> {
-            if (resource.status == Resource.Status.SUCCESS && resource.data != null) {
+            if (resource.status == Resource.Status.SUCCESS) {
                 Toast.makeText(getContext(), resource.data, Toast.LENGTH_SHORT).show();
-            } else if (resource.status == Resource.Status.ERROR && resource.message != null) {
+            } else if (resource.status == Resource.Status.ERROR) {
                 Toast.makeText(getContext(), "Lỗi: " + resource.message, Toast.LENGTH_SHORT).show();
             }
         });
     }
 
-    /**
-     * Thiết lập listener tìm kiếm chỉ cho danh sách gợi ý (không lọc lời mời)
-     */
     private void setupSearchListener() {
-        searchTimer = new Timer();
-
         etSearch.addTextChangedListener(new TextWatcher() {
             @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
             @Override public void onTextChanged(CharSequence s, int start, int before, int count) {}
-
             @Override
             public void afterTextChanged(Editable s) {
-                searchTimer.cancel();
+                if(searchTimer != null) searchTimer.cancel();
                 searchTimer = new Timer();
-
                 searchTimer.schedule(new TimerTask() {
                     @Override
                     public void run() {
-                        String keyword = s.toString().trim().toLowerCase(Locale.getDefault());
-
-                        requireActivity().runOnUiThread(() -> {
-                            if (keyword.isEmpty()) {
-                                exitSearchMode();
-                            } else {
-                                enterSearchMode(keyword);
-                            }
-                        });
+                        if(getActivity() != null) {
+                            getActivity().runOnUiThread(() -> {
+                                String keyword = s.toString().trim().toLowerCase(Locale.getDefault());
+                                if (keyword.isEmpty()) exitSearchMode();
+                                else enterSearchMode(keyword);
+                            });
+                        }
                     }
                 }, SEARCH_DEBOUNCE_DELAY);
             }
         });
     }
 
-    /**
-     * Thực hiện lọc chỉ cho danh sách gợi ý người dùng
-     * // FIX: Không tạo mới adapter + thêm animation mượt
-     */
     private void enterSearchMode(String keyword) {
         isSearching = true;
+        // Ẩn các phần không liên quan
+        tvSectionRequests.setVisibility(View.GONE);
+        tvSectionSuggestions.setVisibility(View.GONE);
+        btnSeeMoreRequests.setVisibility(View.GONE);
+        btnSeeMoreSuggestions.setVisibility(View.GONE);
+        rcvRequests.setVisibility(View.GONE);
 
-        // --- ANIMATION: fade out---
-        tvSectionRequests.animate().alpha(0f).setDuration(300)
-                .withEndAction(() -> tvSectionRequests.setVisibility(View.GONE)).start();
-        tvSectionSuggestions.animate().alpha(0f).setDuration(300)
-                .withEndAction(() -> tvSectionSuggestions.setVisibility(View.GONE)).start();
-        btnSeeMoreRequests.animate().alpha(0f).setDuration(300)
-                .withEndAction(() -> btnSeeMoreRequests.setVisibility(View.GONE)).start();
-        btnSeeMoreSuggestions.animate().alpha(0f).setDuration(300)
-                .withEndAction(() -> btnSeeMoreSuggestions.setVisibility(View.GONE)).start();
-
-        // Ẩn phần lời mời bằng fade
-        rcvRequests.animate().alpha(0f).setDuration(300)
-                .withEndAction(() -> rcvRequests.setVisibility(View.GONE)).start();
-
-        // Lọc dữ liệu
+        // Lọc gợi ý
         List<User> filtered = new ArrayList<>();
         for (User user : originalSuggestions) {
-            if (user.getUsername() != null &&
-                    user.getUsername().toLowerCase(Locale.getDefault()).contains(keyword)) {
+            if (user.getUsername() != null && user.getUsername().toLowerCase().contains(keyword)) {
                 filtered.add(user);
             }
         }
-
         suggestionAdapter.setUsers(filtered);
-        suggestionAdapter.setLimitedMode(false);
-
-        // Focus nhẹ (scale) - giữ nguyên vị trí
-        rcvSuggestions.animate()
-                .scaleX(1.02f)
-                .scaleY(1.02f)
-                .setDuration(300)
-                .withEndAction(() -> rcvSuggestions.animate().scaleX(1f).scaleY(1f).setDuration(200).start())
-                .start();
+        suggestionAdapter.setLimitedMode(false); // Search thì hiện hết
     }
 
-    /**
-     * // FIX: Animation hiện lại + chỉ cập nhật dữ liệu
-     */
     private void exitSearchMode() {
         isSearching = false;
-
-        // Hiện lại phần lời mời bằng fade in
-        rcvRequests.setVisibility(View.VISIBLE);
-        rcvRequests.setAlpha(0f);
-        rcvRequests.animate().alpha(1f).setDuration(300).start();
-
-        // Hiện lại tiêu đề + nút bằng fade in
+        // Hiện lại UI
         tvSectionRequests.setVisibility(View.VISIBLE);
         tvSectionSuggestions.setVisibility(View.VISIBLE);
-        tvSectionRequests.setAlpha(0f);
-        tvSectionSuggestions.setAlpha(0f);
-        tvSectionRequests.animate().alpha(1f).setDuration(300).start();
-        tvSectionSuggestions.animate().alpha(1f).setDuration(300).start();
+        rcvRequests.setVisibility(View.VISIBLE);
 
-        btnSeeMoreRequests.setVisibility(View.VISIBLE);
-        btnSeeMoreSuggestions.setVisibility(View.VISIBLE);
-        btnSeeMoreRequests.setAlpha(0f);
-        btnSeeMoreSuggestions.setAlpha(0f);
-        btnSeeMoreRequests.animate().alpha(1f).setDuration(300).start();
-        btnSeeMoreSuggestions.animate().alpha(1f).setDuration(300).start();
-
-        // Khôi phục dữ liệu
         suggestionAdapter.setUsers(new ArrayList<>(originalSuggestions));
         suggestionAdapter.setLimitedMode(true);
         updateSeeMoreButton(btnSeeMoreSuggestions, originalSuggestions.size(), true);
@@ -306,37 +263,26 @@ public class FriendsBottomSheet extends BottomSheetDialogFragment {
         updateSeeMoreButton(btnSeeMoreRequests, originalRequests.size(), true);
     }
 
-    // ================= UI BOTTOM SHEET CONFIG (Giữ nguyên) =================
-
     @Override
     public void onStart() {
         super.onStart();
         BottomSheetDialog dialog = (BottomSheetDialog) getDialog();
-        if (dialog == null) return;
+        if (dialog != null) {
+            FrameLayout bottomSheet = dialog.findViewById(com.google.android.material.R.id.design_bottom_sheet);
+            if (bottomSheet != null) {
+                int height = (int) (Resources.getSystem().getDisplayMetrics().heightPixels * 0.95);
+                bottomSheet.getLayoutParams().height = height;
+                BottomSheetBehavior<FrameLayout> behavior = BottomSheetBehavior.from(bottomSheet);
+                behavior.setPeekHeight(height);
+                behavior.setState(BottomSheetBehavior.STATE_EXPANDED);
 
-        FrameLayout bottomSheet = dialog.findViewById(com.google.android.material.R.id.design_bottom_sheet);
-        if (bottomSheet != null) {
-            int height = (int) (Resources.getSystem().getDisplayMetrics().heightPixels * 0.95);
-            bottomSheet.getLayoutParams().height = height;
-            bottomSheet.requestLayout();
-
-            BottomSheetBehavior<FrameLayout> behavior = BottomSheetBehavior.from(bottomSheet);
-            behavior.setPeekHeight(height);
-            behavior.setSkipCollapsed(true);
-            behavior.setState(BottomSheetBehavior.STATE_EXPANDED);
-
-            ShapeAppearanceModel shapeModel = new ShapeAppearanceModel()
-                    .toBuilder()
-                    .setTopLeftCornerSize(24f)
-                    .setTopRightCornerSize(24f)
-                    .build();
-
-            int colorSurface = MaterialColors.getColor(bottomSheet, com.google.android.material.R.attr.colorSurface);
-            MaterialShapeDrawable drawable = new MaterialShapeDrawable(shapeModel);
-            drawable.setTint(colorSurface);
-            drawable.setShadowCompatibilityMode(MaterialShapeDrawable.SHADOW_COMPAT_MODE_ALWAYS);
-            drawable.setElevation(8f);
-            bottomSheet.setBackground(drawable);
+                // Style bo góc
+                ShapeAppearanceModel shapeModel = new ShapeAppearanceModel().toBuilder()
+                        .setTopLeftCornerSize(24f).setTopRightCornerSize(24f).build();
+                MaterialShapeDrawable drawable = new MaterialShapeDrawable(shapeModel);
+                drawable.setTint(ContextCompat.getColor(requireContext(), R.color.md_theme_surface));
+                bottomSheet.setBackground(drawable);
+            }
         }
     }
 }

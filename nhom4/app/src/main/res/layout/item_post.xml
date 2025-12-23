@@ -6,9 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="?attr/colorSurface">
-    <!-- Dùng colorSurface thay vì #1C1C1E để hỗ trợ theme sáng/tối -->
 
-    <!-- 1. Caption (Tiêu đề cảm xúc) -->
     <com.google.android.material.textview.MaterialTextView
         android:id="@+id/textCaption"
         android:layout_width="0dp"
@@ -24,7 +22,6 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 
-    <!-- 2. Container Ảnh (Dùng CardView để bo góc ảnh) -->
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/card_image_container"
         android:layout_width="0dp"
@@ -49,8 +46,6 @@
 
     </com.google.android.material.card.MaterialCardView>
 
-    <!-- 3. Timestamp (Chip hiển thị thời gian) -->
-    <!-- Dùng Chip hoặc CardView thay vì Button để nhẹ hơn và đúng ngữ nghĩa -->
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/cardTimestamp"
         android:layout_width="wrap_content"
@@ -75,7 +70,6 @@
             style="@style/TextAppearance.Material3.LabelLarge" />
     </com.google.android.material.card.MaterialCardView>
 
-    <!-- 4. Nhóm người xem (Reactions/Viewers) -->
     <LinearLayout
         android:id="@+id/layoutAvatarGroup"
         android:layout_width="wrap_content"
@@ -87,14 +81,12 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/cardTimestamp">
 
-        <!-- Icon nhỏ -->
         <ImageView
             android:layout_width="16dp"
             android:layout_height="16dp"
             android:layout_marginEnd="6dp"
             app:tint="?attr/colorOnSurfaceVariant"
             tools:ignore="ContentDescription" />
-        <!-- Lưu ý: Bạn cần có icon vector ic_group_24 hoặc tương tự -->
 
         <com.google.android.material.textview.MaterialTextView
             android:id="@+id/textAvatarGroup"

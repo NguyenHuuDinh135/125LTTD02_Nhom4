@@ -20,12 +20,11 @@ import java.util.List;
  */
 public class UserSuggestionAdapter extends RecyclerView.Adapter<UserSuggestionAdapter.UserViewHolder> {
 
-    private final List<User> userList;           // Danh sách đầy đủ (giữ nguyên như cũ)
+    private final List<User> userList;           // Danh sách đầy đủ
     private final OnAddFriendClickListener listener;
 
-    // Thêm để hỗ trợ giới hạn 5 item (chỉ dùng trong FriendsBottomSheet)
-    private boolean isLimitedMode = true;        // Mặc định giới hạn 5 item
-    private static final int LIMIT_COUNT = 5;
+    private boolean isLimitedMode = true;        // Mặc định giới hạn hiển thị
+    private static final int LIMIT_COUNT = 5;    // Số lượng item tối đa khi thu gọn
 
     public interface OnAddFriendClickListener {
         void onAddClick(User user);
@@ -36,12 +35,6 @@ public class UserSuggestionAdapter extends RecyclerView.Adapter<UserSuggestionAd
         this.listener = listener;
     }
 
-    /**
-     * Tạo ViewHolder cho một item người dùng.
-     * @param parent
-     * @param viewType
-     * @return
-     */
     @NonNull
     @Override
     public UserViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -49,50 +42,44 @@ public class UserSuggestionAdapter extends RecyclerView.Adapter<UserSuggestionAd
         return new UserViewHolder(view);
     }
 
-    /**
-     * Bind dữ liệu người dùng vào ViewHolder, xử lý sự kiện nút thêm bạn.
-     * @param holder
-     * @param position
-     */
     @Override
     public void onBindViewHolder(@NonNull UserViewHolder holder, int position) {
-        User user = getCurrentList().get(position); // Lấy từ danh sách đang hiển thị
+        // Lấy item từ danh sách ảo (đã cắt giảm nếu đang ở chế độ limit)
+        User user = getCurrentList().get(position);
 
         holder.tvName.setText(user.getUsername());
 
-        // Sử dụng Glide để tải ảnh avatar
+        // Load ảnh
         Glide.with(holder.itemView.getContext())
                 .load(user.getProfilePhotoUrl())
                 .placeholder(R.drawable.ic_launcher_foreground)
                 .error(R.drawable.ic_launcher_foreground)
                 .into(holder.ivAvatar);
 
-        // Reset trạng thái nút khi view được tái sử dụng (tránh lỗi recycle)
         holder.btnAdd.setText("Thêm");
         holder.btnAdd.setEnabled(true);
 
         holder.btnAdd.setOnClickListener(v -> {
             if (listener != null) {
                 listener.onAddClick(user);
-                holder.btnAdd.setText("Đã gửi"); // Đổi trạng thái nút để báo cho người dùng
+                holder.btnAdd.setText("Đã gửi");
                 holder.btnAdd.setEnabled(false);
             }
         });
     }
 
-    /**
-     * Trả về số lượng người dùng trong danh sách.
-     */
     @Override
     public int getItemCount() {
+        // Nếu không limit -> trả về size thật
         if (!isLimitedMode) {
             return userList.size();
         }
+        // Nếu limit -> trả về max là 5 hoặc size thật nếu nhỏ hơn 5
         return Math.min(userList.size(), LIMIT_COUNT);
     }
 
     /**
-     * Bật/tắt chế độ giới hạn 5 item (chỉ dùng trong FriendsBottomSheet)
+     * Bật/tắt chế độ giới hạn
      */
     public void setLimitedMode(boolean limited) {
         if (this.isLimitedMode != limited) {
@@ -101,9 +88,6 @@ public class UserSuggestionAdapter extends RecyclerView.Adapter<UserSuggestionAd
         }
     }
 
-    /**
-     * Cập nhật danh sách user mới mà không tạo mới adapter
-     */
     public void setUsers(List<User> users) {
         this.userList.clear();
         if (users != null) {
@@ -112,33 +96,27 @@ public class UserSuggestionAdapter extends RecyclerView.Adapter<UserSuggestionAd
         notifyDataSetChanged();
     }
 
-    /**
-     * Trả về trạng thái hiện tại có đang giới hạn không
-     */
     public boolean isLimitedMode() {
         return isLimitedMode;
     }
 
-    /**
-     * Trả về tổng số item thực tế (để kiểm tra có cần hiện nút "Xem tất cả" không)
-     */
     public int getFullItemCount() {
         return userList.size();
     }
 
     /**
-     * Lấy danh sách đang hiển thị hiện tại (dùng trong onBind để tránh lỗi index)
+     * Helper để lấy sublist an toàn cho onBindViewHolder
      */
     private List<User> getCurrentList() {
         if (!isLimitedMode) {
             return userList;
         }
-        return userList.size() > LIMIT_COUNT ? userList.subList(0, LIMIT_COUNT) : userList;
+        if (userList.size() > LIMIT_COUNT) {
+            return userList.subList(0, LIMIT_COUNT);
+        }
+        return userList;
     }
 
-    /**
-     * ViewHolder giữ thông tin hiển thị avatar + nút kết bạn.
-     */
     public static class UserViewHolder extends RecyclerView.ViewHolder {
         TextView tvName;
         MaterialButton btnAdd;

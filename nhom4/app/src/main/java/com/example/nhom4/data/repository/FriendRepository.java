@@ -29,25 +29,51 @@ public class FriendRepository {
 
     // 1. Lấy danh sách User gợi ý
     // Logic: Lấy 50 user đầu tiên tìm thấy trong database (trừ bản thân).
+    // 1. Lấy danh sách User gợi ý (Đã lọc bạn bè)
     public void getUsersToConnect(String currentUserId, MutableLiveData<Resource<List<User>>> result) {
         result.postValue(Resource.loading(null));
 
-        // Sử dụng limit(50) để tối ưu hiệu năng, tránh tải toàn bộ database nếu có hàng nghìn user
-        db.collection("users").limit(50).get()
-                .addOnSuccessListener(snapshots -> {
-                    List<User> users = new ArrayList<>();
-                    for (QueryDocumentSnapshot doc : snapshots) {
-                        User user = doc.toObject(User.class);
-                        user.setUid(doc.getId()); // Quan trọng: Gán ID từ document key vào object User
+        // BƯỚC 1: Lấy danh sách tất cả các mối quan hệ của tôi (để biết ai cần loại trừ)
+        db.collection("relationships")
+                .whereArrayContains("members", currentUserId)
+                .get()
+                .addOnSuccessListener(relationshipSnapshots -> {
+                    // Tạo danh sách các ID cần loại trừ (bao gồm chính mình)
+                    List<String> excludeIds = new ArrayList<>();
+                    excludeIds.add(currentUserId);
 
-                        // Lọc phía Client: Chỉ thêm vào list nếu không phải là chính mình
-                        if (user.getUid() != null && !user.getUid().equals(currentUserId)) {
-                            users.add(user);
+                    for (DocumentSnapshot doc : relationshipSnapshots) {
+                        List<String> members = (List<String>) doc.get("members");
+                        if (members != null) {
+                            for (String memberId : members) {
+                                // Nếu ID trong mối quan hệ không phải là tôi, thì đó là bạn (hoặc người đang chờ duyệt)
+                                if (!memberId.equals(currentUserId)) {
+                                    excludeIds.add(memberId);
+                                }
+                            }
                         }
                     }
-                    result.postValue(Resource.success(users));
+
+                    // BƯỚC 2: Lấy danh sách Users và lọc
+                    // Lưu ý: Tăng limit lên một chút vì sau khi lọc số lượng có thể giảm đi
+                    db.collection("users").limit(100).get()
+                            .addOnSuccessListener(userSnapshots -> {
+                                List<User> users = new ArrayList<>();
+                                for (QueryDocumentSnapshot doc : userSnapshots) {
+                                    User user = doc.toObject(User.class);
+                                    user.setUid(doc.getId());
+
+                                    // QUAN TRỌNG: Chỉ thêm user nếu ID của họ KHÔNG nằm trong danh sách loại trừ
+                                    if (user.getUid() != null && !excludeIds.contains(user.getUid())) {
+                                        users.add(user);
+                                    }
+                                }
+                                result.postValue(Resource.success(users));
+                            })
+                            .addOnFailureListener(e -> result.postValue(Resource.error("Lỗi lấy user: " + e.getMessage(), null)));
+
                 })
-                .addOnFailureListener(e -> result.postValue(Resource.error(e.getMessage(), null)));
+                .addOnFailureListener(e -> result.postValue(Resource.error("Lỗi lấy danh sách bạn: " + e.getMessage(), null)));
     }
 
     // 2. Gửi lời mời kết bạn
