@@ -221,7 +221,14 @@ public class ChatRepository {
                         return;
                     }
                     if (snapshots != null) {
-                        List<Message> messages = snapshots.toObjects(Message.class);
+                        List<Message> messages = new ArrayList<>();
+                        for (DocumentSnapshot doc : snapshots) {
+                            Message msg = doc.toObject(Message.class);
+                            if (msg != null) {
+                                msg.setMessageId(doc.getId()); // <--- Gán ID thật từ Firestore vào object
+                                messages.add(msg);
+                            }
+                        }
                         result.postValue(Resource.success(messages));
                     }
                 });

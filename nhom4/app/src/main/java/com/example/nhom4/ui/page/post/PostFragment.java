@@ -35,13 +35,17 @@ import androidx.core.content.FileProvider;
 import androidx.emoji2.emojipicker.EmojiPickerView;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.target.CustomTarget;
 import com.bumptech.glide.request.transition.Transition;
 import com.example.nhom4.R;
 import com.example.nhom4.data.bean.Post;
+import com.example.nhom4.data.bean.Reaction;
 import com.example.nhom4.data.repository.AuthRepository;
+import com.example.nhom4.ui.adapter.ReactionAdapter;
 import com.example.nhom4.ui.page.main.CenterFragment;
 import com.example.nhom4.ui.viewmodel.MainViewModel;
 import com.example.nhom4.ui.viewmodel.ReplyViewModel;
@@ -49,11 +53,15 @@ import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.chip.Chip;
 import com.google.firebase.Timestamp;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.ListenerRegistration;
+import com.google.firebase.firestore.Query;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -113,7 +121,9 @@ public class PostFragment extends Fragment {
     private Post currentPostObject;
 
     private String currentUserId;
-
+    private FirebaseFirestore db;
+    private ListenerRegistration reactionListener;
+    private List<Reaction> currentReactions = new ArrayList<>();
     public static PostFragment newInstance(Post post) {
         PostFragment fragment = new PostFragment();
         Bundle args = new Bundle();
@@ -131,7 +141,7 @@ public class PostFragment extends Fragment {
 
             args.putString(ARG_CAPTION_START, post.getType().equals("mood") ? post.getMoodName() : post.getActivityTitle());
             args.putString(ARG_CAPTION_END, post.getCaption());
-            args.putString(ARG_IMAGE_URL, post.getPhotoUrl()); // Lưu ý: Activity hay Mood đều dùng field này để hiện ảnh to
+            args.putString(ARG_IMAGE_URL, displayImageUrl); // Lưu ý: Activity hay Mood đều dùng field này để hiện ảnh to
             args.putString(ARG_POST_ID, post.getPostId());
             args.putString(ARG_USER_ID, post.getUserId());
             args.putString(ARG_POST_TYPE, post.getType());
@@ -156,6 +166,7 @@ public class PostFragment extends Fragment {
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
             captionStart = getArguments().getString(ARG_CAPTION_START);
@@ -185,10 +196,17 @@ public class PostFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        db = FirebaseFirestore.getInstance(); // Khởi tạo DB
+        super.onViewCreated(view, savedInstanceState);
         mainViewModel = new ViewModelProvider(requireActivity()).get(MainViewModel.class);
         replyViewModel = new ViewModelProvider(this).get(ReplyViewModel.class);
         reconstructPostObject();
+        // 1. Đảm bảo currentUserId luôn mới nhất
+        currentUserId = new AuthRepository().getCurrentUser() != null
+                ? new AuthRepository().getCurrentUser().getUid()
+                : null;
 
+        super.onViewCreated(view, savedInstanceState);
         initViews(view);
 
         if (checkIfEmptyState()) {
@@ -200,11 +218,22 @@ public class PostFragment extends Fragment {
         setupReactionBar(view);
         setupEvents();
         observeViewModel();
-
+        listenToReactionsRealtime();
         // Ẩn thanh reply + tham gia nếu là post của mình
         toggleCommentBarForOwnPost();
     }
-
+    @Override
+    public void onResume() {
+        super.onResume();
+        // Cưỡng chế kiểm tra lại khi màn hình hiện lên
+        toggleCommentBarForOwnPost();
+    }
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        // Hủy lắng nghe để tránh crash app
+        if (reactionListener != null) reactionListener.remove();
+    }
     private void reconstructPostObject() {
         if (postId == null) {
             currentPostObject = null;
@@ -275,25 +304,136 @@ public class PostFragment extends Fragment {
 
     // 3. Sửa lại hàm toggleCommentBarForOwnPost
     private void toggleCommentBarForOwnPost() {
-        if (currentUserId != null && currentUserId.equals(userIdOfOwner)) {
-            layoutReactionBar.setVisibility(View.GONE);
-            layoutActivityInvite.setVisibility(View.GONE);
-            chipReactions.setVisibility(View.VISIBLE);
-            chipReactions.setText("3 ❤️"); // Demo
-            chipReactions.setOnClickListener(v -> showReactionDetails());
-        } else {
-            layoutReactionBar.setVisibility(View.VISIBLE);
-            chipReactions.setVisibility(View.GONE);
+        if (currentUserId == null || userIdOfOwner == null) return;
+        boolean isOwnPost = currentUserId.equals(userIdOfOwner);
 
-            if ("activity".equals(postType)) {
-                // Quan sát danh sách activity đã tham gia từ ViewModel
-                checkIfJoinedActivity();
-            } else {
-                layoutActivityInvite.setVisibility(View.GONE);
-            }
+        if (isOwnPost) {
+            // --- BÀI CỦA MÌNH ---
+            layoutReactionBar.setVisibility(View.GONE);    // Ẩn thanh chat
+            layoutActivityInvite.setVisibility(View.GONE); // Ẩn nút mời
+            chipReactions.setVisibility(View.VISIBLE);     // HIỆN Chip xem ai like
+        } else {
+            // --- BÀI CỦA BẠN BÈ ---
+            layoutReactionBar.setVisibility(View.VISIBLE); // Hiện thanh chat để tương tác
+
+            // [SỬA TẠI ĐÂY] Luôn ẩn Chip đi theo ý bạn
+            chipReactions.setVisibility(View.GONE);
         }
     }
+    private void listenToReactionsRealtime() {
+        if (postId == null) return;
 
+        // Trỏ vào sub-collection "reactions" của bài viết này
+        reactionListener = db.collection("posts").document(postId)
+                .collection("reactions")
+                .orderBy("createdAt", Query.Direction.DESCENDING)
+                .addSnapshotListener((snapshots, error) -> {
+                    if (error != null) return;
+
+                    if (snapshots != null) {
+                        currentReactions = snapshots.toObjects(Reaction.class);
+                        updateReactionUI();
+                    }
+                });
+    }
+    private void updateReactionUI() {
+        // Đảm bảo có ID để so sánh
+        if (currentUserId == null) {
+            currentUserId = new AuthRepository().getCurrentUser() != null
+                    ? new AuthRepository().getCurrentUser().getUid() : null;
+        }
+
+        boolean isOwnPost = (currentUserId != null && userIdOfOwner != null && currentUserId.equals(userIdOfOwner));
+        int count = currentReactions.size();
+
+        if (isOwnPost) {
+            // --- LOGIC CHO BÀI MÌNH (Giữ nguyên) ---
+            layoutReactionBar.setVisibility(View.GONE);
+            chipReactions.setVisibility(View.VISIBLE);
+
+            if (count > 0) {
+                String topEmoji = currentReactions.get(0).getEmoji();
+                chipReactions.setText(count + " " + topEmoji);
+                chipReactions.setOnClickListener(v -> showReactionDetails());
+            } else {
+                chipReactions.setText("0 ❤️");
+                chipReactions.setOnClickListener(null);
+            }
+        } else {
+            // --- LOGIC CHO BÀI BẠN BÈ (Sửa đổi) ---
+            layoutReactionBar.setVisibility(View.VISIBLE);
+
+            // [SỬA TẠI ĐÂY] Luôn ẩn chip, bất kể có reaction hay không
+            chipReactions.setVisibility(View.GONE);
+        }
+    }
+    // --- LOGIC 3: GỬI REACTION ---
+    private void onReactionSelected(String emoji) {
+        if (currentUserId == null) return;
+
+        // --- VIỆC 1: Lưu Reaction vào Firestore (Visual) ---
+        // Lấy thông tin user để lưu vào history reaction
+        db.collection("users").document(currentUserId).get().addOnSuccessListener(doc -> {
+            String myName = doc.getString("username");
+            String myAvatar = doc.getString("profilePhotoUrl");
+
+            Reaction reaction = new Reaction(currentUserId, myName, myAvatar, emoji);
+
+            db.collection("posts").document(postId)
+                    .collection("reactions").document(currentUserId)
+                    .set(reaction)
+                    .addOnSuccessListener(aVoid -> {
+                        // Thành công visual, không cần Toast để trải nghiệm mượt
+                    });
+
+            // --- VIỆC 2: Gửi tin nhắn Reply (Chat logic) ---
+            // Logic chặn: Không gửi tin nhắn cho chính mình
+            if (userIdOfOwner != null && !userIdOfOwner.equals(currentUserId)) {
+
+                // [DEBUG] Kiểm tra dữ liệu trước khi gửi
+                if (replyViewModel == null || currentPostObject == null) {
+                    Toast.makeText(getContext(), "Lỗi: Không thể gửi phản hồi (Data Null)", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                String replyContent = "Đã thả " + emoji;
+
+                // Gọi ViewModel để gửi tin nhắn
+                replyViewModel.sendReply(replyContent, currentPostObject);
+
+                // [Feedback] Báo cho user biết đã gửi tin nhắn
+                // Toast.makeText(getContext(), "Đã gửi phản hồi cho " + userNameOfOwner, Toast.LENGTH_SHORT).show();
+            }
+        }).addOnFailureListener(e -> {
+            Toast.makeText(getContext(), "Lỗi kết nối: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+        });
+    }
+
+    // --- LOGIC 4: HIỂN THỊ DANH SÁCH (BOTTOM SHEET) ---
+    private void showReactionDetails() {
+        if (currentReactions.isEmpty()) {
+            Toast.makeText(getContext(), "Chưa có cảm xúc nào", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        BottomSheetDialog dialog = new BottomSheetDialog(requireContext());
+        View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.layout_bottom_sheet_list, null);
+        // Lưu ý: Bạn cần tạo layout layout_bottom_sheet_list chứa RecyclerView
+
+        RecyclerView rv = dialogView.findViewById(R.id.recycler_view); // ID trong layout sheet
+        TextView tvTitle = dialogView.findViewById(R.id.tv_title); // ID title
+
+        if (tvTitle != null) tvTitle.setText("Người bày tỏ cảm xúc");
+
+        ReactionAdapter adapter = new ReactionAdapter();
+        adapter.submitList(currentReactions);
+
+        rv.setLayoutManager(new LinearLayoutManager(getContext()));
+        rv.setAdapter(adapter);
+
+        dialog.setContentView(dialogView);
+        dialog.show();
+    }
     // 1. Kiểm tra trạng thái tham gia
     private void checkIfJoinedActivity() {
         String targetActivityId = currentPostObject.getActivityId();
@@ -359,10 +499,6 @@ public class PostFragment extends Fragment {
         });
     }
 
-    private void showReactionDetails() {
-        Toast.makeText(requireContext(), "Chi tiết reaction:\nA: ❤️\nB: 😂\nC: 😍", Toast.LENGTH_LONG).show();
-        // TODO: Mở dialog chi tiết
-    }
 
     private void setupReactionBar(View view) {
         if (reactionEmojis.size() >= 3) {
@@ -390,10 +526,6 @@ public class PostFragment extends Fragment {
         dialog.show();
     }
 
-    private void onReactionSelected(String emoji) {
-        Toast.makeText(requireContext(), "Reacted with " + emoji, Toast.LENGTH_SHORT).show();
-        // TODO: Gửi reaction lên Firestore
-    }
 
     private boolean checkIfEmptyState() {
         if (currentPostObject == null || postId == null || postId.isEmpty()) {

@@ -1,4 +1,4 @@
-package com.example.nhom4.data.model;
+package com.example.nhom4.data.bean;
 
 import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.ServerTimestamp;
