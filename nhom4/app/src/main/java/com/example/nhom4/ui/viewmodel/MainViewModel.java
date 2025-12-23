@@ -18,6 +18,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
@@ -32,7 +33,7 @@ public class MainViewModel extends ViewModel {
     private final FirebaseFirestore db = FirebaseFirestore.getInstance();
     private final FirebaseStorage storage = FirebaseStorage.getInstance();
     private final FirebaseAuth auth = FirebaseAuth.getInstance();
-
+    private ListenerRegistration joinedActivityListener;
     // LiveData
     private final MutableLiveData<Resource<List<Post>>> posts = new MutableLiveData<>();
     private final MutableLiveData<Resource<List<Mood>>> moods = new MutableLiveData<>();
@@ -44,7 +45,13 @@ public class MainViewModel extends ViewModel {
         loadMoods();
         loadJoinedActivities();
     }
-
+    @Override
+    protected void onCleared() {
+        super.onCleared();
+        if (joinedActivityListener != null) {
+            joinedActivityListener.remove();
+        }
+    }
     // ====================== GETTERS ======================
     public LiveData<Resource<List<Post>>> getPosts() { return posts; }
     public LiveData<Resource<List<Mood>>> getMoods() { return moods; }
@@ -76,9 +83,12 @@ public class MainViewModel extends ViewModel {
     public void loadJoinedActivities() {
         if (auth.getCurrentUser() == null) return;
 
+        // Nếu đã có listener đang chạy thì không tạo mới nữa (Tránh duplicate)
+        if (joinedActivityListener != null) return;
+
         String uid = auth.getCurrentUser().getUid();
 
-        db.collection("activities")
+        joinedActivityListener = db.collection("activities")
                 .whereArrayContains("participants", uid)
                 .addSnapshotListener((snapshots, error) -> {
                     if (error != null) {
@@ -213,12 +223,12 @@ public class MainViewModel extends ViewModel {
 
         String uid = auth.getCurrentUser().getUid();
 
-        // Cập nhật Firestore: Thêm uid vào mảng participants
+        // Chỉ cập nhật Firestore
         db.collection("activities").document(activityId)
                 .update("participants", FieldValue.arrayUnion(uid))
                 .addOnSuccessListener(aVoid -> {
-                    // Refresh lại danh sách activity để UI cập nhật ngay lập tức
-                    loadJoinedActivities();
+                    // KHÔNG cần gọi lại loadJoinedActivities() ở đây
+                    // Vì addSnapshotListener ở trên sẽ tự động bắt được thay đổi này ngay lập tức.
                 })
                 .addOnFailureListener(e -> {
                     // Xử lý lỗi nếu cần

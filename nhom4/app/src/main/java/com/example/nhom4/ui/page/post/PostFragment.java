@@ -1,5 +1,4 @@
 package com.example.nhom4.ui.page.post;
-
 import android.Manifest;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
@@ -66,7 +65,7 @@ public class PostFragment extends Fragment {
             "❤️", "😂", "😍", "🥺", "😢", "😡", "👍", "👎",
             "🎉", "🔥", "💯", "🙌", "👏", "🤔", "😮", "😴"
     );
-
+    private String activityId;
     // Argument Keys
     private static final String ARG_CAPTION_START = "caption_start";
     private static final String ARG_CAPTION_END = "caption_end";
@@ -77,7 +76,7 @@ public class PostFragment extends Fragment {
     private static final String ARG_USERNAME = "arg_username";
     private static final String ARG_USER_AVATAR = "arg_user_avatar";
     private static final String ARG_TIMESTAMP = "arg_timestamp";
-
+    private static final String ARG_ACTIVITY_ID = "arg_activity_id"; // <--- THÊM DÒNG NÀY
     private String captionStart, captionEnd, imageUrl;
     private String postId, userIdOfOwner, postType, userNameOfOwner, userAvatarOfOwner;
     private long timestampMillis = 0;
@@ -130,14 +129,19 @@ public class PostFragment extends Fragment {
                 displayImageUrl = post.getPhotoUrl();
             }
 
-            args.putString(ARG_CAPTION_START, startText);
+            args.putString(ARG_CAPTION_START, post.getType().equals("mood") ? post.getMoodName() : post.getActivityTitle());
             args.putString(ARG_CAPTION_END, post.getCaption());
-            args.putString(ARG_IMAGE_URL, displayImageUrl);
+            args.putString(ARG_IMAGE_URL, post.getPhotoUrl()); // Lưu ý: Activity hay Mood đều dùng field này để hiện ảnh to
             args.putString(ARG_POST_ID, post.getPostId());
             args.putString(ARG_USER_ID, post.getUserId());
             args.putString(ARG_POST_TYPE, post.getType());
             args.putString(ARG_USERNAME, post.getUserName());
             args.putString(ARG_USER_AVATAR, post.getUserAvatar());
+
+            // 2. TRUYỀN ACTIVITY ID VÀO BUNDLE
+            if (post.getActivityId() != null) {
+                args.putString(ARG_ACTIVITY_ID, post.getActivityId()); // <--- QUAN TRỌNG
+            }
 
             if (post.getCreatedAt() != null) {
                 args.putLong(ARG_TIMESTAMP, post.getCreatedAt().toDate().getTime());
@@ -163,6 +167,7 @@ public class PostFragment extends Fragment {
             userNameOfOwner = getArguments().getString(ARG_USERNAME);
             userAvatarOfOwner = getArguments().getString(ARG_USER_AVATAR);
             timestampMillis = getArguments().getLong(ARG_TIMESTAMP);
+            activityId = getArguments().getString(ARG_ACTIVITY_ID); // <--- QUAN TRỌNG
         }
 
         // Lấy currentUserId
@@ -214,12 +219,15 @@ public class PostFragment extends Fragment {
         currentPostObject.setUserAvatar(userAvatarOfOwner);
         currentPostObject.setCreatedAt(new Timestamp(new Date(timestampMillis)));
 
+        // 4. SET ACTIVITY ID VÀO OBJECT
+        currentPostObject.setActivityId(activityId); // <--- QUAN TRỌNG: Nếu thiếu dòng này, nút tham gia sẽ ẩn
+
         if ("mood".equals(postType)) {
             currentPostObject.setMoodName(captionStart);
-            currentPostObject.setMoodIconUrl(imageUrl);
+            currentPostObject.setMoodIconUrl(imageUrl); // Icon mood nhỏ
         } else {
             currentPostObject.setActivityTitle(captionStart);
-            currentPostObject.setPhotoUrl(imageUrl);
+            currentPostObject.setPhotoUrl(imageUrl); // Ảnh bìa activity
         }
     }
 
@@ -286,32 +294,34 @@ public class PostFragment extends Fragment {
         }
     }
 
-    // 4. Cập nhật logic checkIfJoinedActivity (QUAN TRỌNG)
+    // 1. Kiểm tra trạng thái tham gia
     private void checkIfJoinedActivity() {
-        // Lấy ID activity từ bài post (cần đảm bảo Post object có field activityId)
         String targetActivityId = currentPostObject.getActivityId();
 
+        // Nếu không có ID hoạt động -> Ẩn
         if (targetActivityId == null) {
             layoutActivityInvite.setVisibility(View.GONE);
             return;
         }
 
-        // Quan sát danh sách activity đã tham gia
+        // Quan sát danh sách Realtime từ ViewModel
         mainViewModel.getJoinedActivities().observe(getViewLifecycleOwner(), resource -> {
             if (resource.data != null) {
                 boolean isJoined = false;
+
+                // Duyệt danh sách xem mình đã tham gia activity này chưa
                 for (com.example.nhom4.data.bean.Activity act : resource.data) {
-                    // So sánh ID
                     if (targetActivityId.equals(act.getId())) {
                         isJoined = true;
                         break;
                     }
                 }
 
-                // Nếu đã tham gia -> Ẩn hoàn toàn layout mời
                 if (isJoined) {
+                    // [QUAN TRỌNG] Nếu đã tham gia rồi -> Ẩn hoàn toàn khung mời
                     layoutActivityInvite.setVisibility(View.GONE);
                 } else {
+                    // Nếu chưa tham gia -> Hiện khung mời và cài đặt nút bấm
                     layoutActivityInvite.setVisibility(View.VISIBLE);
                     setupJoinButtonAction(targetActivityId);
                 }
@@ -319,22 +329,33 @@ public class PostFragment extends Fragment {
         });
     }
 
-    // 5. Hàm xử lý sự kiện bấm nút Tham gia
+    // 2. Logic bấm nút: Bấm xong -> ẨN LUÔN (Feedback ngay lập tức)
     private void setupJoinButtonAction(String activityId) {
+        // Set thông tin người mời (chỉ làm khi layout hiện)
         tvInviteText.setText(userNameOfOwner + " rủ bạn tham gia!");
         if (userAvatarOfOwner != null && !userAvatarOfOwner.isEmpty()) {
             Glide.with(this).load(userAvatarOfOwner).into(imgInviterAvatar);
         }
 
-        updateJoinButtonState(false);
+        // Reset trạng thái nút (tránh bị disable do tái sử dụng view)
+        btnJoinActivity.setEnabled(true);
+        btnJoinActivity.setText("Tham gia");
+        btnJoinActivity.setAlpha(1f);
 
         btnJoinActivity.setOnClickListener(v -> {
-            // Gọi ViewModel để update Firestore
+            // 1. Gọi ViewModel cập nhật Firestore
             mainViewModel.joinActivity(activityId);
 
-            // Update UI tạm thời trong lúc chờ mạng
-            Toast.makeText(getContext(), "Đang tham gia...", Toast.LENGTH_SHORT).show();
-            btnJoinActivity.setEnabled(false);
+            // 2. [QUAN TRỌNG] Ẩn layout ngay lập tức để user thấy phản hồi luôn
+            // Không cần chờ mạng, tạo cảm giác app rất nhanh
+            layoutActivityInvite.animate()
+                    .alpha(0f)
+                    .translationY(50f)
+                    .setDuration(300)
+                    .withEndAction(() -> layoutActivityInvite.setVisibility(View.GONE))
+                    .start();
+
+            Toast.makeText(getContext(), "Đã tham gia hoạt động!", Toast.LENGTH_SHORT).show();
         });
     }
 
@@ -451,14 +472,43 @@ public class PostFragment extends Fragment {
         btnHeartOverlay.setVisibility(View.VISIBLE);
     }
 
+    // 2. Cập nhật giao diện nút bấm (QUAN TRỌNG: Không ẩn layout, chỉ đổi trạng thái nút)
     private void updateJoinButtonState(boolean isJoined) {
         if (isJoined) {
+            // Trạng thái: ĐÃ THAM GIA
             btnJoinActivity.setText("Đã tham gia");
-            btnJoinActivity.setEnabled(false);
-            btnJoinActivity.setAlpha(0.6f);
+            btnJoinActivity.setIconResource(R.drawable.baseline_check_24); // Thêm icon tick (nếu có)
+            btnJoinActivity.setEnabled(false); // Không cho bấm nữa
+
+            // Đổi màu nút sang màu xám/nhạt để thể hiện disabled
+            btnJoinActivity.setBackgroundTintList(ColorStateList.valueOf(Color.GRAY));
+            btnJoinActivity.setTextColor(Color.WHITE);
+            btnJoinActivity.setAlpha(1f);
         } else {
+            // Trạng thái: CHƯA THAM GIA (Mời tham gia)
             btnJoinActivity.setText("Tham gia");
+            btnJoinActivity.setIcon(null);
             btnJoinActivity.setEnabled(true);
+
+            TypedValue typedValue = new TypedValue();
+
+            btnJoinActivity.setBackgroundTintList(
+                    ColorStateList.valueOf(
+                            ContextCompat.getColor(
+                                    requireContext(),
+                                    R.color.md_theme_primary
+                            )
+                    )
+            );
+
+            btnJoinActivity.setTextColor(
+                    ContextCompat.getColor(
+                            requireContext(),
+                            R.color.md_theme_onPrimary
+                    )
+            );
+
+
             btnJoinActivity.setAlpha(1f);
         }
     }

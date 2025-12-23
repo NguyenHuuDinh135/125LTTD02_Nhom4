@@ -561,18 +561,24 @@ public class MainFragment extends Fragment {
 
         viewModel.getJoinedActivities().observe(getViewLifecycleOwner(), res -> {
             if (res.data != null) {
-                // LỌC: Ẩn activity đã hoàn thành mục tiêu hôm nay
+                // Cách 1: Hiện tất cả (An toàn nhất để test)
+                activityAdapter.setList(res.data);
+
+                // Cách 2: Nếu muốn lọc, hãy đảm bảo target > 0
+                /*
                 List<Activity> filtered = new ArrayList<>();
                 for (Activity activity : res.data) {
-                    if (activity.getProgress() < activity.getTarget()) {
+                    // Chỉ lọc nếu target hợp lệ (>0). Nếu target=0 coi như activity vĩnh viễn -> luôn hiện
+                    if (activity.getTarget() <= 0 || activity.getProgress() < activity.getTarget()) {
                         filtered.add(activity);
                     }
                 }
                 activityAdapter.setList(filtered);
+                */
 
-                // Nếu không còn activity nào khả dụng → có thể hiển thị thông báo (tùy chọn)
-                if (filtered.isEmpty()) {
-                    Toast.makeText(getContext(), "Hôm nay bạn đã hoàn thành tất cả hoạt động!", Toast.LENGTH_SHORT).show();
+                // Hiển thị thông báo nếu danh sách rỗng
+                if (res.data.isEmpty()) {
+                    // Toast.makeText(getContext(), "Bạn chưa tham gia hoạt động nào", Toast.LENGTH_SHORT).show();
                 }
             }
         });
