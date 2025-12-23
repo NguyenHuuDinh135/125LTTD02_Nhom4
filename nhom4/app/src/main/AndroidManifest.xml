@@ -89,6 +89,7 @@
                 android:name="android.appwidget.provider"
                 android:resource="@xml/activity_widget_info" />
         </receiver>
+        <service android:name="com.example.nhom4.ui.page.widget.ActivityWidgetService" android:exported="false" android:permission="android.permission.BIND_JOB_SERVICE" />
 
         <receiver android:name=".ui.page.widget.ActivityListWidgetProvider" android:exported="false">
             <intent-filter>

@@ -50,10 +50,15 @@
                     // 🔥 LẤY POST ID TẠI ĐÂY
                     String postId = doc.getId();
 
+                    // Lấy dữ liệu post
                     String type = doc.getString("type");
                     String title = doc.getString("activityTitle");
                     String caption = doc.getString("caption");
                     String moodName = doc.getString("moodName");
+
+                    // Lấy thông tin user
+                    String displayName = doc.getString("displayName");
+                    String avatarUrl = doc.getString("avatarUrl");
 
                     // Xác định photoUrl theo type
                     String photoUrl = doc.getString("photoUrl");
@@ -61,8 +66,8 @@
                         photoUrl = doc.getString("moodIconUrl");
                     }
 
-                    // 🔥 TRUYỀN postId XUỐNG
-                    updateWidget(this, postId, type, title, caption, photoUrl, moodName);
+                    // 🔥 TRUYỀN dữ liệu xuống widget
+                    updateWidget(this, postId, type, title, caption, photoUrl, moodName, displayName, avatarUrl);
 
                 } else {
                     Log.d("WidgetService", "No posts found.");
@@ -74,51 +79,68 @@
         }
 
 
-        private void updateWidget(Context context,String postId, String type, String title, String caption, String photoUrl, String moodName) {
-            // Thay đổi layout khi tạo RemoteViews
+
+        private void updateWidget(Context context,String postId, String type, String title, String caption, String photoUrl, String moodName, String displayName,
+                                  String avatarUrl) {
+            // Tạo RemoteViews
             RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.activity_widget);
 
+            // --- Set displayName ---
+            views.setTextViewText(R.id.tv_display_name, displayName != null ? displayName : "Người dùng");
 
-            // Set text theo type
+            // --- Load avatar ---
+            try {
+                Bitmap avatarBmp;
+                if (avatarUrl != null && !avatarUrl.isEmpty()) {
+                    avatarBmp = Picasso.get()
+                            .load(avatarUrl)
+                            .resize(100, 100)  // avatar nhỏ
+                            .centerCrop()
+                            .get();
+                } else {
+                    avatarBmp = BitmapFactory.decodeResource(context.getResources(), R.drawable.default_image);
+                }
+                views.setImageViewBitmap(R.id.img_avatar, avatarBmp);
+            } catch (IOException e) {
+                e.printStackTrace();
+                views.setImageViewResource(R.id.img_avatar, R.drawable.default_image);
+            }
+
+            // --- Set text theo type ---
             if ("activity".equals(type)) {
                 views.setTextViewText(R.id.tv_title, title != null ? title : "Hoạt động");
                 views.setTextViewText(R.id.tv_caption, caption != null ? caption : "");
             } else if ("mood".equals(type)) {
-                views.setTextViewText(R.id.tv_title, "Cảm xúc: " + (moodName != null ? moodName : ""));
+                views.setTextViewText(R.id.tv_title, moodName != null ? moodName : "");
                 views.setTextViewText(R.id.tv_caption, caption != null ? caption : "");
             } else {
                 views.setTextViewText(R.id.tv_title, "Post mới");
                 views.setTextViewText(R.id.tv_caption, caption != null ? caption : "");
             }
 
-            // Load ảnh đồng bộ với Picasso
+            // --- Load ảnh post ---
             try {
                 Bitmap bmp;
                 if (photoUrl != null && !photoUrl.isEmpty()) {
                     bmp = Picasso.get()
                             .load(photoUrl)
-                            .resize(300, 300) // resize vừa đủ hiển thị
+                            .resize(300, 300)
                             .centerCrop()
                             .get();
                 } else {
                     bmp = BitmapFactory.decodeResource(context.getResources(), R.drawable.default_image);
                 }
                 views.setImageViewBitmap(R.id.img_photo, bmp);
-
             } catch (IOException e) {
                 e.printStackTrace();
                 views.setImageViewResource(R.id.img_photo, R.drawable.default_image);
             }
 
-
-            // --- Thêm click mở app & mở đúng post ---
+            // --- Click mở app ---
             Intent intent = new Intent(context, MainActivity.class);
-
-            // Truyền dữ liệu post sang app
             intent.putExtra("OPEN_POST", true);
-            intent.putExtra("POST_ID", postId);     // ID bài post
-            intent.putExtra("POST_TYPE", type);     // activity / mood
-
+            intent.putExtra("POST_ID", postId);
+            intent.putExtra("POST_TYPE", type);
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
 
             PendingIntent pendingIntent = PendingIntent.getActivity(
@@ -127,10 +149,9 @@
                     intent,
                     PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
             );
-
             views.setOnClickPendingIntent(R.id.widget_root_layout, pendingIntent);
 
-            // Cập nhật widget
+            // --- Cập nhật widget ---
             AppWidgetManager manager = AppWidgetManager.getInstance(context);
             ComponentName widget = new ComponentName(context, ActivityWidgetProvider.class);
             manager.updateAppWidget(widget, views);
