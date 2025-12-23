@@ -1,6 +1,9 @@
 package com.example.nhom4.ui.page.main;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -20,7 +23,7 @@ import com.example.nhom4.ui.adapter.ChatListAdapter;
 import com.example.nhom4.ui.adapter.OperatorAdapter;
 import com.example.nhom4.ui.page.activity.DetailActivity;
 import com.example.nhom4.ui.viewmodel.DiscoveryViewModel;
-
+import androidx.localbroadcastmanager.content.LocalBroadcastManager; // THÊM import
 /**
  * Trang khám phá: nửa trên là danh sách chat gần đây, nửa dưới là hoạt động nổi bật.
  */
@@ -33,7 +36,15 @@ public class DiscoveryFragment extends Fragment {
     private OperatorAdapter activityAdapter;
 
     private DiscoveryViewModel viewModel;
-
+    // THÊM: BroadcastReceiver để nhận signal refresh từ FriendsBottomSheet
+    private BroadcastReceiver refreshReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (viewModel != null) {
+                viewModel.loadConversations(); // Force reload chat list
+            }
+        }
+    };
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -119,5 +130,18 @@ public class DiscoveryFragment extends Fragment {
             viewModel.loadConversations();
             viewModel.loadJoinedActivities();
         }
+    }
+    // THÊM: Register receiver ở onStart (khi fragment visible)
+    @Override
+    public void onStart() {
+        super.onStart();
+        LocalBroadcastManager.getInstance(requireContext()).registerReceiver(refreshReceiver, new IntentFilter("REFRESH_CHAT_LIST"));
+    }
+
+    // THÊM: Unregister ở onStop (khi fragment không visible)
+    @Override
+    public void onStop() {
+        super.onStop();
+        LocalBroadcastManager.getInstance(requireContext()).unregisterReceiver(refreshReceiver);
     }
 }

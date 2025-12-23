@@ -34,7 +34,7 @@ import com.google.android.material.shape.MaterialShapeDrawable;
 import com.google.android.material.shape.ShapeAppearanceModel;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textview.MaterialTextView;
-
+import androidx.localbroadcastmanager.content.LocalBroadcastManager; // THÊM import
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
