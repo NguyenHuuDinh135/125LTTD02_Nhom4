@@ -39,6 +39,15 @@ public class MainViewModel extends ViewModel {
     private final MutableLiveData<Resource<List<Activity>>> joinedActivities = new MutableLiveData<>();
     private final MutableLiveData<Resource<Boolean>> uploadStatus = new MutableLiveData<>();
 
+    // MỚI: Cho Widget 2 - Mở tab Activity
+    private final MutableLiveData<Boolean> shouldOpenActivityTab = new MutableLiveData<>(false);
+
+    // MỚI: Cho Widget 2 - Mở chi tiết posts của activity cụ thể
+    private final MutableLiveData<String> selectedActivityIdForDetail = new MutableLiveData<>(null);
+
+    // Giữ nguyên: Mở chi tiết post từ Widget 1
+    private final MutableLiveData<String> openPostId = new MutableLiveData<>();
+
     public MainViewModel() {
         loadPosts();
         loadMoods();
@@ -50,6 +59,19 @@ public class MainViewModel extends ViewModel {
     public LiveData<Resource<List<Mood>>> getMoods() { return moods; }
     public LiveData<Resource<List<Activity>>> getJoinedActivities() { return joinedActivities; }
     public LiveData<Resource<Boolean>> getUploadStatus() { return uploadStatus; }
+
+    // MỚI: Widget 2
+    public LiveData<Boolean> shouldOpenActivityTab() { return shouldOpenActivityTab; }
+    public void setShouldOpenActivityTab(boolean open) { shouldOpenActivityTab.setValue(open); }
+
+    public LiveData<String> getSelectedActivityIdForDetail() { return selectedActivityIdForDetail; }
+    public void setSelectedActivityIdForDetail(String activityId) { selectedActivityIdForDetail.setValue(activityId); }
+    public void clearSelectedActivityIdForDetail() { selectedActivityIdForDetail.setValue(null); }
+
+    // Giữ nguyên: Widget 1
+    public LiveData<String> getOpenPostId() { return openPostId; }
+    public void setOpenPostId(String postId) { openPostId.setValue(postId); }
+    public void clearOpenPostId() { openPostId.setValue(null); }
 
     // ====================== LOAD DATA ======================
     private void loadPosts() {
@@ -180,14 +202,13 @@ public class MainViewModel extends ViewModel {
     private void createCheckInPost(Activity activity, String uid, String imageUrl, String note) {
         Post post = new Post();
         post.setUserId(uid);
-        post.setType("activity"); // Phân biệt với mood
+        post.setType("activity");
         post.setActivityId(activity.getId());
-        post.setActivityTitle(activity.getTitle()); // Dùng để hiển thị tên activity trong Story
+        post.setActivityTitle(activity.getTitle());
         post.setPhotoUrl(imageUrl);
         post.setCaption(note != null ? note : "");
         post.setCreatedAt(Timestamp.now());
 
-        // Tạo post trong collection posts → sẽ realtime hiện trong Story/Feed
         postRepository.createPost(post, null, new MutableLiveData<>());
     }
 
@@ -208,22 +229,18 @@ public class MainViewModel extends ViewModel {
 
         postRepository.createPost(post, null, uploadStatus);
     }
+
     public void joinActivity(String activityId) {
         if (auth.getCurrentUser() == null || activityId == null) return;
 
         String uid = auth.getCurrentUser().getUid();
 
-        // Cập nhật Firestore: Thêm uid vào mảng participants
         db.collection("activities").document(activityId)
                 .update("participants", FieldValue.arrayUnion(uid))
-                .addOnSuccessListener(aVoid -> {
-                    // Refresh lại danh sách activity để UI cập nhật ngay lập tức
-                    loadJoinedActivities();
-                })
-                .addOnFailureListener(e -> {
-                    // Xử lý lỗi nếu cần
-                });
+                .addOnSuccessListener(aVoid -> loadJoinedActivities())
+                .addOnFailureListener(e -> { /* Xử lý lỗi nếu cần */ });
     }
+
     // ====================== REFRESH ======================
     public void refreshPosts() {
         loadPosts();
@@ -232,19 +249,4 @@ public class MainViewModel extends ViewModel {
     public void refreshActivities() {
         loadJoinedActivities();
     }
-    // ====================== OPEN POST FROM WIDGET ======================
-    private final MutableLiveData<String> openPostId = new MutableLiveData<>();
-
-    public LiveData<String> getOpenPostId() {
-        return openPostId;
-    }
-
-    public void setOpenPostId(String postId) {
-        openPostId.setValue(postId);
-    }
-
-    public void clearOpenPostId() {
-        openPostId.setValue(null);
-    }
-
 }

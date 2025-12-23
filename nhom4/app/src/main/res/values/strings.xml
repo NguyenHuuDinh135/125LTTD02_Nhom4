@@ -156,4 +156,11 @@
     <string name="_10_50_pm_11_05_pm">10:50 PM - 11:05 PM</string>
     <string name="_3_member">3 member</string>
     <string name="habit_image" />
+
+    <string name="activity_header_image">Activity Header Image</string>
+    <string name="view_all_posts">Xem tất cả bài đăng</string>
+    <string name="checkin_history">Lịch sử check-in</string>
+    <string name="no_posts_yet">Chưa có bài đăng nào\nHãy là người đầu tiên check-in!</string>
+    <string name="loading_posts">Đang tải bài đăng...</string>
+    <string name="error_no_activity_id">Lỗi: Không có ID hoạt động</string>
 </resources>

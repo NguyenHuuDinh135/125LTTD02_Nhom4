@@ -16,8 +16,9 @@ import com.bumptech.glide.Glide;
 import com.example.nhom4.R;
 import com.example.nhom4.data.Resource;
 import com.example.nhom4.data.bean.Activity;
-import com.example.nhom4.ui.page.calendar.StoryAllActivity;
 import com.example.nhom4.ui.viewmodel.DetailViewModel;
+import com.google.android.material.button.MaterialButton;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -34,6 +35,7 @@ public class DetailActivity extends AppCompatActivity {
     private ImageView imgHeader;
     private GridLayout gridDays;
     private Toolbar toolbar;
+    private MaterialButton btnViewAllPosts;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,24 +50,62 @@ public class DetailActivity extends AppCompatActivity {
             getSupportActionBar().setDisplayShowHomeEnabled(true);
             getSupportActionBar().setTitle("");
         }
-
         toolbar.setNavigationOnClickListener(v -> finish());
 
-        // Nhận dữ liệu từ Intent
-        currentActivity = getIntent().getParcelableExtra("ACTIVITY");
-        if (currentActivity == null) {
+        initViews();
+
+        // === XỬ LÝ NHẬN DỮ LIỆU TỪ INTENT ===
+        Activity passedActivity = getIntent().getParcelableExtra("ACTIVITY");
+        String activityId = getIntent().getStringExtra("ACTIVITY_ID");
+
+        if (passedActivity != null) {
+            // Trường hợp mở từ trong app (có truyền toàn bộ object Activity)
+            currentActivity = passedActivity;
+            // Đảm bảo ID được set (phòng trường hợp thiếu)
+            if (activityId != null) {
+                currentActivity.setId(activityId);
+            }
+
+            setupAfterLoad();
+        } else if (activityId != null) {
+            // Trường hợp mở từ Widget (chỉ có ID)
+            loadActivityFromFirestore(activityId);
+        } else {
             Toast.makeText(this, "Không tải được hoạt động", Toast.LENGTH_SHORT).show();
             finish();
-            return;
         }
+    }
 
+    private void loadActivityFromFirestore(String activityId) {
+        FirebaseFirestore.getInstance()
+                .collection("activities")
+                .document(activityId)
+                .get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    currentActivity = documentSnapshot.toObject(Activity.class);
+                    if (currentActivity != null) {
+                        currentActivity.setId(activityId);
+                        setupAfterLoad();
+                    } else {
+                        Toast.makeText(this, "Không tìm thấy hoạt động", Toast.LENGTH_SHORT).show();
+                        finish();
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(this, "Lỗi tải dữ liệu: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    finish();
+                });
+    }
+
+    private void setupAfterLoad() {
+        // Chỉ gọi các hàm này sau khi đã có currentActivity chắc chắn
         viewModel = new ViewModelProvider(this).get(DetailViewModel.class);
         viewModel.setCurrentActivity(currentActivity);
 
-        initViews();
         bindData();
         setupGridDays();
         observeViewModel();
+        setupViewAllButton();
     }
 
     private void initViews() {
@@ -75,13 +115,12 @@ public class DetailActivity extends AppCompatActivity {
         tvProgress = findViewById(R.id.tv_progress);
         imgHeader = findViewById(R.id.img_header);
         gridDays = findViewById(R.id.grid_days);
+        btnViewAllPosts = findViewById(R.id.btn_view_all_posts);
     }
 
     private void bindData() {
-        // --- TITLE ---
         tvTitle.setText(currentActivity.getTitle());
 
-        // --- TIME ---
         if (currentActivity.getScheduledTime() != null) {
             Date start = currentActivity.getScheduledTime().toDate();
             long endMillis = start.getTime() + (currentActivity.getDurationSeconds() * 1000);
@@ -90,24 +129,21 @@ public class DetailActivity extends AppCompatActivity {
             SimpleDateFormat timeFormat = new SimpleDateFormat("hh:mm a", Locale.getDefault());
             String timeRange = timeFormat.format(start) + " - " + timeFormat.format(end);
 
-            String frequency = currentActivity.isDaily() ? "Everyday" : "Custom";
+            String frequency = currentActivity.isDaily() ? "Hằng ngày" : "Tùy chỉnh";
             tvTime.setText(frequency + " • " + timeRange);
         } else {
             tvTime.setText("Chưa đặt thời gian");
         }
 
-        // --- MEMBERS ---
         List<String> participants = currentActivity.getParticipants();
         int count = participants != null ? participants.size() : 1;
-        tvMembers.setText(count + " member" + (count > 1 ? "s" : ""));
+        tvMembers.setText(count + " thành viên" + (count > 1 ? "" : ""));
 
-        // --- HEADER IMAGE (Dùng Glide) ---
-        // Đảm bảo bạn đã thêm dependency Glide trong build.gradle
         if (currentActivity.getImageUrl() != null && !currentActivity.getImageUrl().isEmpty()) {
             Glide.with(this)
                     .load(currentActivity.getImageUrl())
-                    .placeholder(R.drawable.default_image_background) // Ảnh chờ (cần có trong drawable)
-                    .error(R.drawable.default_image_background)       // Ảnh lỗi
+                    .placeholder(R.drawable.default_image_background)
+                    .error(R.drawable.default_image_background)
                     .centerCrop()
                     .into(imgHeader);
         } else {
@@ -131,14 +167,12 @@ public class DetailActivity extends AppCompatActivity {
             final int finalDay = day;
             viewModel.isDayCheckedIn(currentActivity.getId(), finalDay).observe(this, checked -> {
                 if (checked != null && checked) {
-                    // Nếu ngày đó có check-in -> Hiện icon sáng
-                    imgSun.setImageResource(R.drawable.outline_light_mode_24); // Đảm bảo có resource này
-
-                    dayView.setOnClickListener(v -> openStoryAll(finalDay));
-                } else {
-                    // Nếu không -> Hiện icon mờ/tối
                     imgSun.setImageResource(R.drawable.outline_light_mode_24);
-
+                    // Khi click vào ngày có post → mở feed posts
+                    dayView.setOnClickListener(v -> openPostsFeed());
+                } else {
+                    imgSun.setImageResource(R.drawable.outline_light_mode_24);
+                    imgSun.setAlpha(0.3f); // Làm mờ icon ngày chưa có post
                     dayView.setOnClickListener(null);
                 }
             });
@@ -147,12 +181,22 @@ public class DetailActivity extends AppCompatActivity {
         }
     }
 
-    private void openStoryAll(int day) {
-        Intent intent = new Intent(this, StoryAllActivity.class);
+    /**
+     * Thiết lập nút "Xem tất cả bài đăng"
+     */
+    private void setupViewAllButton() {
+        if (btnViewAllPosts != null) {
+            btnViewAllPosts.setOnClickListener(v -> openPostsFeed());
+        }
+    }
+
+    /**
+     * Mở màn hình feed posts (giống TikTok - vuốt dọc)
+     */
+    private void openPostsFeed() {
+        Intent intent = new Intent(this, ActivityPostsFeedActivity.class);
         intent.putExtra("ACTIVITY_ID", currentActivity.getId());
-        intent.putExtra("DAY_OF_MONTH", day);
-        intent.putExtra("MONTH", Calendar.getInstance().get(Calendar.MONTH) + 1);
-        intent.putExtra("YEAR", Calendar.getInstance().get(Calendar.YEAR));
+        intent.putExtra("ACTIVITY_TITLE", currentActivity.getTitle());
         startActivity(intent);
     }
 

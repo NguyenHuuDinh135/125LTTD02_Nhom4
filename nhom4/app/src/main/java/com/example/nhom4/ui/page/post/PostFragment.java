@@ -288,7 +288,6 @@ public class PostFragment extends Fragment {
 
     // 4. Cập nhật logic checkIfJoinedActivity (QUAN TRỌNG)
     private void checkIfJoinedActivity() {
-        // Lấy ID activity từ bài post (cần đảm bảo Post object có field activityId)
         String targetActivityId = currentPostObject.getActivityId();
 
         if (targetActivityId == null) {
@@ -296,19 +295,16 @@ public class PostFragment extends Fragment {
             return;
         }
 
-        // Quan sát danh sách activity đã tham gia
         mainViewModel.getJoinedActivities().observe(getViewLifecycleOwner(), resource -> {
             if (resource.data != null) {
                 boolean isJoined = false;
                 for (com.example.nhom4.data.bean.Activity act : resource.data) {
-                    // So sánh ID
                     if (targetActivityId.equals(act.getId())) {
                         isJoined = true;
                         break;
                     }
                 }
 
-                // Nếu đã tham gia -> Ẩn hoàn toàn layout mời
                 if (isJoined) {
                     layoutActivityInvite.setVisibility(View.GONE);
                 } else {
@@ -319,7 +315,6 @@ public class PostFragment extends Fragment {
         });
     }
 
-    // 5. Hàm xử lý sự kiện bấm nút Tham gia
     private void setupJoinButtonAction(String activityId) {
         tvInviteText.setText(userNameOfOwner + " rủ bạn tham gia!");
         if (userAvatarOfOwner != null && !userAvatarOfOwner.isEmpty()) {
@@ -329,10 +324,7 @@ public class PostFragment extends Fragment {
         updateJoinButtonState(false);
 
         btnJoinActivity.setOnClickListener(v -> {
-            // Gọi ViewModel để update Firestore
             mainViewModel.joinActivity(activityId);
-
-            // Update UI tạm thời trong lúc chờ mạng
             Toast.makeText(getContext(), "Đang tham gia...", Toast.LENGTH_SHORT).show();
             btnJoinActivity.setEnabled(false);
         });
