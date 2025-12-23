@@ -1,5 +1,6 @@
 package com.example.nhom4.ui.page.post;
-
+import com.google.android.material.bottomsheet.BottomSheetDialog;
+import androidx.emoji2.emojipicker.EmojiPickerView;
 import android.Manifest;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
@@ -30,9 +31,11 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+
 import androidx.constraintlayout.widget.Group;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
+import androidx.emoji2.emojipicker.EmojiPickerView;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
@@ -41,9 +44,12 @@ import com.bumptech.glide.request.target.CustomTarget;
 import com.bumptech.glide.request.transition.Transition;
 import com.example.nhom4.R;
 import com.example.nhom4.data.bean.Post;
+import com.example.nhom4.data.repository.AuthRepository;
 import com.example.nhom4.ui.page.main.CenterFragment;
 import com.example.nhom4.ui.viewmodel.ReplyViewModel;
+import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.chip.Chip;
 import com.google.firebase.Timestamp;
 
 import java.io.File;
@@ -55,10 +61,13 @@ import java.util.List;
 import java.util.Locale;
 
 public class PostFragment extends Fragment {
+
+    // Danh sách emoji reaction động (có thể thay đổi dễ dàng)
     private final List<String> reactionEmojis = List.of(
-            "❤️", "😂", "😍", "😢", "😢", "😡", "👍", "👎",
+            "❤️", "😂", "😍", "🥺", "😢", "😡", "👍", "👎",
             "🎉", "🔥", "💯", "🙌", "👏", "🤔", "😮", "😴"
     );
+
     // Argument Keys
     private static final String ARG_CAPTION_START = "caption_start";
     private static final String ARG_CAPTION_END = "caption_end";
@@ -74,7 +83,7 @@ public class PostFragment extends Fragment {
     private String postId, userIdOfOwner, postType, userNameOfOwner, userAvatarOfOwner;
     private long timestampMillis = 0;
 
-    private String currentPhotoUrl; // URL ảnh hiện tại (photo hoặc mood icon)
+    private String currentPhotoUrl;
 
     // UI Controls
     private View overlayContainer;
@@ -96,8 +105,16 @@ public class PostFragment extends Fragment {
 
     private TextView tvTimestamp;
 
+    // Reaction UI
+    private TextView reaction1, reaction2, reaction3;
+    private ImageView btnAddReaction;
+    private Chip chipReactions;
+    private View layoutReactionBar;
+
     private ReplyViewModel replyViewModel;
     private Post currentPostObject;
+
+    private String currentUserId; // ID người dùng hiện tại
 
     public static PostFragment newInstance(Post post) {
         PostFragment fragment = new PostFragment();
@@ -148,6 +165,11 @@ public class PostFragment extends Fragment {
             userAvatarOfOwner = getArguments().getString(ARG_USER_AVATAR);
             timestampMillis = getArguments().getLong(ARG_TIMESTAMP);
         }
+
+        // Lấy currentUserId
+        currentUserId = new AuthRepository().getCurrentUser() != null
+                ? new AuthRepository().getCurrentUser().getUid()
+                : null;
     }
 
     @Nullable
@@ -171,8 +193,12 @@ public class PostFragment extends Fragment {
 
         setupMainUI();
         setupPostTypeLogic();
+        setupReactionBar(view);
         setupEvents();
         observeViewModel();
+
+        // Ẩn thanh comment nếu là post của mình
+        toggleCommentBarForOwnPost();
     }
 
     private void reconstructPostObject() {
@@ -219,6 +245,8 @@ public class PostFragment extends Fragment {
         btnSendDirect = view.findViewById(R.id.btn_send_reply_direct);
         btnCancelReply = view.findViewById(R.id.btn_cancel_reply);
 
+        layoutReactionBar = view.findViewById(R.id.layout_reaction_bar);
+
         View btnShutter = view.findViewById(R.id.btn_shutter);
         btnShutter.setOnClickListener(v -> {
             Fragment p = getParentFragment();
@@ -231,6 +259,66 @@ public class PostFragment extends Fragment {
 
         btnGridView.setOnClickListener(v -> downloadPostImage());
         btnShare.setOnClickListener(v -> sharePostImage());
+
+        // Reaction UI
+        reaction1 = view.findViewById(R.id.reaction_1);
+        reaction2 = view.findViewById(R.id.reaction_2);
+        reaction3 = view.findViewById(R.id.reaction_3);
+        btnAddReaction = view.findViewById(R.id.btn_add_reaction);
+        chipReactions = view.findViewById(R.id.chip_reactions);
+    }
+
+    private void toggleCommentBarForOwnPost() {
+        if (currentUserId != null && currentUserId.equals(userIdOfOwner)) {
+            // Là post của mình → ẩn thanh comment, hiện chip reaction
+            layoutReactionBar.setVisibility(View.GONE);
+            chipReactions.setVisibility(View.VISIBLE);
+
+            // Ví dụ hiển thị số reaction (bạn thay bằng dữ liệu thật từ Firestore)
+            chipReactions.setText("3 ❤️");
+            chipReactions.setOnClickListener(v -> showReactionDetails());
+        } else {
+            // Post người khác → hiện thanh comment
+            layoutReactionBar.setVisibility(View.VISIBLE);
+            chipReactions.setVisibility(View.GONE);
+        }
+    }
+
+    private void showReactionDetails() {
+        Toast.makeText(requireContext(), "Chi tiết reaction:\nA: ❤️\nB: 😂\nC: 😍", Toast.LENGTH_LONG).show();
+        // TODO: Mở dialog chi tiết từ dữ liệu Firestore
+    }
+
+    private void setupReactionBar(View view) {
+        if (reactionEmojis.size() >= 3) {
+            reaction1.setText(reactionEmojis.get(0));
+            reaction2.setText(reactionEmojis.get(1));
+            reaction3.setText(reactionEmojis.get(2));
+        }
+
+        reaction1.setOnClickListener(v -> onReactionSelected(reactionEmojis.get(0)));
+        reaction2.setOnClickListener(v -> onReactionSelected(reactionEmojis.get(1)));
+        reaction3.setOnClickListener(v -> onReactionSelected(reactionEmojis.get(2)));
+
+        // Bấm nút + → mở EmojiPicker
+        btnAddReaction.setOnClickListener(v -> openEmojiPicker());
+    }
+
+    private void openEmojiPicker() {
+        EmojiPickerView emojiPickerView = new EmojiPickerView(requireContext());
+        emojiPickerView.setOnEmojiPickedListener(emojiViewItem -> {
+            String emoji = emojiViewItem.getEmoji();
+            onReactionSelected(emoji);
+        });
+
+        BottomSheetDialog dialog = new BottomSheetDialog(requireContext());
+        dialog.setContentView(emojiPickerView);
+        dialog.show();
+    }
+
+    private void onReactionSelected(String emoji) {
+        Toast.makeText(requireContext(), "Reacted with " + emoji, Toast.LENGTH_SHORT).show();
+        // TODO: Gửi reaction lên Firestore (Map<String, List<String>> reactions trong Post)
     }
 
     private boolean checkIfEmptyState() {

@@ -227,15 +227,15 @@ public class ChatRepository {
         }
 
         db.collection("conversations").document(conversationId)
-            .delete()
-            .addOnSuccessListener(aVoid -> {
-                // Xóa thành công
-                result.postValue(Resource.success(true));
-            })
-            .addOnFailureListener(e -> {
-                // Xóa thất bại
-                result.postValue(Resource.error("Lỗi khi xóa: " + e.getMessage(), false));
-            });
+                .delete()
+                .addOnSuccessListener(aVoid -> {
+                    // Xóa thành công
+                    result.postValue(Resource.success(true));
+                })
+                .addOnFailureListener(e -> {
+                    // Xóa thất bại
+                    result.postValue(Resource.error("Lỗi khi xóa: " + e.getMessage(), false));
+                });
     }
 
 }

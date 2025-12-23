@@ -1,70 +1,76 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical">
+    android:layout_marginHorizontal="12dp"
+    android:layout_marginVertical="6dp"
+    app:cardBackgroundColor="?attr/colorSurfaceContainerLowest"
+    app:cardCornerRadius="20dp"
+    app:cardElevation="2dp">
+
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="72dp"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
         android:gravity="center_vertical"
-        android:orientation="horizontal">
+        android:padding="12dp">
 
-        <com.google.android.material.card.MaterialCardView
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:layout_marginRight="8dp"
-            app:cardBackgroundColor="?android:attr/colorBackground"
-            app:cardCornerRadius="0dp"
-            app:cardElevation="0dp">
+        <!-- Avatar lớn, bo tròn -->
+        <com.google.android.material.imageview.ShapeableImageView
+            android:id="@+id/img_avatar"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:scaleType="centerCrop"
+            app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.Full"
+            app:strokeWidth="2dp"
+            app:strokeColor="?attr/colorOutlineVariant"
+            tools:src="@drawable/avatar_placeholder" />
 
-            <com.google.android.material.imageview.ShapeableImageView
-                android:id="@+id/my_image_view"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:layout_gravity="center"
-                android:src="@drawable/avatar"
-                app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.Full"
-                app:strokeColor="?android:attr/colorBackground" />
-
-        </com.google.android.material.card.MaterialCardView>
-
+        <!-- Thông tin tên + tin nhắn mới nhất -->
         <LinearLayout
             android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_marginLeft="8sp"
+            android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:gravity="center_vertical"
+            android:layout_marginStart="16dp"
             android:orientation="vertical">
 
+            <!-- Tên bạn bè -->
             <com.google.android.material.textview.MaterialTextView
-                android:id="@+id/textView3"
-                android:layout_width="match_parent"
+                android:id="@+id/tv_friend_name"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/bray"
-                android:textColor="?android:attr/colorForeground"
-                android:textSize="16sp"
-                app:lineHeight="24sp" />
-
-            <com.google.android.material.textview.MaterialTextView
-                android:id="@+id/textView4"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:ellipsize="end"
+                android:textSize="17sp"
+                android:textStyle="bold"
+                android:textColor="?attr/colorOnSurface"
                 android:maxLines="1"
-                android:text="@string/supporting_line_text_lorem_ipsum_dolor_sit_amet_consectetur"
+                android:ellipsize="end"
+                tools:text="Bray" />
+
+            <!-- Tin nhắn gần nhất -->
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/tv_last_message"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:textSize="14sp"
                 android:textColor="?attr/colorOnSurfaceVariant"
-                android:textSize="16sp"
-                app:lineHeight="24sp" />
+                android:maxLines="1"
+                android:ellipsize="end"
+                tools:text="Haha, đúng rồi! 😄" />
+
         </LinearLayout>
 
+        <!-- Mũi tên hoặc thời gian (tùy chọn) -->
         <ImageView
-            android:id="@+id/imageView5"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:contentDescription="@string/cometo"
-            android:padding="10dp"
-            app:srcCompat="@drawable/outline_arrow_forward_ios_24" />
+            android:id="@+id/img_arrow"
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:contentDescription="Mở cuộc trò chuyện"
+            app:srcCompat="@drawable/outline_arrow_forward_ios_24"
+            app:tint="?attr/colorOnSurfaceVariant" />
 
     </LinearLayout>
-</LinearLayout>
+
+</androidx.cardview.widget.CardView>

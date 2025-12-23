@@ -267,10 +267,18 @@
                 android:cursorVisible="false"
                 android:longClickable="false" />
 
-            <TextView android:layout_width="44dp" android:layout_height="match_parent" android:gravity="center" android:text="😍" android:textSize="22sp" android:background="?attr/selectableItemBackgroundBorderless" android:clickable="true"/>
-            <TextView android:layout_width="44dp" android:layout_height="match_parent" android:gravity="center" android:text="🥺" android:textSize="22sp" android:background="?attr/selectableItemBackgroundBorderless" android:clickable="true"/>
-            <TextView android:layout_width="44dp" android:layout_height="match_parent" android:gravity="center" android:text="💛" android:textSize="22sp" android:background="?attr/selectableItemBackgroundBorderless" android:clickable="true"/>
-            <ImageView android:layout_width="44dp" android:layout_height="match_parent" android:padding="12dp" android:src="@drawable/outline_add_reaction_24" app:tint="?attr/colorOnSurfaceVariant" android:background="?attr/selectableItemBackgroundBorderless" android:clickable="true"/>
+            <TextView android:id="@+id/reaction_1" android:layout_width="44dp" android:layout_height="match_parent" android:gravity="center" android:textSize="22sp" android:background="?attr/selectableItemBackgroundBorderless" android:clickable="true"/>
+            <TextView android:id="@+id/reaction_2" android:layout_width="44dp" android:layout_height="match_parent" android:gravity="center" android:textSize="22sp" android:background="?attr/selectableItemBackgroundBorderless" android:clickable="true"/>
+            <TextView android:id="@+id/reaction_3" android:layout_width="44dp" android:layout_height="match_parent" android:gravity="center" android:textSize="22sp" android:background="?attr/selectableItemBackgroundBorderless" android:clickable="true"/>
+            <ImageView android:id="@+id/btn_add_reaction" android:layout_width="44dp" android:layout_height="match_parent" android:padding="12dp" android:src="@drawable/outline_add_reaction_24" app:tint="?attr/colorOnSurfaceVariant" android:background="?attr/selectableItemBackgroundBorderless" android:clickable="true"/>
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chip_reactions"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="3 ❤️"
+                android:visibility="gone"
+                app:layout_constraintStart_toStartOf="@id/layout_reaction_bar"
+                app:layout_constraintTop_toTopOf="@id/layout_reaction_bar" />
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
 

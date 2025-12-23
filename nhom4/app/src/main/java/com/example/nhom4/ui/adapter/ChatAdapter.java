@@ -171,25 +171,31 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
      */
     static class WidgetSenderHolder extends RecyclerView.ViewHolder {
         TextView tvTitle, tvTime, tvBody;
-        // Nếu bạn muốn hiện ảnh bài post nhỏ trong widget, khai báo thêm ImageView ở đây
-        // ImageView imgPostThumb;
+        ImageView imgPostPreview; // Thêm
 
         WidgetSenderHolder(View v) {
             super(v);
             tvTitle = v.findViewById(R.id.tv_post_title);
             tvTime = v.findViewById(R.id.tv_post_time);
             tvBody = v.findViewById(R.id.tv_message_body);
-            // imgPostThumb = v.findViewById(R.id.img_post_thumb); // Ví dụ
+            imgPostPreview = v.findViewById(R.id.img_post_preview); // Thêm ID trong layout
         }
         void bind(Message m) {
             tvTitle.setText(m.getReplyPostTitle() != null ? m.getReplyPostTitle() : "Bài viết");
             tvBody.setText(m.getContent());
             tvTime.setText(formatTime(m.getCreatedAt()));
 
-            // Nếu layout có ImageView để hiện ảnh post:
-            // if (m.getReplyPostImage() != null) {
-            //    Glide.with(itemView.getContext()).load(m.getReplyPostImage()).into(imgPostThumb);
-            // }
+            // Load ảnh post preview
+            if (m.getReplyPostImage() != null && !m.getReplyPostImage().isEmpty()) {
+                Glide.with(itemView.getContext())
+                        .load(m.getReplyPostImage())
+                        .placeholder(R.drawable.ic_launcher_foreground)
+                        .centerCrop()
+                        .into(imgPostPreview);
+                imgPostPreview.setVisibility(View.VISIBLE);
+            } else {
+                imgPostPreview.setVisibility(View.GONE);
+            }
         }
     }
 
@@ -198,17 +204,31 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
      */
     static class WidgetReceiverHolder extends RecyclerView.ViewHolder {
         TextView tvTitle, tvTime, tvBody;
+        ImageView imgPostPreview; // Thêm
 
         WidgetReceiverHolder(View v) {
             super(v);
             tvTitle = v.findViewById(R.id.tv_post_title);
             tvTime = v.findViewById(R.id.tv_post_time);
             tvBody = v.findViewById(R.id.tv_message_body);
+            imgPostPreview = v.findViewById(R.id.img_post_preview); // Thêm ID trong layout
         }
         void bind(Message m) {
             tvTitle.setText(m.getReplyPostTitle() != null ? m.getReplyPostTitle() : "Bài viết");
             tvBody.setText(m.getContent());
             tvTime.setText(formatTime(m.getCreatedAt()));
+
+            // Load ảnh post preview
+            if (m.getReplyPostImage() != null && !m.getReplyPostImage().isEmpty()) {
+                Glide.with(itemView.getContext())
+                        .load(m.getReplyPostImage())
+                        .placeholder(R.drawable.ic_launcher_foreground)
+                        .centerCrop()
+                        .into(imgPostPreview);
+                imgPostPreview.setVisibility(View.VISIBLE);
+            } else {
+                imgPostPreview.setVisibility(View.GONE);
+            }
         }
     }
 }

@@ -14,6 +14,8 @@ rendering = "1.17.1"
 firebaseStorage = "22.0.1"
 datastoreCore = "1.2.0"
 contentpager = "1.0.0"
+emoji2Emojipicker = "1.6.0"
+emoji2Bundled = "1.6.0"
 
 [libraries]
 junit = { group = "junit", name = "junit", version.ref = "junit" }
@@ -30,6 +32,8 @@ rendering = { group = "com.google.ar.sceneform", name = "rendering", version.ref
 firebase-storage = { group = "com.google.firebase", name = "firebase-storage", version.ref = "firebaseStorage" }
 datastore-core = { group = "androidx.datastore", name = "datastore-core", version.ref = "datastoreCore" }
 contentpager = { group = "androidx.contentpager", name = "contentpager", version.ref = "contentpager" }
+emoji2-emojipicker = { group = "androidx.emoji2", name = "emoji2-emojipicker", version.ref = "emoji2Emojipicker" }
+emoji2-bundled = { group = "androidx.emoji2", name = "emoji2-bundled", version.ref = "emoji2Bundled" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

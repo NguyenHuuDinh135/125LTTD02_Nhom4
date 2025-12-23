@@ -14,14 +14,15 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.example.nhom4.R;
 import com.example.nhom4.data.bean.Conversation;
-import com.example.nhom4.ui.page.chat.ChatActivity; // [QUAN TRỌNG] Import đúng Activity mới
+import com.example.nhom4.ui.page.chat.ChatActivity;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Adapter cho danh sách cuộc trò chuyện tại màn hình Chat List.
- * Gắn dữ liệu từ {@link Conversation} vào layout chat_item và điều hướng sang ChatActivity.
+ * Hiển thị tên bạn bè, tin nhắn gần nhất và avatar.
+ * Click vào item → mở ChatActivity với thông tin đúng.
  */
 public class ChatListAdapter extends RecyclerView.Adapter<ChatListAdapter.ChatViewHolder> {
 
@@ -33,95 +34,79 @@ public class ChatListAdapter extends RecyclerView.Adapter<ChatListAdapter.ChatVi
     }
 
     /**
-     * Cập nhật danh sách hội thoại và refresh UI.
+     * Cập nhật danh sách hội thoại (gọi từ ViewModel khi có dữ liệu mới).
      */
     public void setList(List<Conversation> list) {
-        this.list = list;
+        this.list = list != null ? list : new ArrayList<>();
         notifyDataSetChanged();
     }
 
-    /**
-     * Tạo ViewHolder cho mỗi item conversation.
-     * @param parent
-     * @param viewType
-     * @return
-     */
     @NonNull
     @Override
     public ChatViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        // Đảm bảo tên layout item đúng là chat_item.xml
         View view = LayoutInflater.from(context).inflate(R.layout.chat_item, parent, false);
         return new ChatViewHolder(view);
     }
 
-    /**
-     * Bind dữ liệu mô hình vào ViewHolder.
-     * @param holder
-     * @param position
-     */
     @Override
     public void onBindViewHolder(@NonNull ChatViewHolder holder, int position) {
         Conversation conversation = list.get(position);
 
-        // 1. Hiển thị thông tin
-        holder.tvName.setText(conversation.getFriendName());
+        // Hiển thị tên bạn bè
+        String friendName = conversation.getFriendName();
+        holder.tvFriendName.setText(friendName != null && !friendName.isEmpty() ? friendName : "Người dùng");
 
-        if (conversation.getLastMessage() != null) {
-            holder.tvLastMessage.setText(conversation.getLastMessage());
+        // Hiển thị tin nhắn gần nhất
+        String lastMessage = conversation.getLastMessage();
+        if (lastMessage != null && !lastMessage.isEmpty()) {
+            holder.tvLastMessage.setText(lastMessage);
         } else {
-            holder.tvLastMessage.setText("Bắt đầu trò chuyện");
+            holder.tvLastMessage.setText("Bắt đầu trò chuyện ngay");
         }
 
-        // Tải ảnh đại diện bạn bè sử dụng Glide
-        if (conversation.getFriendAvatar() != null) {
+        // Load avatar bằng Glide (bo tròn)
+        String avatarUrl = conversation.getFriendAvatar();
+        if (avatarUrl != null && !avatarUrl.isEmpty()) {
             Glide.with(context)
-                    .load(conversation.getFriendAvatar())
+                    .load(avatarUrl)
+                    .placeholder(R.drawable.avatar_placeholder)
+                    .error(R.drawable.avatar_placeholder)
                     .circleCrop()
-                    .placeholder(R.drawable.avatar_placeholder) // Ảnh mặc định nếu lỗi
                     .into(holder.imgAvatar);
+        } else {
+            holder.imgAvatar.setImageResource(R.drawable.avatar_placeholder);
         }
 
-        // 2. [QUAN TRỌNG] Sự kiện click mở màn hình Chat
+        // Click vào item → mở ChatActivity
         holder.itemView.setOnClickListener(v -> {
-            // Mở ChatActivity mới
             Intent intent = new Intent(context, ChatActivity.class);
-
-            // Truyền đúng KEY mà ChatActivity đang chờ nhận
             intent.putExtra("CONVERSATION_ID", conversation.getConversationId());
             intent.putExtra("PARTNER_ID", conversation.getFriendId());
             intent.putExtra("PARTNER_NAME", conversation.getFriendName());
             intent.putExtra("PARTNER_AVATAR", conversation.getFriendAvatar());
 
-            context.startActivity(intent); // Điều hướng sang màn chat chi tiết
+            context.startActivity(intent);
         });
     }
 
-    /**
-     * Trả về số lượng item trong danh sách.
-     */
     @Override
     public int getItemCount() {
         return list.size();
     }
 
     /**
-     * Giữ tham chiếu view trong một item conversation.
+     * ViewHolder ánh xạ các view trong chat_item.xml mới.
      */
     public static class ChatViewHolder extends RecyclerView.ViewHolder {
         ImageView imgAvatar;
-        TextView tvName;
+        TextView tvFriendName;
         TextView tvLastMessage;
 
-        /**
-         * Ánh xạ các view con trong item conversation.
-         * @param itemView
-         */
         public ChatViewHolder(@NonNull View itemView) {
             super(itemView);
-            // Ánh xạ ID theo file chat_item.xml của bạn
-            imgAvatar = itemView.findViewById(R.id.my_image_view);
-            tvName = itemView.findViewById(R.id.textView3);
-            tvLastMessage = itemView.findViewById(R.id.textView4);
+            imgAvatar = itemView.findViewById(R.id.img_avatar);
+            tvFriendName = itemView.findViewById(R.id.tv_friend_name);
+            tvLastMessage = itemView.findViewById(R.id.tv_last_message);
         }
     }
 }
