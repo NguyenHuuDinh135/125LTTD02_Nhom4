@@ -1,27 +1,40 @@
 package com.example.nhom4.data.bean;
 
+import com.google.firebase.Timestamp;
+
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * Bean đại diện cho một lời mời kết bạn (relationship document trong Firestore).
+ * Sử dụng chung cho cả pending, accepted, declined.
+ */
 public class FriendRequest {
-    private String requestId;     // ID document trên Firestore
-    private String requesterId;   // người gửi yêu cầu
-    private String recipientId;   // người nhận
-    private String status;        // pending / accepted / declined
-    private List<String> members; // [requesterId, recipientId]
+    private String requestId;           // ID của document trong collection "relationships"
+    private String senderId;            // Người gửi lời mời (requester)
+    private String receiverId;          // Người nhận lời mời (recipient)
+    private String status;              // "pending", "accepted", "declined"
+    private List<String> members;       // Mảng [senderId, receiverId] để query dễ dàng
+    private Timestamp createdAt;        // Thời gian tạo lời mời
+    private Timestamp updatedAt;        // Thời gian cập nhật (khi accept/decline)
 
-    // Constructor mặc định (bắt buộc cho Firestore)
+    // Thông tin bổ sung (không lưu trong Firestore, load thêm khi cần)
+    private User sender;                // User object của người gửi (load từ users collection)
+
+    // Constructor mặc định (bắt buộc cho Firestore toObject())
     public FriendRequest() {}
 
-    // Constructor tiện lợi khi tạo mới
-    public FriendRequest(String requesterId, String recipientId) {
-        this.requesterId = requesterId;
-        this.recipientId = recipientId;
+    // Constructor tiện lợi khi tạo mới lời mời
+    public FriendRequest(String senderId, String receiverId) {
+        this.senderId = senderId;
+        this.receiverId = receiverId;
         this.status = "pending";
-        this.members = Arrays.asList(requesterId, recipientId);
+        this.members = Arrays.asList(senderId, receiverId);
+        this.createdAt = Timestamp.now();
     }
 
-    // --- Getter / Setter ---
+    // --- Getter & Setter ---
+
     public String getRequestId() {
         return requestId;
     }
@@ -30,20 +43,20 @@ public class FriendRequest {
         this.requestId = requestId;
     }
 
-    public String getRequesterId() {
-        return requesterId;
+    public String getSenderId() {
+        return senderId;
     }
 
-    public void setRequesterId(String requesterId) {
-        this.requesterId = requesterId;
+    public void setSenderId(String senderId) {
+        this.senderId = senderId;
     }
 
-    public String getRecipientId() {
-        return recipientId;
+    public String getReceiverId() {
+        return receiverId;
     }
 
-    public void setRecipientId(String recipientId) {
-        this.recipientId = recipientId;
+    public void setReceiverId(String receiverId) {
+        this.receiverId = receiverId;
     }
 
     public String getStatus() {
@@ -60,5 +73,29 @@ public class FriendRequest {
 
     public void setMembers(List<String> members) {
         this.members = members;
+    }
+
+    public Timestamp getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Timestamp createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public Timestamp getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(Timestamp updatedAt) {
+        this.updatedAt = updatedAt;
+    }
+
+    public User getSender() {
+        return sender;
+    }
+
+    public void setSender(User sender) {
+        this.sender = sender;
     }
 }

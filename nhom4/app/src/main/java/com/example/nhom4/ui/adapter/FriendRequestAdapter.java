@@ -79,7 +79,7 @@ public class FriendRequestAdapter extends RecyclerView.Adapter<FriendRequestAdap
         FriendRequest request = getCurrentList().get(position); // Lấy từ danh sách đang hiển thị
 
         // Load thông tin User
-        db.collection("users").document(request.getRequesterId())
+        db.collection("users").document(request.getRequestId())
                 .get()
                 .addOnSuccessListener(doc -> {
                     if (doc.exists()) {

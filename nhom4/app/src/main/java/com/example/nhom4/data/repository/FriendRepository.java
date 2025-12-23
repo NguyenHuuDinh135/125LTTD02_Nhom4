@@ -3,8 +3,11 @@ package com.example.nhom4.data.repository;
 import com.example.nhom4.data.Resource;
 import com.example.nhom4.data.bean.FriendRequest;
 import com.example.nhom4.data.bean.User;
+import com.google.android.gms.tasks.Task;
+import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
@@ -27,126 +30,208 @@ import androidx.lifecycle.MutableLiveData;
 public class FriendRepository {
     private final FirebaseFirestore db = FirebaseFirestore.getInstance();
 
-    // 1. Lấy danh sách User gợi ý
-    // Logic: Lấy 50 user đầu tiên tìm thấy trong database (trừ bản thân).
-    // 1. Lấy danh sách User gợi ý (Đã lọc bạn bè)
+    private ListenerRegistration relationshipListener;
+    private ListenerRegistration userListener;
+    private ListenerRegistration pendingListener;
+
+    // 1. Lấy danh sách User gợi ý (Đã lọc bạn bè) - REALTIME
     public void getUsersToConnect(String currentUserId, MutableLiveData<Resource<List<User>>> result) {
         result.postValue(Resource.loading(null));
 
-        // BƯỚC 1: Lấy danh sách tất cả các mối quan hệ của tôi (để biết ai cần loại trừ)
-        db.collection("relationships")
-                .whereArrayContains("members", currentUserId)
-                .get()
-                .addOnSuccessListener(relationshipSnapshots -> {
-                    // Tạo danh sách các ID cần loại trừ (bao gồm chính mình)
-                    List<String> excludeIds = new ArrayList<>();
-                    excludeIds.add(currentUserId);
+        // Hủy listener cũ nếu có
+        if (relationshipListener != null) {
+            relationshipListener.remove();
+        }
+        if (userListener != null) {
+            userListener.remove();
+        }
 
-                    for (DocumentSnapshot doc : relationshipSnapshots) {
+        // BƯỚC 1: LẮNG NGHE REALTIME DANH SÁCH MỐI QUAN HỆ (để biết bạn bè/pending để loại trừ)
+        relationshipListener = db.collection("relationships")
+                .whereArrayContains("members", currentUserId)
+                .addSnapshotListener((relationshipSnapshots, error) -> {
+                    if (error != null) {
+                        result.postValue(Resource.error(error.getMessage(), null));
+                        return;
+                    }
+
+                    // Tạo danh sách ID cần loại trừ: bạn bè (accepted) + pending + chính mình
+                    List<String> excludeIds = new ArrayList<>();
+                    excludeIds.add(currentUserId); // Loại chính mình
+
+                    for (QueryDocumentSnapshot doc : relationshipSnapshots) {
                         List<String> members = (List<String>) doc.get("members");
                         if (members != null) {
                             for (String memberId : members) {
-                                // Nếu ID trong mối quan hệ không phải là tôi, thì đó là bạn (hoặc người đang chờ duyệt)
                                 if (!memberId.equals(currentUserId)) {
-                                    excludeIds.add(memberId);
+                                    excludeIds.add(memberId); // Loại tất cả bạn bè và pending
                                 }
                             }
                         }
                     }
 
-                    // BƯỚC 2: Lấy danh sách Users và lọc
-                    // Lưu ý: Tăng limit lên một chút vì sau khi lọc số lượng có thể giảm đi
-                    db.collection("users").limit(100).get()
-                            .addOnSuccessListener(userSnapshots -> {
+                    // BƯỚC 2: LẮNG NGHE REALTIME DANH SÁCH USER (loại trừ excludeIds)
+                    if (userListener != null) {
+                        userListener.remove();
+                    }
+                    userListener = db.collection("users")
+                            .addSnapshotListener((userSnapshots, userError) -> {
+                                if (userError != null) {
+                                    result.postValue(Resource.error(userError.getMessage(), null));
+                                    return;
+                                }
+
                                 List<User> users = new ArrayList<>();
                                 for (QueryDocumentSnapshot doc : userSnapshots) {
                                     User user = doc.toObject(User.class);
-                                    user.setUid(doc.getId());
-
-                                    // QUAN TRỌNG: Chỉ thêm user nếu ID của họ KHÔNG nằm trong danh sách loại trừ
-                                    if (user.getUid() != null && !excludeIds.contains(user.getUid())) {
+                                    if (user != null && user.getUid() != null && !excludeIds.contains(user.getUid())) {
                                         users.add(user);
                                     }
                                 }
-                                result.postValue(Resource.success(users));
-                            })
-                            .addOnFailureListener(e -> result.postValue(Resource.error("Lỗi lấy user: " + e.getMessage(), null)));
 
-                })
-                .addOnFailureListener(e -> result.postValue(Resource.error("Lỗi lấy danh sách bạn: " + e.getMessage(), null)));
+                                // Giới hạn 50 user đầu tiên (nếu cần)
+                                if (users.size() > 50) {
+                                    users = users.subList(0, 50);
+                                }
+
+                                result.postValue(Resource.success(users));
+                            });
+                });
     }
 
     // 2. Gửi lời mời kết bạn
-    // Hành động: Tạo một document mới trong collection "relationships" với trạng thái 'pending'.
-    public void sendFriendRequest(String currentUserId, String targetUserId, MutableLiveData<Resource<Boolean>> result) {
-        Map<String, Object> relationship = new HashMap<>();
+    public void sendFriendRequest(String senderId, String receiverId, MutableLiveData<Resource<Boolean>> result) {
+        result.postValue(Resource.loading(null));
 
-        // Mảng "members" giúp query các mối quan hệ của 1 user bất kỳ dễ dàng hơn (array-contains)
-        relationship.put("members", Arrays.asList(currentUserId, targetUserId));
-        relationship.put("requesterId", currentUserId); // Người gửi lời mời
-        relationship.put("recipientId", targetUserId);  // Người nhận lời mời
-        relationship.put("status", "pending");          // Trạng thái ban đầu: Đang chờ
+        Map<String, Object> relationship = new HashMap<>();
+        relationship.put("members", Arrays.asList(senderId, receiverId));
+        relationship.put("senderId", senderId);
+        relationship.put("receiverId", receiverId);
+        relationship.put("status", "pending");
         relationship.put("createdAt", com.google.firebase.Timestamp.now());
 
-        db.collection("relationships").add(relationship)
-                .addOnSuccessListener(doc -> result.postValue(Resource.success(true)))
+        db.collection("relationships")
+                .add(relationship)
+                .addOnSuccessListener(ref -> result.postValue(Resource.success(true)))
                 .addOnFailureListener(e -> result.postValue(Resource.error(e.getMessage(), false)));
     }
 
-    // --- PHẦN MỚI CHO FRIENDS BOTTOM SHEET ---
-
-    /**
-     * 3. Lấy danh sách lời mời kết bạn đang chờ (Pending Requests)
-     * ĐẶC BIỆT: Sử dụng addSnapshotListener thay vì get().
-     * Tác dụng: Tạo kết nối Realtime. Khi có ai đó gửi lời mời, danh sách này tự động cập nhật ngay lập tức.
-     */
+    // 3. Lấy danh sách lời mời đang chờ (REALTIME)
     public void getPendingRequests(String currentUserId, MutableLiveData<Resource<List<FriendRequest>>> result) {
         result.postValue(Resource.loading(null));
 
-        // Query: Tìm trong bảng relationships, những dòng mà TÔI là người nhận (recipientId == me)
-        // và trạng thái là đang chờ (pending).
-        db.collection("relationships")
-                .whereEqualTo("recipientId", currentUserId)
+        // Hủy listener cũ nếu có
+        if (pendingListener != null) {
+            pendingListener.remove();
+        }
+
+        pendingListener = db.collection("relationships")
+                .whereEqualTo("receiverId", currentUserId)
                 .whereEqualTo("status", "pending")
-                .addSnapshotListener((snapshots, e) -> { // Dùng Realtime Listener
+                .addSnapshotListener((snapshots, e) -> {
                     if (e != null) {
                         result.postValue(Resource.error(e.getMessage(), null));
                         return;
                     }
-                    if (snapshots != null) {
-                        List<FriendRequest> list = new ArrayList<>();
-                        for (DocumentSnapshot doc : snapshots) {
-                            FriendRequest fr = doc.toObject(FriendRequest.class);
-                            if (fr != null) {
-                                // Lưu ID của request (relationship ID) để dùng cho việc Accept/Deny sau này
-                                fr.setRequestId(doc.getId());
-                                list.add(fr);
+
+                    List<FriendRequest> requests = new ArrayList<>();
+                    List<Task<User>> userTasks = new ArrayList<>();
+
+                    for (QueryDocumentSnapshot doc : snapshots) {
+                        FriendRequest req = doc.toObject(FriendRequest.class);
+                        if (req != null) {
+                            req.setRequestId(doc.getId());
+
+                            // Load sender info
+                            if (req.getSenderId() != null) {
+                                Task<User> userTask = db.collection("users").document(req.getSenderId())
+                                        .get()
+                                        .continueWith(task -> {
+                                            if (task.isSuccessful() && task.getResult() != null) {
+                                                return task.getResult().toObject(User.class);
+                                            }
+                                            return null;
+                                        });
+                                userTasks.add(userTask);
+                            }
+                            requests.add(req);
+                        }
+                    }
+
+                    // Đợi tất cả userTasks hoàn thành
+                    Tasks.whenAllSuccess(userTasks).addOnSuccessListener(users -> {
+                        for (int i = 0; i < requests.size(); i++) {
+                            User sender = (User) users.get(i);
+                            if (sender != null) {
+                                requests.get(i).setSender(sender);
                             }
                         }
-                        result.postValue(Resource.success(list));
-                    }
+                        result.postValue(Resource.success(requests));
+                    }).addOnFailureListener(error -> result.postValue(Resource.error(error.getMessage(), null)));
                 });
     }
 
-    // 4. Phản hồi lời mời (Chấp nhận / Từ chối)
-    // Logic: Chỉ cần update trường "status" của document relationship tương ứng.
-    // newStatus sẽ là "accepted" (Chấp nhận) hoặc "declined" (Từ chối).
-    public void respondToRequest(String requestId, String newStatus, MutableLiveData<Resource<Boolean>> result) {
+    // 4. Phản hồi lời mời - phương thức chung (được gọi bởi accept/decline)
+    public void respondToRequest(String requestId, String status, MutableLiveData<Resource<Boolean>> result) {
+        result.postValue(Resource.loading(null));
+
+        Map<String, Object> update = new HashMap<>();
+        update.put("status", status);
+        update.put("updatedAt", com.google.firebase.Timestamp.now());
+
         db.collection("relationships").document(requestId)
-                .update("status", newStatus)
+                .update(update)
                 .addOnSuccessListener(aVoid -> result.postValue(Resource.success(true)))
                 .addOnFailureListener(e -> result.postValue(Resource.error(e.getMessage(), false)));
     }
 
+    // 5. Chấp nhận lời mời (gọi respondToRequest với status = "accepted")
+    public void acceptFriendRequest(String currentUserId, String senderId, MutableLiveData<Resource<Boolean>> result) {
+        // Tìm requestId tương ứng với senderId và currentUserId (receiver)
+        db.collection("relationships")
+                .whereEqualTo("receiverId", currentUserId)
+                .whereEqualTo("senderId", senderId)
+                .whereEqualTo("status", "pending")
+                .get()
+                .addOnSuccessListener(query -> {
+                    if (!query.isEmpty()) {
+                        DocumentSnapshot doc = query.getDocuments().get(0);
+                        String requestId = doc.getId();
+                        respondToRequest(requestId, "accepted", result);
+                    } else {
+                        result.postValue(Resource.error("Không tìm thấy lời mời kết bạn", false));
+                    }
+                })
+                .addOnFailureListener(e -> result.postValue(Resource.error(e.getMessage(), false)));
+    }
+
+    // 6. Từ chối lời mời (gọi respondToRequest với status = "declined")
+    public void declineFriendRequest(String currentUserId, String senderId, MutableLiveData<Resource<Boolean>> result) {
+        // Tìm requestId tương ứng
+        db.collection("relationships")
+                .whereEqualTo("receiverId", currentUserId)
+                .whereEqualTo("senderId", senderId)
+                .whereEqualTo("status", "pending")
+                .get()
+                .addOnSuccessListener(query -> {
+                    if (!query.isEmpty()) {
+                        DocumentSnapshot doc = query.getDocuments().get(0);
+                        String requestId = doc.getId();
+                        respondToRequest(requestId, "declined", result);
+                    } else {
+                        result.postValue(Resource.error("Không tìm thấy lời mời kết bạn", false));
+                    }
+                })
+                .addOnFailureListener(e -> result.postValue(Resource.error(e.getMessage(), false)));
+    }
+
+    // 7. Xóa bạn
     public void unfriendUser(String currentUserId, String targetUserId, MutableLiveData<Resource<Boolean>> result) {
-        // Tìm document trong collection "relationships" có chứa cả 2 user trong mảng "members"
         db.collection("relationships")
                 .whereArrayContains("members", currentUserId)
                 .get()
                 .addOnSuccessListener(snapshots -> {
                     String relationshipId = null;
-
-                    // Lọc thủ công để tìm document chứa cả targetUserId
                     for (DocumentSnapshot doc : snapshots) {
                         List<String> members = (List<String>) doc.get("members");
                         if (members != null && members.contains(targetUserId)) {
@@ -156,13 +241,11 @@ public class FriendRepository {
                     }
 
                     if (relationshipId != null) {
-                        // Tìm thấy -> Xóa document
                         db.collection("relationships").document(relationshipId)
                                 .delete()
                                 .addOnSuccessListener(aVoid -> result.postValue(Resource.success(true)))
                                 .addOnFailureListener(e -> result.postValue(Resource.error("Lỗi xóa bạn: " + e.getMessage(), false)));
                     } else {
-                        // Không tìm thấy quan hệ (có thể đã xóa trước đó) -> Coi như thành công
                         result.postValue(Resource.success(true));
                     }
                 })

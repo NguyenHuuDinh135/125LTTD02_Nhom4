@@ -110,13 +110,13 @@ public class FriendsBottomSheet extends BottomSheetDialogFragment {
     }
 
     private void setupAdapters() {
-        suggestionAdapter = new UserSuggestionAdapter(new ArrayList<>(), user -> viewModel.sendFriendRequest(user));
+        suggestionAdapter = new UserSuggestionAdapter(new ArrayList<>(), user -> viewModel.sendFriendRequest(user.getUid()));
         rcvSuggestions.setLayoutManager(new LinearLayoutManager(getContext()));
         rcvSuggestions.setAdapter(suggestionAdapter);
 
         requestAdapter = new FriendRequestAdapter(new ArrayList<>(), new FriendRequestAdapter.OnRequestActionListener() {
-            @Override public void onAccept(FriendRequest request) { viewModel.acceptRequest(request); }
-            @Override public void onDecline(FriendRequest request) { viewModel.declineRequest(request); }
+            @Override public void onAccept(FriendRequest request) { viewModel.acceptFriendRequest(request.getSenderId()); }
+            @Override public void onDecline(FriendRequest request) { viewModel.declineFriendRequest(request.getSenderId()); }
         });
         rcvRequests.setLayoutManager(new LinearLayoutManager(getContext()));
         rcvRequests.setAdapter(requestAdapter);
@@ -194,11 +194,32 @@ public class FriendsBottomSheet extends BottomSheetDialogFragment {
             }
         });
 
-        viewModel.getActionStatus().observe(getViewLifecycleOwner(), resource -> {
+        // Quan sát kết quả gửi lời mời
+        viewModel.getSendResult().observe(getViewLifecycleOwner(), resource -> {
             if (resource.status == Resource.Status.SUCCESS) {
-                Toast.makeText(getContext(), resource.data, Toast.LENGTH_SHORT).show();
+                Toast.makeText(requireContext(), "Đã gửi lời mời kết bạn!", Toast.LENGTH_SHORT).show();
             } else if (resource.status == Resource.Status.ERROR) {
-                Toast.makeText(getContext(), "Lỗi: " + resource.message, Toast.LENGTH_SHORT).show();
+                Toast.makeText(requireContext(), resource.message, Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        // Quan sát kết quả chấp nhận lời mời
+        viewModel.getAcceptResult().observe(getViewLifecycleOwner(), resource -> {
+            if (resource.status == Resource.Status.SUCCESS) {
+                Toast.makeText(requireContext(), "Đã chấp nhận lời mời!", Toast.LENGTH_SHORT).show();
+                // THÊM: Gửi broadcast để refresh chat list
+                LocalBroadcastManager.getInstance(requireContext()).sendBroadcast(new Intent("REFRESH_CHAT_LIST"));
+            } else if (resource.status == Resource.Status.ERROR) {
+                Toast.makeText(requireContext(), resource.message, Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        // Quan sát kết quả từ chối lời mời
+        viewModel.getDeclineResult().observe(getViewLifecycleOwner(), resource -> {
+            if (resource.status == Resource.Status.SUCCESS) {
+                Toast.makeText(requireContext(), "Đã từ chối lời mời.", Toast.LENGTH_SHORT).show();
+            } else if (resource.status == Resource.Status.ERROR) {
+                Toast.makeText(requireContext(), resource.message, Toast.LENGTH_SHORT).show();
             }
         });
     }

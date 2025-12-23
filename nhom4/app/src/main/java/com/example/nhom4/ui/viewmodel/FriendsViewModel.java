@@ -23,8 +23,10 @@ public class FriendsViewModel extends ViewModel {
     private final MutableLiveData<Resource<List<User>>> suggestions = new MutableLiveData<>();
     private final MutableLiveData<Resource<List<FriendRequest>>> friendRequests = new MutableLiveData<>();
 
-    // Dùng chung status cho các hành động (Gửi/Chấp nhận/Từ chối)
-    private final MutableLiveData<Resource<String>> actionStatus = new MutableLiveData<>();
+    // Separate LiveData cho từng hành động
+    private final MutableLiveData<Resource<Boolean>> sendResult = new MutableLiveData<>();
+    private final MutableLiveData<Resource<Boolean>> acceptResult = new MutableLiveData<>();
+    private final MutableLiveData<Resource<Boolean>> declineResult = new MutableLiveData<>();
 
     public FriendsViewModel() {
         friendRepository = new FriendRepository();
@@ -34,7 +36,9 @@ public class FriendsViewModel extends ViewModel {
 
     public LiveData<Resource<List<User>>> getSuggestions() { return suggestions; }
     public LiveData<Resource<List<FriendRequest>>> getFriendRequests() { return friendRequests; }
-    public LiveData<Resource<String>> getActionStatus() { return actionStatus; }
+    public LiveData<Resource<Boolean>> getSendResult() { return sendResult; }
+    public LiveData<Resource<Boolean>> getAcceptResult() { return acceptResult; }
+    public LiveData<Resource<Boolean>> getDeclineResult() { return declineResult; }
 
     /**
      * Lấy cả danh sách gợi ý và lời mời đang chờ ngay khi khởi tạo.
@@ -42,54 +46,36 @@ public class FriendsViewModel extends ViewModel {
     private void loadData() {
         String uid = getCurrentUserId();
         if (uid != null) {
-            friendRepository.getUsersToConnect(uid, suggestions); // Lắng nghe realtime danh sách đề xuất
+            friendRepository.getUsersToConnect(uid, suggestions);
             friendRepository.getPendingRequests(uid, friendRequests);
         }
     }
 
-    /**
-     * Gửi lời mời kết bạn rồi chuyển thông báo trạng thái qua actionStatus.
-     */
-    public void sendFriendRequest(User user) {
+    public void sendFriendRequest(String userId) {
         String uid = getCurrentUserId();
-        if (uid == null) return;
-
-        MutableLiveData<Resource<Boolean>> tempResult = new MutableLiveData<>();
-        friendRepository.sendFriendRequest(uid, user.getUid(), tempResult);
-
-        // Quan sát kết quả tạm và update actionStatus
-        tempResult.observeForever(res -> {
-            if (res.status == Resource.Status.SUCCESS) {
-                actionStatus.setValue(Resource.success("Đã gửi lời mời tới " + user.getUsername()));
-            } else if (res.status == Resource.Status.ERROR) {
-                actionStatus.setValue(Resource.error(res.message, null));
-            }
-        });
+        if (uid != null) {
+            friendRepository.sendFriendRequest(uid, userId, sendResult);
+        } else {
+            sendResult.postValue(Resource.error("Không thể gửi lời mời", false));
+        }
     }
 
-    public void acceptRequest(FriendRequest request) {
-        handleResponse(request, "accepted", "Đã chấp nhận kết bạn");
+    public void acceptFriendRequest(String senderId) {
+        String uid = getCurrentUserId();
+        if (uid != null) {
+            friendRepository.acceptFriendRequest(uid, senderId, acceptResult);
+        } else {
+            acceptResult.postValue(Resource.error("Không thể chấp nhận lời mời", false));
+        }
     }
 
-    public void declineRequest(FriendRequest request) {
-        handleResponse(request, "rejected", "Đã từ chối lời mời");
-    }
-
-    /**
-     * Dùng chung cho accept/decline để cập nhật actionStatus.
-     */
-    private void handleResponse(FriendRequest request, String status, String successMsg) {
-        MutableLiveData<Resource<Boolean>> tempResult = new MutableLiveData<>();
-        friendRepository.respondToRequest(request.getRequestId(), status, tempResult);
-
-        tempResult.observeForever(res -> {
-            if (res.status == Resource.Status.SUCCESS) {
-                actionStatus.setValue(Resource.success(successMsg));
-                // Danh sách request sẽ tự update nhờ SnapshotListener trong Repository
-            } else if (res.status == Resource.Status.ERROR) {
-                actionStatus.setValue(Resource.error(res.message, null));
-            }
-        });
+    public void declineFriendRequest(String senderId) {
+        String uid = getCurrentUserId();
+        if (uid != null) {
+            friendRepository.declineFriendRequest(uid, senderId, declineResult);
+        } else {
+            declineResult.postValue(Resource.error("Không thể từ chối lời mời", false));
+        }
     }
 
     private String getCurrentUserId() {
