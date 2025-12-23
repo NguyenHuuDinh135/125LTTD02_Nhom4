@@ -12,11 +12,6 @@ import com.example.nhom4.data.repository.FriendRepository;
 
 import java.util.List;
 
-/**
- * ViewModel trung gian giữa ChatActivity và ChatRepository:
- * - Lắng nghe tin nhắn realtime
- * - Gửi tin nhắn text và reply post
- */
 public class ChatViewModel extends ViewModel {
 
     private final ChatRepository chatRepository;
@@ -28,6 +23,8 @@ public class ChatViewModel extends ViewModel {
     private final MutableLiveData<Resource<Boolean>> deleteConversationStatus = new MutableLiveData<>();
     private final MutableLiveData<Resource<Boolean>> unFriendStatus = new MutableLiveData<>();
 
+    // [MỚI] LiveData để hứng kết quả tìm/tạo conversation ID
+    private final MutableLiveData<Resource<String>> conversationIdResult = new MutableLiveData<>();
 
     private String currentUserId;
 
@@ -42,29 +39,40 @@ public class ChatViewModel extends ViewModel {
 
     public LiveData<Resource<List<Message>>> getMessages() { return messages; }
     public LiveData<Resource<Boolean>> getSendStatus() { return sendStatus; }
-    public LiveData<Resource<Boolean>> getDeleteResult() { return  deleteConversationStatus; }
+    public LiveData<Resource<Boolean>> getDeleteResult() { return deleteConversationStatus; }
+    // [MỚI] Getter cho conversationId
+    public LiveData<Resource<String>> getConversationIdResult() { return conversationIdResult; }
+
     public String getCurrentUserId() { return currentUserId; }
 
-    // Bắt đầu lắng nghe tin nhắn khi có ConversationID
-    public void startListening(String conversationId) {
-        if (conversationId != null && !conversationId.isEmpty()) {
-            chatRepository.getMessages(conversationId, messages); // Snapshot listener emit Resource
+    // [MỚI] Hàm tìm hoặc tạo cuộc hội thoại (Gọi khi vào màn hình Chat)
+    public void findOrCreateConversation(String partnerId) {
+        if (currentUserId != null && partnerId != null) {
+            chatRepository.findOrCreateConversation(currentUserId, partnerId, conversationIdResult);
         }
     }
 
-    // Gửi tin nhắn thường (Text)
-    public void sendMessage(String conversationId, String content) {
-        if (currentUserId == null || content.trim().isEmpty()) return;
-
-        Message msg = new Message(currentUserId, content.trim(), "text");
-        chatRepository.sendMessage(currentUserId, conversationId, msg, sendStatus); // Đẩy trạng thái LOADING/SUCCESS/ERROR
+    // Bắt đầu lắng nghe tin nhắn khi đã có ConversationID
+    public void startListening(String conversationId) {
+        if (conversationId != null && !conversationId.isEmpty()) {
+            chatRepository.getMessages(conversationId, messages);
+        }
     }
 
-    // [MỚI] Gửi tin nhắn Reply Post (Widget)
+    // Gửi tin nhắn thường
+    public void sendMessage(String conversationId, String content) {
+        if (currentUserId == null || content.trim().isEmpty()) return;
+        if (conversationId == null) return; // Chặn nếu chưa có ID
+
+        Message msg = new Message(currentUserId, content.trim(), "text");
+        chatRepository.sendMessage(currentUserId, conversationId, msg, sendStatus);
+    }
+
+    // Gửi tin nhắn Reply Post
     public void sendReplyPost(String conversationId, String content, String postId, String postTitle, String postImage) {
         if (currentUserId == null) return;
+        if (conversationId == null) return;
 
-        // Gọi Constructor đầy đủ cho Post Reply trong Message.java
         Message msg = new Message(
                 currentUserId,
                 content.trim(),
@@ -73,13 +81,13 @@ public class ChatViewModel extends ViewModel {
                 postImage,
                 postTitle
         );
-
         chatRepository.sendMessage(currentUserId, conversationId, msg, sendStatus);
     }
 
-    public  void deleteConversation(String conversationId) {
+    public void deleteConversation(String conversationId) {
         chatRepository.deleteConversation(conversationId, deleteConversationStatus);
     }
+
     public void unFriend(String friendId) {
         friendRepository.unfriendUser(getCurrentUserId(), friendId, unFriendStatus);
     }

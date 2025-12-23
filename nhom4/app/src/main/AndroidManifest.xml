@@ -79,7 +79,7 @@
         <activity android:name="com.example.nhom4.ui.page.chat.ChatActivity" android:windowSoftInputMode="adjustResize" android:exported="false" />
         <activity android:name="com.example.nhom4.ui.page.calendar.StoryAllActivity" android:windowSoftInputMode="adjustResize" android:exported="false" />
         <activity android:name="com.example.nhom4.ui.page.main.FocusActivity" android:windowSoftInputMode="adjustResize" android:exported="false" />
-
+        <activity android:name=".ui.page.activity.DetailActivity" android:windowSoftInputMode="adjustResize" android:exported="false"/>
         <!-- Widget -->
         <receiver android:name="com.example.nhom4.ui.page.widget.ActivityWidgetProvider" android:exported="false">
             <intent-filter>

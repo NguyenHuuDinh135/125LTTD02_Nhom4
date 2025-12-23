@@ -7,6 +7,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.emoji2.emojipicker.EmojiPickerView;
@@ -25,9 +26,6 @@ import com.google.android.material.imageview.ShapeableImageView;
 import com.google.android.material.textview.MaterialTextView;
 import com.google.firebase.firestore.FirebaseFirestore;
 
-/**
- * Màn hình chat 1-1: hiển thị tin nhắn, gửi tin mới và load thông tin đối tác.
- */
 public class ChatActivity extends AppCompatActivity {
 
     private ChatViewModel viewModel;
@@ -54,19 +52,12 @@ public class ChatActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chatbox);
 
-        // Lấy dữ liệu Intent
+        // 1. Nhận dữ liệu từ Intent
         conversationId = getIntent().getStringExtra("CONVERSATION_ID");
         partnerId = getIntent().getStringExtra("PARTNER_ID");
         partnerName = getIntent().getStringExtra("PARTNER_NAME");
         partnerAvatar = getIntent().getStringExtra("PARTNER_AVATAR");
 
-        if (conversationId == null) {
-            Toast.makeText(this, "Lỗi cuộc trò chuyện", Toast.LENGTH_SHORT).show();
-            finish();
-            return;
-        }
-
-        // Init ViewModel
         viewModel = new ViewModelProvider(this).get(ChatViewModel.class);
 
         initViews();
@@ -74,17 +65,33 @@ public class ChatActivity extends AppCompatActivity {
         setupMoreButton();
         setupEmojiLogic();
         loadPartnerInfo();
-
-        // Bắt đầu lắng nghe tin nhắn realtime
-        viewModel.startListening(conversationId);
         observeViewModel();
+
+        // 2. Logic Xử lý ID hội thoại (FIX LỖI KHÔNG VÀO ĐƯỢC CHAT)
+        if (conversationId != null && !conversationId.isEmpty()) {
+            // Trường hợp 1: Đã có ID (chat cũ) -> Lắng nghe tin nhắn ngay
+            viewModel.startListening(conversationId);
+        } else if (partnerId != null) {
+            // Trường hợp 2: Chưa có ID (người mới) -> Gọi ViewModel tìm hoặc tạo ID
+            // Tạm thời disable nút gửi để tránh lỗi
+            btnSend.setEnabled(false);
+            btnSend.setAlpha(0.5f);
+            viewModel.findOrCreateConversation(partnerId);
+        } else {
+            Toast.makeText(this, "Lỗi: Không xác định được người dùng", Toast.LENGTH_SHORT).show();
+            finish();
+        }
 
         // Sự kiện gửi tin nhắn
         btnSend.setOnClickListener(v -> {
             String content = etMessage.getText().toString().trim();
             if (!content.isEmpty()) {
-                viewModel.sendMessage(conversationId, content);
-                etMessage.setText(""); // Clear ngay để UX mượt
+                if (conversationId != null) {
+                    viewModel.sendMessage(conversationId, content);
+                    etMessage.setText("");
+                } else {
+                    Toast.makeText(this, "Đang kết nối...", Toast.LENGTH_SHORT).show();
+                }
             }
         });
     }
@@ -119,10 +126,82 @@ public class ChatActivity extends AppCompatActivity {
         recyclerView.setAdapter(adapter);
     }
 
+    private void observeViewModel() {
+        // 3. Lắng nghe kết quả tìm/tạo ID hội thoại (MỚI)
+        viewModel.getConversationIdResult().observe(this, resource -> {
+            if (resource.status == Resource.Status.SUCCESS && resource.data != null) {
+                conversationId = resource.data; // Cập nhật ID
+
+                // Có ID rồi -> Bắt đầu load tin nhắn và mở khóa nút gửi
+                viewModel.startListening(conversationId);
+                btnSend.setEnabled(true);
+                btnSend.setAlpha(1f);
+            } else if (resource.status == Resource.Status.ERROR) {
+                Toast.makeText(this, "Lỗi kết nối: " + resource.message, Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        // Lắng nghe tin nhắn về
+        viewModel.getMessages().observe(this, resource -> {
+            if (resource.status == Resource.Status.SUCCESS && resource.data != null) {
+                adapter.setMessages(resource.data);
+                if (!resource.data.isEmpty()) {
+                    recyclerView.smoothScrollToPosition(resource.data.size() - 1);
+                }
+            } else if (resource.status == Resource.Status.ERROR) {
+                Toast.makeText(this, resource.message, Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        viewModel.getSendStatus().observe(this, resource -> {
+            if (resource.status == Resource.Status.ERROR) {
+                Toast.makeText(this, "Gửi thất bại", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        viewModel.getDeleteResult().observe(this, resource -> {
+            if (resource.status == Resource.Status.SUCCESS) {
+                Toast.makeText(this, "Đã xóa cuộc trò chuyện", Toast.LENGTH_SHORT).show();
+                finish();
+            }
+        });
+    }
+
+    private void loadPartnerInfo() {
+        // Ưu tiên hiển thị dữ liệu truyền từ Intent cho nhanh
+        if (partnerName != null && !partnerName.isEmpty()) {
+            tvName.setText(partnerName);
+            tvStatus.setText("Đang hoạt động");
+            if (partnerAvatar != null && !partnerAvatar.isEmpty()) {
+                Glide.with(this).load(partnerAvatar).placeholder(R.drawable.avatar_placeholder).circleCrop().into(imgAvatar);
+            }
+            return;
+        }
+
+        // Nếu Intent thiếu thông tin, load lại từ Firestore
+        if (partnerId != null) {
+            FirebaseFirestore.getInstance().collection("users").document(partnerId)
+                    .get()
+                    .addOnSuccessListener(doc -> {
+                        if (doc.exists()) {
+                            User user = doc.toObject(User.class);
+                            if (user != null) {
+                                tvName.setText(user.getUsername());
+                                String avatarUrl = user.getProfilePhotoUrl();
+                                if (avatarUrl != null && !avatarUrl.isEmpty()) {
+                                    Glide.with(ChatActivity.this).load(avatarUrl).placeholder(R.drawable.avatar_placeholder).circleCrop().into(imgAvatar);
+                                }
+                            }
+                        }
+                    })
+                    .addOnFailureListener(e -> tvName.setText("Người dùng"));
+        }
+    }
+
+    // --- Các hàm tiện ích UI (Giữ nguyên) ---
     private void setupMoreButton() {
         btnMore.setOnClickListener(v -> {
             View menuView = getLayoutInflater().inflate(R.layout.item_chat_more_menu, null);
-
             android.widget.PopupWindow popupWindow = new android.widget.PopupWindow(
                     menuView,
                     android.view.ViewGroup.LayoutParams.WRAP_CONTENT,
@@ -130,24 +209,22 @@ public class ChatActivity extends AppCompatActivity {
                     true
             );
             popupWindow.setElevation(10);
-
             TextView btnDelete = menuView.findViewById(R.id.action_delete_chat);
             btnDelete.setOnClickListener(view -> {
                 popupWindow.dismiss();
                 confirmDeleteConversation();
             });
-
             popupWindow.showAsDropDown(btnMore, 0, 0);
         });
     }
 
     private void confirmDeleteConversation() {
-        new androidx.appcompat.app.AlertDialog.Builder(this)
+        new AlertDialog.Builder(this)
                 .setTitle("Xóa cuộc trò chuyện")
-                .setMessage("Bạn có chắc chắn muốn xóa toàn bộ tin nhắn với người này không? Hành động này không thể hoàn tác.")
+                .setMessage("Bạn có chắc chắn muốn xóa không?")
                 .setPositiveButton("Xóa", (dialog, which) -> {
                     viewModel.deleteConversation(conversationId);
-                    viewModel.unFriend(partnerId);
+                    if (partnerId != null) viewModel.unFriend(partnerId);
                 })
                 .setNegativeButton("Hủy", null)
                 .show();
@@ -162,25 +239,11 @@ public class ChatActivity extends AppCompatActivity {
         });
 
         btnOption.setOnClickListener(v -> {
-            if (isEmojiShowing) {
-                showKeyboard();
-            } else {
-                hideKeyboard();
-                showEmojiPicker();
-            }
+            if (isEmojiShowing) showKeyboard(); else { hideKeyboard(); showEmojiPicker(); }
         });
 
-        etMessage.setOnClickListener(v -> {
-            if (isEmojiShowing) {
-                hideEmojiPicker();
-            }
-        });
-
-        etMessage.setOnFocusChangeListener((v, hasFocus) -> {
-            if (hasFocus && isEmojiShowing) {
-                hideEmojiPicker();
-            }
-        });
+        etMessage.setOnClickListener(v -> { if (isEmojiShowing) hideEmojiPicker(); });
+        etMessage.setOnFocusChangeListener((v, hasFocus) -> { if (hasFocus && isEmojiShowing) hideEmojiPicker(); });
     }
 
     private void showEmojiPicker() {
@@ -207,78 +270,6 @@ public class ChatActivity extends AppCompatActivity {
         if (view != null) {
             InputMethodManager imm = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
             imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
-        }
-    }
-
-    private void observeViewModel() {
-        viewModel.getMessages().observe(this, resource -> {
-            if (resource.status == Resource.Status.SUCCESS && resource.data != null) {
-                adapter.setMessages(resource.data);
-                if (!resource.data.isEmpty()) {
-                    recyclerView.smoothScrollToPosition(resource.data.size() - 1);
-                }
-            } else if (resource.status == Resource.Status.ERROR) {
-                Toast.makeText(this, resource.message, Toast.LENGTH_SHORT).show();
-            }
-        });
-
-        viewModel.getSendStatus().observe(this, resource -> {
-            if (resource.status == Resource.Status.ERROR) {
-                Toast.makeText(this, "Gửi thất bại", Toast.LENGTH_SHORT).show();
-            }
-        });
-
-        viewModel.getDeleteResult().observe(this, resource -> {
-            if (resource.status == Resource.Status.SUCCESS) {
-                Toast.makeText(this, "Đã xóa cuộc trò chuyện", Toast.LENGTH_SHORT).show();
-                finish();
-            } else if (resource.status == Resource.Status.ERROR) {
-                Toast.makeText(this, "Xóa thất bại", Toast.LENGTH_SHORT).show();
-            }
-        });
-    }
-
-    private void loadPartnerInfo() {
-        if (partnerName != null && !partnerName.isEmpty()) {
-            tvName.setText(partnerName);
-            tvStatus.setText("Đang hoạt động");
-
-            if (partnerAvatar != null && !partnerAvatar.isEmpty()) {
-                Glide.with(this)
-                        .load(partnerAvatar)
-                        .placeholder(R.drawable.avatar_placeholder)
-                        .error(R.drawable.avatar_placeholder)
-                        .centerCrop()
-                        .into(imgAvatar);
-            }
-            return;
-        }
-
-        if (partnerId != null) {
-            FirebaseFirestore.getInstance().collection("users").document(partnerId)
-                    .get()
-                    .addOnSuccessListener(doc -> {
-                        if (doc.exists()) {
-                            User user = doc.toObject(User.class);
-                            if (user != null) {
-                                tvName.setText(user.getUsername() != null ? user.getUsername() : "Người dùng");
-                                tvStatus.setText("Đang hoạt động");
-
-                                String avatarUrl = user.getProfilePhotoUrl();
-                                if (avatarUrl != null && !avatarUrl.isEmpty()) {
-                                    Glide.with(ChatActivity.this)
-                                            .load(avatarUrl)
-                                            .placeholder(R.drawable.avatar_placeholder)
-                                            .error(R.drawable.avatar_placeholder)
-                                            .centerCrop()
-                                            .into(imgAvatar);
-                                } else {
-                                    imgAvatar.setImageResource(R.drawable.avatar_placeholder);
-                                }
-                            }
-                        }
-                    })
-                    .addOnFailureListener(e -> tvName.setText("Người dùng"));
         }
     }
 }

@@ -1,6 +1,5 @@
 package com.example.nhom4.ui.page.post;
-import com.google.android.material.bottomsheet.BottomSheetDialog;
-import androidx.emoji2.emojipicker.EmojiPickerView;
+
 import android.Manifest;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
@@ -31,7 +30,6 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-
 import androidx.constraintlayout.widget.Group;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
@@ -46,6 +44,7 @@ import com.example.nhom4.R;
 import com.example.nhom4.data.bean.Post;
 import com.example.nhom4.data.repository.AuthRepository;
 import com.example.nhom4.ui.page.main.CenterFragment;
+import com.example.nhom4.ui.viewmodel.MainViewModel;
 import com.example.nhom4.ui.viewmodel.ReplyViewModel;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.button.MaterialButton;
@@ -61,8 +60,8 @@ import java.util.List;
 import java.util.Locale;
 
 public class PostFragment extends Fragment {
-
-    // Danh sách emoji reaction động (có thể thay đổi dễ dàng)
+    private MainViewModel mainViewModel;
+    // Danh sách emoji reaction động
     private final List<String> reactionEmojis = List.of(
             "❤️", "😂", "😍", "🥺", "😢", "😡", "👍", "👎",
             "🎉", "🔥", "💯", "🙌", "👏", "🤔", "😮", "😴"
@@ -114,7 +113,7 @@ public class PostFragment extends Fragment {
     private ReplyViewModel replyViewModel;
     private Post currentPostObject;
 
-    private String currentUserId; // ID người dùng hiện tại
+    private String currentUserId;
 
     public static PostFragment newInstance(Post post) {
         PostFragment fragment = new PostFragment();
@@ -181,7 +180,7 @@ public class PostFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-
+        mainViewModel = new ViewModelProvider(requireActivity()).get(MainViewModel.class);
         replyViewModel = new ViewModelProvider(this).get(ReplyViewModel.class);
         reconstructPostObject();
 
@@ -197,7 +196,7 @@ public class PostFragment extends Fragment {
         setupEvents();
         observeViewModel();
 
-        // Ẩn thanh comment nếu là post của mình
+        // Ẩn thanh reply + tham gia nếu là post của mình
         toggleCommentBarForOwnPost();
     }
 
@@ -253,14 +252,12 @@ public class PostFragment extends Fragment {
             if (p instanceof CenterFragment) ((CenterFragment) p).navigateToCamera();
         });
 
-        // Nút Download và Share
         MaterialButton btnGridView = view.findViewById(R.id.btn_grid_view);
         MaterialButton btnShare = view.findViewById(R.id.btn_share);
 
         btnGridView.setOnClickListener(v -> downloadPostImage());
         btnShare.setOnClickListener(v -> sharePostImage());
 
-        // Reaction UI
         reaction1 = view.findViewById(R.id.reaction_1);
         reaction2 = view.findViewById(R.id.reaction_2);
         reaction3 = view.findViewById(R.id.reaction_3);
@@ -268,25 +265,82 @@ public class PostFragment extends Fragment {
         chipReactions = view.findViewById(R.id.chip_reactions);
     }
 
+    // 3. Sửa lại hàm toggleCommentBarForOwnPost
     private void toggleCommentBarForOwnPost() {
         if (currentUserId != null && currentUserId.equals(userIdOfOwner)) {
-            // Là post của mình → ẩn thanh comment, hiện chip reaction
             layoutReactionBar.setVisibility(View.GONE);
+            layoutActivityInvite.setVisibility(View.GONE);
             chipReactions.setVisibility(View.VISIBLE);
-
-            // Ví dụ hiển thị số reaction (bạn thay bằng dữ liệu thật từ Firestore)
-            chipReactions.setText("3 ❤️");
+            chipReactions.setText("3 ❤️"); // Demo
             chipReactions.setOnClickListener(v -> showReactionDetails());
         } else {
-            // Post người khác → hiện thanh comment
             layoutReactionBar.setVisibility(View.VISIBLE);
             chipReactions.setVisibility(View.GONE);
+
+            if ("activity".equals(postType)) {
+                // Quan sát danh sách activity đã tham gia từ ViewModel
+                checkIfJoinedActivity();
+            } else {
+                layoutActivityInvite.setVisibility(View.GONE);
+            }
         }
+    }
+
+    // 4. Cập nhật logic checkIfJoinedActivity (QUAN TRỌNG)
+    private void checkIfJoinedActivity() {
+        // Lấy ID activity từ bài post (cần đảm bảo Post object có field activityId)
+        String targetActivityId = currentPostObject.getActivityId();
+
+        if (targetActivityId == null) {
+            layoutActivityInvite.setVisibility(View.GONE);
+            return;
+        }
+
+        // Quan sát danh sách activity đã tham gia
+        mainViewModel.getJoinedActivities().observe(getViewLifecycleOwner(), resource -> {
+            if (resource.data != null) {
+                boolean isJoined = false;
+                for (com.example.nhom4.data.bean.Activity act : resource.data) {
+                    // So sánh ID
+                    if (targetActivityId.equals(act.getId())) {
+                        isJoined = true;
+                        break;
+                    }
+                }
+
+                // Nếu đã tham gia -> Ẩn hoàn toàn layout mời
+                if (isJoined) {
+                    layoutActivityInvite.setVisibility(View.GONE);
+                } else {
+                    layoutActivityInvite.setVisibility(View.VISIBLE);
+                    setupJoinButtonAction(targetActivityId);
+                }
+            }
+        });
+    }
+
+    // 5. Hàm xử lý sự kiện bấm nút Tham gia
+    private void setupJoinButtonAction(String activityId) {
+        tvInviteText.setText(userNameOfOwner + " rủ bạn tham gia!");
+        if (userAvatarOfOwner != null && !userAvatarOfOwner.isEmpty()) {
+            Glide.with(this).load(userAvatarOfOwner).into(imgInviterAvatar);
+        }
+
+        updateJoinButtonState(false);
+
+        btnJoinActivity.setOnClickListener(v -> {
+            // Gọi ViewModel để update Firestore
+            mainViewModel.joinActivity(activityId);
+
+            // Update UI tạm thời trong lúc chờ mạng
+            Toast.makeText(getContext(), "Đang tham gia...", Toast.LENGTH_SHORT).show();
+            btnJoinActivity.setEnabled(false);
+        });
     }
 
     private void showReactionDetails() {
         Toast.makeText(requireContext(), "Chi tiết reaction:\nA: ❤️\nB: 😂\nC: 😍", Toast.LENGTH_LONG).show();
-        // TODO: Mở dialog chi tiết từ dữ liệu Firestore
+        // TODO: Mở dialog chi tiết
     }
 
     private void setupReactionBar(View view) {
@@ -300,7 +354,6 @@ public class PostFragment extends Fragment {
         reaction2.setOnClickListener(v -> onReactionSelected(reactionEmojis.get(1)));
         reaction3.setOnClickListener(v -> onReactionSelected(reactionEmojis.get(2)));
 
-        // Bấm nút + → mở EmojiPicker
         btnAddReaction.setOnClickListener(v -> openEmojiPicker());
     }
 
@@ -318,7 +371,7 @@ public class PostFragment extends Fragment {
 
     private void onReactionSelected(String emoji) {
         Toast.makeText(requireContext(), "Reacted with " + emoji, Toast.LENGTH_SHORT).show();
-        // TODO: Gửi reaction lên Firestore (Map<String, List<String>> reactions trong Post)
+        // TODO: Gửi reaction lên Firestore
     }
 
     private boolean checkIfEmptyState() {
@@ -381,7 +434,7 @@ public class PostFragment extends Fragment {
 
     private void setupPostTypeLogic() {
         if ("activity".equals(postType)) {
-            layoutActivityInvite.setVisibility(View.VISIBLE);
+            // Đã xử lý ở toggleCommentBarForOwnPost() (ẩn nếu đã join)
             tvInviteText.setText(userNameOfOwner + " rủ bạn tham gia!");
 
             if (userAvatarOfOwner != null && !userAvatarOfOwner.isEmpty()) {
@@ -429,6 +482,7 @@ public class PostFragment extends Fragment {
             downloadImageLegacy();
         }
     }
+
 
     private void downloadImageAndroid10Plus() {
         Glide.with(this)

@@ -208,7 +208,22 @@ public class MainViewModel extends ViewModel {
 
         postRepository.createPost(post, null, uploadStatus);
     }
+    public void joinActivity(String activityId) {
+        if (auth.getCurrentUser() == null || activityId == null) return;
 
+        String uid = auth.getCurrentUser().getUid();
+
+        // Cập nhật Firestore: Thêm uid vào mảng participants
+        db.collection("activities").document(activityId)
+                .update("participants", FieldValue.arrayUnion(uid))
+                .addOnSuccessListener(aVoid -> {
+                    // Refresh lại danh sách activity để UI cập nhật ngay lập tức
+                    loadJoinedActivities();
+                })
+                .addOnFailureListener(e -> {
+                    // Xử lý lỗi nếu cần
+                });
+    }
     // ====================== REFRESH ======================
     public void refreshPosts() {
         loadPosts();

@@ -130,7 +130,7 @@ public class MainFragment extends Fragment {
     }
 
     private void setupThemeToggle() {
-        btnNavLeft.setOnClickListener(v -> toggleTheme());
+//        btnNavLeft.setOnClickListener(v -> toggleTheme());
 
         // Cập nhật icon đúng với theme hiện tại khi fragment được tạo/resume
         updateThemeIcon();
@@ -401,9 +401,10 @@ public class MainFragment extends Fragment {
 
     // --- LOGIC SHUTTER ---
 
+    // 2. Sửa hàm handleNavLeftClick: Điều hướng logic
     private void handleNavLeftClick() {
         if (isEditingMode) {
-            // Đang ở chế độ Edit (Mood hoặc Check-in Activity)
+            // --- LOGIC BACK BUTTON (Khi đang ở Camera/Preview) ---
             if (!isMoodTabSelected && imgMainDisplay.getVisibility() == View.VISIBLE) {
                 // Đang xem lại ảnh vừa chụp -> Hủy ảnh
                 discardCapturedPhoto();
@@ -413,7 +414,8 @@ public class MainFragment extends Fragment {
                 else switchToActivityTab();
             }
         } else {
-            Toast.makeText(getContext(), "Menu Clicked", Toast.LENGTH_SHORT).show();
+            // --- LOGIC ĐỔI THEME (Khi đang ở màn hình chính) ---
+            toggleTheme();
         }
     }
 

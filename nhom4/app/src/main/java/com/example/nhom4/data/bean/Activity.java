@@ -1,10 +1,13 @@
 package com.example.nhom4.data.bean;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import com.google.firebase.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Activity {
+public class Activity implements Parcelable {
     private String id;
     private String creatorId;
     private String title;
@@ -77,4 +80,53 @@ public class Activity {
 
     public Timestamp getCreatedAt() { return createdAt; }
     public void setCreatedAt(Timestamp createdAt) { this.createdAt = createdAt; }
+
+    // --- Parcelable Implementation ---
+    protected Activity(Parcel in) {
+        id = in.readString();
+        creatorId = in.readString();
+        title = in.readString();
+        imageUrl = in.readString();
+        isDaily = in.readByte() != 0;
+        progress = in.readInt();
+        target = in.readInt();
+        durationSeconds = in.readLong();
+        scheduledTime = in.readParcelable(Timestamp.class.getClassLoader());
+        isReminderEnabled = in.readByte() != 0;
+        participants = in.createStringArrayList();
+        createdAt = in.readParcelable(Timestamp.class.getClassLoader());
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(id);
+        dest.writeString(creatorId);
+        dest.writeString(title);
+        dest.writeString(imageUrl);
+        dest.writeByte((byte) (isDaily ? 1 : 0));
+        dest.writeInt(progress);
+        dest.writeInt(target);
+        dest.writeLong(durationSeconds);
+        dest.writeParcelable(scheduledTime, flags);
+        dest.writeByte((byte) (isReminderEnabled ? 1 : 0));
+        dest.writeStringList(participants);
+        dest.writeParcelable(createdAt, flags);
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    public static final Creator<Activity> CREATOR = new Creator<Activity>() {
+        @Override
+        public Activity createFromParcel(Parcel in) {
+            return new Activity(in);
+        }
+
+        @Override
+        public Activity[] newArray(int size) {
+            return new Activity[size];
+        }
+    };
 }

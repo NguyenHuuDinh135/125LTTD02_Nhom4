@@ -1,5 +1,6 @@
 package com.example.nhom4.ui.page.main;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,6 +18,7 @@ import com.example.nhom4.R;
 import com.example.nhom4.data.Resource;
 import com.example.nhom4.ui.adapter.ChatListAdapter;
 import com.example.nhom4.ui.adapter.OperatorAdapter;
+import com.example.nhom4.ui.page.activity.DetailActivity;
 import com.example.nhom4.ui.viewmodel.DiscoveryViewModel;
 
 /**
@@ -69,8 +71,10 @@ public class DiscoveryFragment extends Fragment {
     private void setupActivityRecyclerView() {
         // Thêm listener xử lý sự kiện click vào item activity
         activityAdapter = new OperatorAdapter(getContext(), activity -> {
-            // Xử lý khi click vào activity (Ví dụ: Chuyển sang trang chi tiết hoặc check-in)
-            Toast.makeText(getContext(), "Đã chọn: " + activity.getTitle(), Toast.LENGTH_SHORT).show();
+            // Khi bấm vào một Activity → mở DetailActivity
+            Intent intent = new Intent(getContext(), DetailActivity.class);
+            intent.putExtra("ACTIVITY", activity); // Truyền object Activity (phải Parcelable)
+            startActivity(intent);
         });
 
         activityRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));

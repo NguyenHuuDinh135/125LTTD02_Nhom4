@@ -1,48 +1,28 @@
 package com.example.nhom4.data.bean;
 
+import com.google.firebase.Timestamp; // Nhớ import cái này
 import java.util.List;
 
 public class Conversation {
-    private String conversationId; // ID của document hội thoại
-    private List<String> members;  // Danh sách các thành viên trong hội thoại [uid1, uid2]
+    private String conversationId;
+    private List<String> members;
 
     private String friendId;
     private String friendName;
     private String friendAvatar;
     private String lastMessage;
-    private long timestamp;
 
-    // Constructor mặc định (bắt buộc cho Firestore)
+    // Sửa lại: Dùng Timestamp để hứng dữ liệu từ Firestore
+    private Timestamp lastMessageAt;
+
     public Conversation() { }
 
-    // Constructor đầy đủ
-    public Conversation(String friendId, String friendName, String friendAvatar, String lastMessage, long timestamp) {
-        this.friendId = friendId;
-        this.friendName = friendName;
-        this.friendAvatar = friendAvatar;
-        this.lastMessage = lastMessage;
-        this.timestamp = timestamp;
-    }
+    // --- Getter & Setter ---
+    public String getConversationId() { return conversationId; }
+    public void setConversationId(String conversationId) { this.conversationId = conversationId; }
 
-    // --- Getter và Setter cho các trường bị thiếu (Nguyên nhân gây lỗi) ---
-
-    public String getConversationId() {
-        return conversationId;
-    }
-
-    public void setConversationId(String conversationId) {
-        this.conversationId = conversationId;
-    }
-
-    public List<String> getMembers() {
-        return members;
-    }
-
-    public void setMembers(List<String> members) {
-        this.members = members;
-    }
-
-    // --- Getter và Setter các trường cũ ---
+    public List<String> getMembers() { return members; }
+    public void setMembers(List<String> members) { this.members = members; }
 
     public String getFriendId() { return friendId; }
     public void setFriendId(String friendId) { this.friendId = friendId; }
@@ -56,6 +36,12 @@ public class Conversation {
     public String getLastMessage() { return lastMessage; }
     public void setLastMessage(String lastMessage) { this.lastMessage = lastMessage; }
 
-    public long getTimestamp() { return timestamp; }
-    public void setTimestamp(long timestamp) { this.timestamp = timestamp; }
+    // Getter/Setter cho Timestamp từ Firestore
+    public Timestamp getLastMessageAt() { return lastMessageAt; }
+    public void setLastMessageAt(Timestamp lastMessageAt) { this.lastMessageAt = lastMessageAt; }
+
+    // Helper: Trả về milliseconds để sắp xếp list
+    public long getTimestampLong() {
+        return lastMessageAt != null ? lastMessageAt.toDate().getTime() : 0;
+    }
 }

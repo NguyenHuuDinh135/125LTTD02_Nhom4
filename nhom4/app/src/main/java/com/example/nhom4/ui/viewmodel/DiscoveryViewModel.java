@@ -5,99 +5,105 @@ import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
 import com.example.nhom4.data.Resource;
-import com.example.nhom4.data.bean.Activity; // Import Activity
+import com.example.nhom4.data.bean.Activity;
 import com.example.nhom4.data.bean.Conversation;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.firestore.DocumentSnapshot;
+import com.example.nhom4.data.repository.AuthRepository;
+import com.example.nhom4.data.repository.ChatRepository;
 import com.google.firebase.firestore.FirebaseFirestore;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
- * ViewModel cho DiscoveryFragment: tải danh sách hội thoại và hoạt động đã tham gia.
+ * ViewModel quản lý dữ liệu cho màn hình Khám phá (DiscoveryFragment).
+ * Bao gồm:
+ * 1. Danh sách tin nhắn (Realtime + hiển thị cả bạn bè chưa nhắn).
+ * 2. Danh sách hoạt động (Activity) đã tham gia (Realtime).
  */
 public class DiscoveryViewModel extends ViewModel {
 
+    private final ChatRepository chatRepository;
+    private final AuthRepository authRepository;
     private final FirebaseFirestore db = FirebaseFirestore.getInstance();
-    private final FirebaseAuth auth = FirebaseAuth.getInstance();
 
-    // LiveData cho Chat
+    // LiveData chứa danh sách hội thoại (Chat List)
     private final MutableLiveData<Resource<List<Conversation>>> conversations = new MutableLiveData<>();
 
-    // [MỚI] LiveData cho Activity
+    // LiveData chứa danh sách hoạt động (Activities)
     private final MutableLiveData<Resource<List<Activity>>> activities = new MutableLiveData<>();
 
-    public LiveData<Resource<List<Conversation>>> getConversations() { return conversations; }
+    // Cờ đánh dấu để tránh gọi listener nhiều lần khi config change
+    private boolean isChatLoaded = false;
+    private boolean isActivityLoaded = false;
 
-    // [MỚI] Getter cho Activity
-    public LiveData<Resource<List<Activity>>> getActivities() { return activities; }
+    public DiscoveryViewModel() {
+        chatRepository = new ChatRepository();
+        authRepository = new AuthRepository();
 
-    // 1. Load Chat (Code cũ giữ nguyên)
+        // Tự động kích hoạt load dữ liệu khi ViewModel được khởi tạo
+        loadConversations();
+        loadJoinedActivities();
+    }
+
+    // --- GETTERS ---
+    public LiveData<Resource<List<Conversation>>> getConversations() {
+        return conversations;
+    }
+
+    public LiveData<Resource<List<Activity>>> getActivities() {
+        return activities;
+    }
+
+    // --- LOAD DATA ---
+
+    /**
+     * Load danh sách Chat (Sử dụng ChatRepository mới).
+     * Repository sẽ tự động:
+     * 1. Lấy danh sách bạn bè.
+     * 2. Lắng nghe tin nhắn Realtime.
+     * 3. Gộp lại để hiển thị đầy đủ.
+     */
     public void loadConversations() {
-        if (auth.getCurrentUser() == null) return;
-        String currentUserId = auth.getCurrentUser().getUid();
-        conversations.postValue(Resource.loading(null));
+        // Kiểm tra xem đã load chưa để tránh đăng ký listener trùng lặp
+        if (isChatLoaded) return;
 
-        db.collection("relationships")
-                .whereArrayContains("members", currentUserId)
-                .whereEqualTo("status", "accepted")
-                .get()
-                .addOnSuccessListener(snapshots -> {
-                    List<Conversation> list = new ArrayList<>();
-                    if (snapshots.isEmpty()) {
-                        conversations.postValue(Resource.success(list));
-                        return;
-                    }
-                    for (DocumentSnapshot doc : snapshots) {
-                        String conversationId = doc.getId();
-                        List<String> members = (List<String>) doc.get("members");
-                        if (members != null) {
-                            String friendId = members.get(0).equals(currentUserId) ? members.get(1) : members.get(0); // Lấy id người còn lại
-                            fetchFriendInfo(conversationId, friendId, list, snapshots.size());
-                        }
-                    }
-                })
-                .addOnFailureListener(e -> conversations.postValue(Resource.error(e.getMessage(), null)));
+        if (authRepository.getCurrentUser() != null) {
+            String uid = authRepository.getCurrentUser().getUid();
+
+            // Gọi hàm trong ChatRepository
+            chatRepository.loadUserConversations(uid, conversations);
+
+            isChatLoaded = true;
+        } else {
+            conversations.postValue(Resource.error("Chưa đăng nhập", null));
+        }
     }
 
     /**
-     * Sau khi biết conversationId, lấy thông tin basic của bạn bè để bind lên UI.
+     * Load danh sách Activity user đã tham gia (Realtime)
      */
-    private void fetchFriendInfo(String conversationId, String friendId, List<Conversation> list, int totalExpected) {
-        db.collection("users").document(friendId).get()
-                .addOnSuccessListener(userDoc -> {
-                    if (userDoc.exists()) {
-                        String name = userDoc.getString("username");
-                        String avatar = userDoc.getString("profilePhotoUrl");
-                        Conversation conv = new Conversation(friendId, name, avatar, "Nhắn tin ngay nào!", System.currentTimeMillis());
-                        conv.setConversationId(conversationId);
-                        list.add(conv);
-                    }
-                    if (list.size() > 0) {
-                        conversations.postValue(Resource.success(list)); // emit mỗi khi có đủ dữ liệu người bạn
-                    }
-                });
-    }
-
-    // 2. [MỚI] Load Activity User đã tham gia
     public void loadJoinedActivities() {
-        if (auth.getCurrentUser() == null) return;
-        String uid = auth.getCurrentUser().getUid();
-        activities.postValue(Resource.loading(null));
+        if (isActivityLoaded) return;
 
-        // Lắng nghe realtime collection activities
-        db.collection("activities")
-                .whereArrayContains("participants", uid)
-                .addSnapshotListener((value, error) -> {
-                    if (error != null) {
-                        activities.postValue(Resource.error(error.getMessage(), null));
-                        return;
-                    }
-                    if (value != null) {
-                        List<Activity> list = value.toObjects(Activity.class);
-                        activities.postValue(Resource.success(list));
-                    }
-                });
+        if (authRepository.getCurrentUser() != null) {
+            String uid = authRepository.getCurrentUser().getUid();
+            activities.postValue(Resource.loading(null));
+
+            // Lắng nghe realtime collection activities
+            // Lọc những activity mà user này có trong mảng 'participants'
+            db.collection("activities")
+                    .whereArrayContains("participants", uid)
+                    .addSnapshotListener((snapshots, error) -> {
+                        if (error != null) {
+                            activities.postValue(Resource.error(error.getMessage(), null));
+                            return;
+                        }
+                        if (snapshots != null) {
+                            List<Activity> list = snapshots.toObjects(Activity.class);
+                            activities.postValue(Resource.success(list));
+                        }
+                    });
+
+            isActivityLoaded = true;
+        }
     }
 }
