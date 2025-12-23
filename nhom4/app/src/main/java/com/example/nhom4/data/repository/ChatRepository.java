@@ -211,7 +211,49 @@ public class ChatRepository {
                     }
                 });
     }
+    /**
+     * Chấp nhận lời mời và tự động tạo conversation nếu chưa có
+     */
+    public void acceptFriendRequestAndCreateChat(String currentUserId, String senderId, MutableLiveData<Resource<Boolean>> result) {
+        db.collection("relationships")
+                .whereEqualTo("receiverId", currentUserId)
+                .whereEqualTo("senderId", senderId)
+                .whereEqualTo("status", "pending")
+                .get()
+                .addOnSuccessListener(query -> {
+                    if (query.isEmpty()) {
+                        result.postValue(Resource.error("Không tìm thấy lời mời", false));
+                        return;
+                    }
 
+                    DocumentSnapshot doc = query.getDocuments().get(0);
+                    String requestId = doc.getId();
+
+                    // 1. Update status thành accepted
+                    Map<String, Object> update = new HashMap<>();
+                    update.put("status", "accepted");
+                    update.put("updatedAt", com.google.firebase.Timestamp.now());
+
+                    doc.getReference().update(update)
+                            .addOnSuccessListener(aVoid -> {
+                                // 2. Tạo conversation nếu chưa tồn tại
+                                new ChatRepository().findOrCreateConversation(currentUserId, senderId, new MutableLiveData<Resource<String>>() {
+                                    @Override
+                                    public void setValue(Resource<String> value) {
+                                        if (value.status == Resource.Status.SUCCESS) {
+                                            result.postValue(Resource.success(true));
+                                            // Broadcast để refresh UI ngay lập tức
+                                            // (nếu bạn dùng LocalBroadcastManager)
+                                        } else {
+                                            result.postValue(Resource.error("Tạo chat thất bại: " + value.message, false));
+                                        }
+                                    }
+                                });
+                            })
+                            .addOnFailureListener(e -> result.postValue(Resource.error(e.getMessage(), false)));
+                })
+                .addOnFailureListener(e -> result.postValue(Resource.error(e.getMessage(), false)));
+    }
     public void deleteConversation(String conversationId, MutableLiveData<Resource<Boolean>> result) {
         result.postValue(Resource.loading(null));
         if (conversationId == null || conversationId.isEmpty()) {

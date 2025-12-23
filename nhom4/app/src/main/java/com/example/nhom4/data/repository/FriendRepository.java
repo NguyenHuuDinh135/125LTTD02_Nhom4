@@ -5,6 +5,7 @@ import com.example.nhom4.data.bean.FriendRequest;
 import com.example.nhom4.data.bean.User;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
+import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.ListenerRegistration;
@@ -21,11 +22,7 @@ import androidx.lifecycle.MutableLiveData;
 /**
  * FriendRepository
  * --------------------------------------------------
- * Class này quản lý các tương tác kết bạn giữa các User:
- * 1. Gợi ý kết bạn (Lấy danh sách người dùng).
- * 2. Gửi lời mời kết bạn (Tạo quan hệ mới).
- * 3. Xem danh sách lời mời đang chờ (Realtime).
- * 4. Phản hồi lời mời (Chấp nhận / Từ chối).
+ * Quản lý toàn bộ logic kết bạn và tạo chat tự động.
  */
 public class FriendRepository {
     private final FirebaseFirestore db = FirebaseFirestore.getInstance();
@@ -34,19 +31,17 @@ public class FriendRepository {
     private ListenerRegistration userListener;
     private ListenerRegistration pendingListener;
 
-    // 1. Lấy danh sách User gợi ý (Đã lọc bạn bè) - REALTIME
+    // ====================================================================================
+    // 1. Lấy danh sách gợi ý (User chưa kết bạn)
+    // ====================================================================================
     public void getUsersToConnect(String currentUserId, MutableLiveData<Resource<List<User>>> result) {
         result.postValue(Resource.loading(null));
 
-        // Hủy listener cũ nếu có
-        if (relationshipListener != null) {
-            relationshipListener.remove();
-        }
-        if (userListener != null) {
-            userListener.remove();
-        }
+        // Hủy listener cũ để tránh leak
+        if (relationshipListener != null) relationshipListener.remove();
+        if (userListener != null) userListener.remove();
 
-        // BƯỚC 1: LẮNG NGHE REALTIME DANH SÁCH MỐI QUAN HỆ (để biết bạn bè/pending để loại trừ)
+        // Bước 1: Lắng nghe bảng relationships để lọc ra những người đã là bạn hoặc đang chờ
         relationshipListener = db.collection("relationships")
                 .whereArrayContains("members", currentUserId)
                 .addSnapshotListener((relationshipSnapshots, error) -> {
@@ -55,25 +50,22 @@ public class FriendRepository {
                         return;
                     }
 
-                    // Tạo danh sách ID cần loại trừ: bạn bè (accepted) + pending + chính mình
                     List<String> excludeIds = new ArrayList<>();
-                    excludeIds.add(currentUserId); // Loại chính mình
+                    excludeIds.add(currentUserId); // Loại bỏ chính mình
 
                     for (QueryDocumentSnapshot doc : relationshipSnapshots) {
                         List<String> members = (List<String>) doc.get("members");
                         if (members != null) {
                             for (String memberId : members) {
                                 if (!memberId.equals(currentUserId)) {
-                                    excludeIds.add(memberId); // Loại tất cả bạn bè và pending
+                                    excludeIds.add(memberId); // Loại bỏ người đã tương tác
                                 }
                             }
                         }
                     }
 
-                    // BƯỚC 2: LẮNG NGHE REALTIME DANH SÁCH USER (loại trừ excludeIds)
-                    if (userListener != null) {
-                        userListener.remove();
-                    }
+                    // Bước 2: Lắng nghe bảng users và loại trừ danh sách trên
+                    if (userListener != null) userListener.remove();
                     userListener = db.collection("users")
                             .addSnapshotListener((userSnapshots, userError) -> {
                                 if (userError != null) {
@@ -89,7 +81,6 @@ public class FriendRepository {
                                     }
                                 }
 
-                                // Giới hạn 50 user đầu tiên (nếu cần)
                                 if (users.size() > 50) {
                                     users = users.subList(0, 50);
                                 }
@@ -99,7 +90,9 @@ public class FriendRepository {
                 });
     }
 
+    // ====================================================================================
     // 2. Gửi lời mời kết bạn
+    // ====================================================================================
     public void sendFriendRequest(String senderId, String receiverId, MutableLiveData<Resource<Boolean>> result) {
         result.postValue(Resource.loading(null));
 
@@ -108,7 +101,7 @@ public class FriendRepository {
         relationship.put("senderId", senderId);
         relationship.put("receiverId", receiverId);
         relationship.put("status", "pending");
-        relationship.put("createdAt", com.google.firebase.Timestamp.now());
+        relationship.put("createdAt", Timestamp.now());
 
         db.collection("relationships")
                 .add(relationship)
@@ -116,14 +109,13 @@ public class FriendRepository {
                 .addOnFailureListener(e -> result.postValue(Resource.error(e.getMessage(), false)));
     }
 
-    // 3. Lấy danh sách lời mời đang chờ (REALTIME)
+    // ====================================================================================
+    // 3. Lấy danh sách lời mời đang chờ (Pending Requests)
+    // ====================================================================================
     public void getPendingRequests(String currentUserId, MutableLiveData<Resource<List<FriendRequest>>> result) {
         result.postValue(Resource.loading(null));
 
-        // Hủy listener cũ nếu có
-        if (pendingListener != null) {
-            pendingListener.remove();
-        }
+        if (pendingListener != null) pendingListener.remove();
 
         pendingListener = db.collection("relationships")
                 .whereEqualTo("receiverId", currentUserId)
@@ -142,7 +134,7 @@ public class FriendRepository {
                         if (req != null) {
                             req.setRequestId(doc.getId());
 
-                            // Load sender info
+                            // Load thông tin người gửi (Sender Info)
                             if (req.getSenderId() != null) {
                                 Task<User> userTask = db.collection("users").document(req.getSenderId())
                                         .get()
@@ -158,7 +150,7 @@ public class FriendRepository {
                         }
                     }
 
-                    // Đợi tất cả userTasks hoàn thành
+                    // Đợi load xong info user mới trả về kết quả
                     Tasks.whenAllSuccess(userTasks).addOnSuccessListener(users -> {
                         for (int i = 0; i < requests.size(); i++) {
                             User sender = (User) users.get(i);
@@ -171,23 +163,11 @@ public class FriendRepository {
                 });
     }
 
-    // 4. Phản hồi lời mời - phương thức chung (được gọi bởi accept/decline)
-    public void respondToRequest(String requestId, String status, MutableLiveData<Resource<Boolean>> result) {
-        result.postValue(Resource.loading(null));
-
-        Map<String, Object> update = new HashMap<>();
-        update.put("status", status);
-        update.put("updatedAt", com.google.firebase.Timestamp.now());
-
-        db.collection("relationships").document(requestId)
-                .update(update)
-                .addOnSuccessListener(aVoid -> result.postValue(Resource.success(true)))
-                .addOnFailureListener(e -> result.postValue(Resource.error(e.getMessage(), false)));
-    }
-
-    // 5. Chấp nhận lời mời (gọi respondToRequest với status = "accepted")
+    // ====================================================================================
+    // 4. Chấp nhận lời mời kết bạn -> TỰ ĐỘNG TẠO CHAT
+    // ====================================================================================
     public void acceptFriendRequest(String currentUserId, String senderId, MutableLiveData<Resource<Boolean>> result) {
-        // Tìm requestId tương ứng với senderId và currentUserId (receiver)
+        // Tìm document relationship đang pending
         db.collection("relationships")
                 .whereEqualTo("receiverId", currentUserId)
                 .whereEqualTo("senderId", senderId)
@@ -197,7 +177,15 @@ public class FriendRepository {
                     if (!query.isEmpty()) {
                         DocumentSnapshot doc = query.getDocuments().get(0);
                         String requestId = doc.getId();
-                        respondToRequest(requestId, "accepted", result);
+
+                        // 1. Cập nhật status -> accepted
+                        db.collection("relationships").document(requestId)
+                                .update("status", "accepted", "updatedAt", Timestamp.now())
+                                .addOnSuccessListener(aVoid -> {
+                                    // 2. QUAN TRỌNG: Tạo conversation ngay sau khi accept thành công
+                                    createConversation(currentUserId, senderId, result);
+                                })
+                                .addOnFailureListener(e -> result.postValue(Resource.error(e.getMessage(), false)));
                     } else {
                         result.postValue(Resource.error("Không tìm thấy lời mời kết bạn", false));
                     }
@@ -205,9 +193,53 @@ public class FriendRepository {
                 .addOnFailureListener(e -> result.postValue(Resource.error(e.getMessage(), false)));
     }
 
-    // 6. Từ chối lời mời (gọi respondToRequest với status = "declined")
+    /**
+     * Hàm helper: Tạo document chat mới trong collection "conversations".
+     * Được gọi sau khi acceptFriendRequest thành công.
+     */
+    private void createConversation(String user1, String user2, MutableLiveData<Resource<Boolean>> result) {
+        // Kiểm tra xem đã tồn tại chat giữa 2 người này chưa
+        db.collection("conversations")
+                .whereArrayContains("members", user1)
+                .get()
+                .addOnSuccessListener(querySnapshot -> {
+                    boolean exists = false;
+                    for (DocumentSnapshot doc : querySnapshot.getDocuments()) {
+                        List<String> members = (List<String>) doc.get("members");
+                        if (members != null && members.contains(user2)) {
+                            exists = true;
+                            break;
+                        }
+                    }
+
+                    if (exists) {
+                        // Đã có chat -> Báo thành công luôn
+                        result.postValue(Resource.success(true));
+                    } else {
+                        // Chưa có chat -> Tạo mới
+                        Map<String, Object> chat = new HashMap<>();
+                        chat.put("members", Arrays.asList(user1, user2));
+                        chat.put("lastMessage", "Các bạn đã trở thành bạn bè 👋"); // Tin nhắn hệ thống đầu tiên
+                        chat.put("lastMessageTime", Timestamp.now());
+                        chat.put("createdAt", Timestamp.now());
+                        chat.put("createdBy", user1);
+
+                        db.collection("conversations")
+                                .add(chat)
+                                .addOnSuccessListener(ref -> result.postValue(Resource.success(true))) // Thành công hoàn toàn
+                                .addOnFailureListener(e -> result.postValue(Resource.error("Lỗi tạo chat: " + e.getMessage(), false)));
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    // Lỗi query check thì vẫn cố tạo hoặc báo lỗi (ở đây chọn báo lỗi an toàn)
+                    result.postValue(Resource.error("Lỗi kiểm tra chat: " + e.getMessage(), false));
+                });
+    }
+
+    // ====================================================================================
+    // 5. Từ chối lời mời
+    // ====================================================================================
     public void declineFriendRequest(String currentUserId, String senderId, MutableLiveData<Resource<Boolean>> result) {
-        // Tìm requestId tương ứng
         db.collection("relationships")
                 .whereEqualTo("receiverId", currentUserId)
                 .whereEqualTo("senderId", senderId)
@@ -219,13 +251,26 @@ public class FriendRepository {
                         String requestId = doc.getId();
                         respondToRequest(requestId, "declined", result);
                     } else {
-                        result.postValue(Resource.error("Không tìm thấy lời mời kết bạn", false));
+                        result.postValue(Resource.error("Không tìm thấy lời mời", false));
                     }
                 })
                 .addOnFailureListener(e -> result.postValue(Resource.error(e.getMessage(), false)));
     }
 
-    // 7. Xóa bạn
+    private void respondToRequest(String requestId, String status, MutableLiveData<Resource<Boolean>> result) {
+        Map<String, Object> update = new HashMap<>();
+        update.put("status", status);
+        update.put("updatedAt", Timestamp.now());
+
+        db.collection("relationships").document(requestId)
+                .update(update)
+                .addOnSuccessListener(aVoid -> result.postValue(Resource.success(true)))
+                .addOnFailureListener(e -> result.postValue(Resource.error(e.getMessage(), false)));
+    }
+
+    // ====================================================================================
+    // 6. Xóa bạn bè (Unfriend)
+    // ====================================================================================
     public void unfriendUser(String currentUserId, String targetUserId, MutableLiveData<Resource<Boolean>> result) {
         db.collection("relationships")
                 .whereArrayContains("members", currentUserId)
@@ -246,6 +291,7 @@ public class FriendRepository {
                                 .addOnSuccessListener(aVoid -> result.postValue(Resource.success(true)))
                                 .addOnFailureListener(e -> result.postValue(Resource.error("Lỗi xóa bạn: " + e.getMessage(), false)));
                     } else {
+                        // Không tìm thấy relationship -> coi như đã xóa
                         result.postValue(Resource.success(true));
                     }
                 })

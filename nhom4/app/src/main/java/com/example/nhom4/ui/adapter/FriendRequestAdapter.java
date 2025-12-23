@@ -76,28 +76,41 @@ public class FriendRequestAdapter extends RecyclerView.Adapter<FriendRequestAdap
      */
     @Override
     public void onBindViewHolder(@NonNull RequestViewHolder holder, int position) {
-        FriendRequest request = getCurrentList().get(position); // Lấy từ danh sách đang hiển thị
+        FriendRequest request = getCurrentList().get(position);
 
-        // Load thông tin User
-        db.collection("users").document(request.getRequestId())
-                .get()
-                .addOnSuccessListener(doc -> {
-                    if (doc.exists()) {
-                        User user = doc.toObject(User.class);
-                        if (user != null) {
-                            holder.tvName.setText(user.getUsername());
-                            Glide.with(holder.itemView.getContext())
-                                    .load(user.getProfilePhotoUrl())
-                                    .placeholder(R.drawable.ic_launcher_foreground)
-                                    .error(R.drawable.ic_launcher_foreground)
-                                    .into(holder.ivAvatar);
+        // Sử dụng sender đã load sẵn từ repository (không cần load lại)
+        User sender = request.getSender();
+        if (sender != null) {
+            holder.tvName.setText(sender.getUsername() != null ? sender.getUsername() : "User name");  // Fallback nếu null
+            Glide.with(holder.itemView.getContext())
+                    .load(sender.getProfilePhotoUrl())
+                    .placeholder(R.drawable.ic_launcher_foreground)
+                    .error(R.drawable.ic_launcher_foreground)
+                    .into(holder.ivAvatar);
+        } else {
+            // Nếu sender chưa load (hiếm xảy ra), fallback load từ Firestore với senderId đúng
+            db.collection("users").document(request.getSenderId())
+                    .get()
+                    .addOnSuccessListener(doc -> {
+                        if (doc.exists()) {
+                            User user = doc.toObject(User.class);
+                            if (user != null) {
+                                holder.tvName.setText(user.getUsername() != null ? user.getUsername() : "User name");
+                                Glide.with(holder.itemView.getContext())
+                                        .load(user.getProfilePhotoUrl())
+                                        .placeholder(R.drawable.ic_launcher_foreground)
+                                        .error(R.drawable.ic_launcher_foreground)
+                                        .into(holder.ivAvatar);
+                            }
                         }
-                    }
-                })
-                .addOnFailureListener(e -> {}); // Bỏ qua lỗi nhỏ, UI vẫn hiển thị tên request
+                    })
+                    .addOnFailureListener(e -> {
+                        holder.tvName.setText("User name");  // Fallback lỗi
+                    });
+        }
 
         holder.btnAccept.setOnClickListener(v -> {
-            if (listener != null) listener.onAccept(request); // Báo ra ViewModel xử lý
+            if (listener != null) listener.onAccept(request);
         });
 
         holder.btnDecline.setOnClickListener(v -> {

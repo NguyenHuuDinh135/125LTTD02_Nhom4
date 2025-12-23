@@ -20,11 +20,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-/**
- * Adapter chính cho màn hình chat, hỗ trợ 4 kiểu view:
- * - Tin nhắn text gửi/nhận
- * - Widget trả lời bài post gửi/nhận
- */
 public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     private static final int TYPE_SENT = 1;
@@ -34,7 +29,7 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     private List<Message> messages = new ArrayList<>();
     private final String currentUserId;
-    private String partnerAvatarUrl;  // Avatar của partner
+    private String partnerAvatarUrl;
 
     public ChatAdapter(String currentUserId) {
         this.currentUserId = currentUserId;
@@ -42,6 +37,7 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     public void setPartnerAvatarUrl(String url) {
         this.partnerAvatarUrl = url;
+        notifyDataSetChanged(); // Refresh lại để cập nhật avatar
     }
 
     public void setMessages(List<Message> messages) {
@@ -52,6 +48,7 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     @Override
     public int getItemViewType(int position) {
         Message message = messages.get(position);
+        // Bảo vệ null cho senderId
         if (message.getSenderId() == null) return TYPE_RECEIVED;
 
         boolean isMe = message.getSenderId().equals(currentUserId);
@@ -95,7 +92,7 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     @Override
     public int getItemCount() {
-        return messages.size();
+        return messages == null ? 0 : messages.size();
     }
 
     private static String formatTime(Timestamp timestamp) {
@@ -103,17 +100,54 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         return new SimpleDateFormat("HH:mm", Locale.getDefault()).format(timestamp.toDate());
     }
 
+    // --- HELPER LOAD IMAGE AN TOÀN ---
+    private static void loadImageSafe(ImageView imageView, String url) {
+        if (url != null && !url.isEmpty()) {
+            imageView.setVisibility(View.VISIBLE);
+            try {
+                Glide.with(imageView.getContext())
+                        .load(url)
+                        .placeholder(R.drawable.ic_launcher_foreground)
+                        .error(R.drawable.ic_launcher_foreground) // Fallback nếu URL lỗi
+                        .centerCrop()
+                        .into(imageView);
+            } catch (Exception e) {
+                // Bắt lỗi nếu Context bị hủy hoặc Glide lỗi
+                imageView.setImageResource(R.drawable.ic_launcher_foreground);
+            }
+        } else {
+            imageView.setVisibility(View.GONE);
+        }
+    }
+
+    private static void loadAvatarSafe(ShapeableImageView avatarView, String url) {
+        if (avatarView == null) return;
+
+        if (url != null && !url.isEmpty()) {
+            try {
+                Glide.with(avatarView.getContext())
+                        .load(url)
+                        .placeholder(R.drawable.ic_launcher_background) // Dùng background làm placeholder avatar
+                        .error(R.drawable.ic_launcher_background)
+                        .circleCrop()
+                        .into(avatarView);
+            } catch (Exception e) {
+                avatarView.setImageResource(R.drawable.ic_launcher_background);
+            }
+        } else {
+            avatarView.setImageResource(R.drawable.ic_launcher_background);
+        }
+    }
+
     // --- VIEW HOLDERS ---
 
     static class SentHolder extends RecyclerView.ViewHolder {
         TextView tvMsg, tvTime;
-
         SentHolder(View v) {
             super(v);
-            tvMsg = v.findViewById(R.id.tv_message_content); // Adjust ID if different in sender layout
+            tvMsg = v.findViewById(R.id.tv_message_content);
             tvTime = v.findViewById(R.id.tv_timestamp);
         }
-
         void bind(Message m) {
             tvMsg.setText(m.getContent());
             tvTime.setText(formatTime(m.getCreatedAt()));
@@ -123,28 +157,22 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     static class ReceivedHolder extends RecyclerView.ViewHolder {
         TextView tvMsg, tvTime;
         ShapeableImageView avatar;
-
         ReceivedHolder(View v) {
             super(v);
             tvMsg = v.findViewById(R.id.tv_message_content);
             tvTime = v.findViewById(R.id.tv_timestamp);
             avatar = v.findViewById(R.id.img_avatar);
         }
-
-        void bind(Message m, String partnerAvatarUrl) {
+        void bind(Message m, String url) {
             tvMsg.setText(m.getContent());
             tvTime.setText(formatTime(m.getCreatedAt()));
-
-            if (avatar != null) {
-                loadAvatar(avatar, partnerAvatarUrl);
-            }
+            loadAvatarSafe(avatar, url);
         }
     }
 
     static class WidgetSenderHolder extends RecyclerView.ViewHolder {
         TextView tvTitle, tvTime, tvBody;
         ImageView imgPostPreview;
-
         WidgetSenderHolder(View v) {
             super(v);
             tvTitle = v.findViewById(R.id.tv_post_title);
@@ -152,22 +180,11 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             tvBody = v.findViewById(R.id.tv_message_body);
             imgPostPreview = v.findViewById(R.id.img_post_preview);
         }
-
         void bind(Message m) {
             tvTitle.setText(m.getReplyPostTitle() != null ? m.getReplyPostTitle() : "Bài viết");
             tvBody.setText(m.getContent());
             tvTime.setText(formatTime(m.getCreatedAt()));
-
-            if (m.getReplyPostImage() != null && !m.getReplyPostImage().isEmpty()) {
-                Glide.with(itemView.getContext())
-                        .load(m.getReplyPostImage())
-                        .placeholder(R.drawable.ic_launcher_foreground)
-                        .centerCrop()
-                        .into(imgPostPreview);
-                imgPostPreview.setVisibility(View.VISIBLE);
-            } else {
-                imgPostPreview.setVisibility(View.GONE);
-            }
+            loadImageSafe(imgPostPreview, m.getReplyPostImage());
         }
     }
 
@@ -182,41 +199,19 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             tvTime = v.findViewById(R.id.tv_post_time);
             tvBody = v.findViewById(R.id.tv_message_body);
             imgPostPreview = v.findViewById(R.id.img_post_preview);
-            avatar = v.findViewById(R.id.iv_avatar);  // ID in widget receiver layout
+            avatar = v.findViewById(R.id.iv_avatar); // <--- ID này phải khớp item_message_widget_receiver.xml
         }
 
-        void bind(Message m, String partnerAvatarUrl) {
+        void bind(Message m, String url) {
             tvTitle.setText(m.getReplyPostTitle() != null ? m.getReplyPostTitle() : "Bài viết");
             tvBody.setText(m.getContent());
             tvTime.setText(formatTime(m.getCreatedAt()));
 
-            if (m.getReplyPostImage() != null && !m.getReplyPostImage().isEmpty()) {
-                Glide.with(itemView.getContext())
-                        .load(m.getReplyPostImage())
-                        .placeholder(R.drawable.ic_launcher_foreground)
-                        .centerCrop()
-                        .into(imgPostPreview);
-                imgPostPreview.setVisibility(View.VISIBLE);
-            } else {
-                imgPostPreview.setVisibility(View.GONE);
-            }
+            // Load ảnh bài viết (An toàn)
+            loadImageSafe(imgPostPreview, m.getReplyPostImage());
 
-            if (avatar != null) {
-                loadAvatar(avatar, partnerAvatarUrl);
-            }
-        }
-    }
-
-    private static void loadAvatar(ShapeableImageView avatarView, String url) {
-        if (url != null && !url.isEmpty()) {
-            Glide.with(avatarView.getContext())
-                    .load(url)
-                    .placeholder(R.drawable.avatar_placeholder)
-                    .error(R.drawable.avatar_placeholder)
-                    .circleCrop()
-                    .into(avatarView);
-        } else {
-            avatarView.setImageResource(R.drawable.avatar_placeholder);
+            // Load avatar người gửi (An toàn)
+            loadAvatarSafe(avatar, url);
         }
     }
 }

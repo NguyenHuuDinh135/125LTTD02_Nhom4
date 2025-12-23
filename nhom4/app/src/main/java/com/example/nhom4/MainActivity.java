@@ -10,12 +10,14 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.bumptech.glide.Glide;
 import com.example.nhom4.ui.adapter.MainPagerAdapter;
 import com.example.nhom4.ui.page.calendar.ProfileActivity;
+import com.example.nhom4.ui.page.main.DiscoveryFragment; // Import Fragment
 import com.example.nhom4.ui.viewmodel.MainViewModel;
 import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.imageview.ShapeableImageView;
@@ -25,8 +27,9 @@ import com.google.firebase.auth.FirebaseUser;
 public class MainActivity extends AppCompatActivity {
 
     private ViewPager2 viewPagerMain;
+    private MainPagerAdapter pagerAdapter; // Lưu adapter ra biến toàn cục
 
-    // Top Bar
+    // Top Bar Views
     private View topBar;
     private ShapeableImageView imgAvatar;
     private MaterialCardView cardFriendsPill;
@@ -39,52 +42,36 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        // 🔥 EDGE TO EDGE – QUAN TRỌNG
         WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
-
         setContentView(R.layout.activity_main);
 
         auth = FirebaseAuth.getInstance();
 
         initViews();
-        setupStatusBarInset();   // 👈 FIX STATUS BAR
+        setupStatusBarInset();
         setupViewPager();
         loadCurrentUserAvatar();
         handleOpenPostFromWidget(getIntent());
-
     }
 
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
-        setIntent(intent); // ⚠️ RẤT QUAN TRỌNG
+        setIntent(intent);
         handleOpenPostFromWidget(intent);
     }
-    /**
-     * XỬ LÝ INSET STATUS BAR CHO TOP BAR
-     */
+
     private void setupStatusBarInset() {
         ViewCompat.setOnApplyWindowInsetsListener(topBar, (view, insets) -> {
-            int statusBarHeight =
-                    insets.getInsets(WindowInsetsCompat.Type.statusBars()).top;
-
-            view.setPadding(
-                    view.getPaddingLeft(),
-                    statusBarHeight,
-                    view.getPaddingRight(),
-                    view.getPaddingBottom()
-            );
+            int statusBarHeight = insets.getInsets(WindowInsetsCompat.Type.statusBars()).top;
+            view.setPadding(view.getPaddingLeft(), statusBarHeight, view.getPaddingRight(), view.getPaddingBottom());
             return insets;
         });
     }
 
     private void initViews() {
         viewPagerMain = findViewById(R.id.viewPagerMain);
-
-        // Top bar container (include)
         topBar = findViewById(R.id.top_bar);
-
         imgAvatar = findViewById(R.id.img_avatar);
         cardFriendsPill = findViewById(R.id.card_friends_pill);
         btnChat = findViewById(R.id.btn_chat);
@@ -93,59 +80,57 @@ public class MainActivity extends AppCompatActivity {
 
         btnNavIcon.setOnClickListener(v -> {
             int currentItem = viewPagerMain.getCurrentItem();
-            if (currentItem == 0) {
-                startActivity(new Intent(this, ProfileActivity.class));
-            } else if (currentItem == 2) {
-                navigateToFeed();
-            }
+            if (currentItem == 0) startActivity(new Intent(this, ProfileActivity.class));
+            else if (currentItem == 2) navigateToFeed();
         });
 
         imgAvatar.setOnClickListener(v -> navigateToCalendar());
 
         btnChat.setOnClickListener(v -> {
             int currentItem = viewPagerMain.getCurrentItem();
-            if (currentItem == 0) {
-                navigateToFeed();
-            } else if (currentItem == 1) {
-                navigateToDiscovery();
-            }
+            if (currentItem == 0) navigateToFeed();
+            else if (currentItem == 1) navigateToDiscovery();
         });
     }
 
     private void setupViewPager() {
-        MainPagerAdapter adapter = new MainPagerAdapter(this);
-        viewPagerMain.setAdapter(adapter);
+        pagerAdapter = new MainPagerAdapter(this);
+        viewPagerMain.setAdapter(pagerAdapter);
         viewPagerMain.setOrientation(ViewPager2.ORIENTATION_HORIZONTAL);
         viewPagerMain.setOverScrollMode(ViewPager2.OVER_SCROLL_NEVER);
+        // Giữ lại 1 trang ở hai bên để mượt hơn, nhưng onResume có thể không gọi nếu giữ state
+        viewPagerMain.setOffscreenPageLimit(1);
 
         viewPagerMain.setCurrentItem(1, false);
         updateTopBarUI(1);
 
-        viewPagerMain.registerOnPageChangeCallback(
-                new ViewPager2.OnPageChangeCallback() {
-                    @Override
-                    public void onPageSelected(int position) {
-                        updateTopBarUI(position);
+        viewPagerMain.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
+            @Override
+            public void onPageSelected(int position) {
+                updateTopBarUI(position);
+
+                // FIX: Khi vuốt sang tab Discovery (index 2), ép reload data
+                if (position == 2) {
+                    // Lấy Fragment từ FragmentManager thông qua tag (cách ViewPager2 đặt tên tag: "f" + id)
+                    Fragment fragment = getSupportFragmentManager().findFragmentByTag("f" + pagerAdapter.getItemId(position));
+                    if (fragment instanceof DiscoveryFragment) {
+                        ((DiscoveryFragment) fragment).refreshData();
                     }
-                });
+                }
+            }
+        });
     }
 
     private void handleOpenPostFromWidget(Intent intent) {
         if (intent == null) return;
-
         boolean openPost = intent.getBooleanExtra("OPEN_POST", false);
         if (!openPost) return;
 
         String postId = intent.getStringExtra("POST_ID");
         if (postId == null || postId.isEmpty()) return;
 
-        // Chuyển về tab Feed
         viewPagerMain.setCurrentItem(1, false);
-
-        // 🔥 LƯU POST ID VÀO VIEWMODEL
-        MainViewModel viewModel =
-                new ViewModelProvider(this).get(MainViewModel.class);
-
+        MainViewModel viewModel = new ViewModelProvider(this).get(MainViewModel.class);
         viewModel.setOpenPostId(postId);
     }
 
@@ -154,13 +139,10 @@ public class MainActivity extends AppCompatActivity {
             case 0: // Calendar
                 imgAvatar.setVisibility(View.GONE);
                 cardFriendsPill.setVisibility(View.GONE);
-
                 btnNavIcon.setVisibility(View.VISIBLE);
                 btnNavIcon.setImageResource(R.drawable.outline_account_circle_24);
-
                 btnChat.setVisibility(View.VISIBLE);
                 btnChat.setImageResource(R.drawable.outline_arrow_forward_ios_24);
-
                 tvScreenTitle.setVisibility(View.VISIBLE);
                 tvScreenTitle.setText("Lịch sử & Streak");
                 break;
@@ -168,10 +150,8 @@ public class MainActivity extends AppCompatActivity {
             case 1: // Main
                 imgAvatar.setVisibility(View.VISIBLE);
                 cardFriendsPill.setVisibility(View.VISIBLE);
-
                 btnChat.setVisibility(View.VISIBLE);
                 btnChat.setImageResource(R.drawable.outline_chat_24);
-
                 btnNavIcon.setVisibility(View.GONE);
                 tvScreenTitle.setVisibility(View.GONE);
                 break;
@@ -180,10 +160,8 @@ public class MainActivity extends AppCompatActivity {
                 imgAvatar.setVisibility(View.GONE);
                 cardFriendsPill.setVisibility(View.GONE);
                 btnChat.setVisibility(View.GONE);
-
                 btnNavIcon.setVisibility(View.VISIBLE);
                 btnNavIcon.setImageResource(R.drawable.outline_arrow_back_ios_24);
-
                 tvScreenTitle.setVisibility(View.VISIBLE);
                 tvScreenTitle.setText("Khám phá");
                 break;
@@ -201,17 +179,9 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public void navigateToCalendar() {
-        viewPagerMain.setCurrentItem(0, true);
-    }
-
-    public void navigateToFeed() {
-        viewPagerMain.setCurrentItem(1, true);
-    }
-
-    public void navigateToDiscovery() {
-        viewPagerMain.setCurrentItem(2, true);
-    }
+    public void navigateToCalendar() { viewPagerMain.setCurrentItem(0, true); }
+    public void navigateToFeed() { viewPagerMain.setCurrentItem(1, true); }
+    public void navigateToDiscovery() { viewPagerMain.setCurrentItem(2, true); }
 
     @Override
     protected void onResume() {

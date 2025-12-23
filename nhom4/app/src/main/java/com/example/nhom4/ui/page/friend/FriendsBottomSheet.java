@@ -204,16 +204,21 @@ public class FriendsBottomSheet extends BottomSheetDialogFragment {
         });
 
         // Quan sát kết quả chấp nhận lời mời
+        // Trong FriendsBottomSheet.java
         viewModel.getAcceptResult().observe(getViewLifecycleOwner(), resource -> {
             if (resource.status == Resource.Status.SUCCESS) {
                 Toast.makeText(requireContext(), "Đã chấp nhận lời mời!", Toast.LENGTH_SHORT).show();
-                // THÊM: Gửi broadcast để refresh chat list
-                LocalBroadcastManager.getInstance(requireContext()).sendBroadcast(new Intent("REFRESH_CHAT_LIST"));
+
+                // Gửi broadcast ngay lập tức
+                LocalBroadcastManager.getInstance(requireContext())
+                        .sendBroadcast(new Intent("REFRESH_CHAT_LIST"));
+
+                // Ẩn item đã accept khỏi list hiện tại (UX improvement)
+                // (Bạn cần implement hàm removeRequest trong Adapter để xóa item ngay trên UI)
             } else if (resource.status == Resource.Status.ERROR) {
                 Toast.makeText(requireContext(), resource.message, Toast.LENGTH_SHORT).show();
             }
         });
-
         // Quan sát kết quả từ chối lời mời
         viewModel.getDeclineResult().observe(getViewLifecycleOwner(), resource -> {
             if (resource.status == Resource.Status.SUCCESS) {
