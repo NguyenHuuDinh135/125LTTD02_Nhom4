@@ -91,7 +91,7 @@ public class ActivityWidgetRemoteViewsFactory implements RemoteViewsService.Remo
         views.setImageViewResource(R.id.img_icon, R.drawable.ic_launcher_foreground);
 
         Intent fillInIntent = new Intent();
-        fillInIntent.putExtra("ACTIVITY_ID", activity.getId());
+        fillInIntent.putExtra("ACTIVITY_ID", activity.getId());  // ← KEY QUAN TRỌNG
         views.setOnClickFillInIntent(R.id.item_root, fillInIntent);
 
         return views;

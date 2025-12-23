@@ -6,6 +6,7 @@ import android.appwidget.AppWidgetProvider;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 import android.widget.RemoteViews;
 
 import com.example.nhom4.MainActivity;
@@ -24,39 +25,34 @@ public class ActivityListWidgetProvider extends AppWidgetProvider {
     static void updateAppWidget(Context context, AppWidgetManager appWidgetManager, int appWidgetId) {
         RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.activity_list_widget);
 
-        // Set RemoteAdapter cho ListView
+        // RemoteAdapter
         Intent serviceIntent = new Intent(context, ActivityWidgetRemoteViewsService.class);
         views.setRemoteAdapter(R.id.lv_activities, serviceIntent);
-
         views.setEmptyView(R.id.lv_activities, R.id.tv_empty);
 
-        // ===== TEMPLATE INTENT: MỞ THẲNG DETAILACTIVITY =====
+        // TEMPLATE INTENT: Mở DetailActivity
         Intent templateIntent = new Intent(context, DetailActivity.class);
         templateIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        // Không cần putExtra cố định ở đây, vì sẽ được fill từ factory
+
+        // FLAG_MUTABLE để merge fillInIntent (quan trọng trên API 31+)
+        int flags = PendingIntent.FLAG_UPDATE_CURRENT;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            flags |= PendingIntent.FLAG_MUTABLE;
+        }
 
         PendingIntent templatePendingIntent = PendingIntent.getActivity(
-                context,
-                0,
-                templateIntent,
-                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
+                context, 0, templateIntent, flags
         );
 
-        // Áp dụng template cho ListView – mỗi item sẽ nhận ACTIVITY_ID từ fillInIntent
         views.setPendingIntentTemplate(R.id.lv_activities, templatePendingIntent);
 
-        // Optional: Click vào phần nền widget (không phải item) → mở MainActivity
+        // Click background widget → MainActivity
         Intent rootIntent = new Intent(context, MainActivity.class);
-        rootIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
         PendingIntent rootPendingIntent = PendingIntent.getActivity(
-                context,
-                1,  // requestCode khác để tránh conflict
-                rootIntent,
-                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
+                context, 1, rootIntent, flags
         );
         views.setOnClickPendingIntent(R.id.widget_root_layout, rootPendingIntent);
 
-        // Cập nhật widget
         appWidgetManager.updateAppWidget(appWidgetId, views);
         appWidgetManager.notifyAppWidgetViewDataChanged(appWidgetId, R.id.lv_activities);
     }
