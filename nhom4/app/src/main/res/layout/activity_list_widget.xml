@@ -1,35 +1,37 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/widget_root"
-    android:orientation="vertical"
+    android:id="@+id/widget_root_layout"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:background="?attr/colorSurface"
-    android:padding="8dp">
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@drawable/default_image_background"
+    android:padding="16dp">
 
     <TextView
-        android:id="@+id/widget_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Hoạt động"
+        android:text="Hoạt động đang thực hiện"
+        android:textSize="18sp"
         android:textStyle="bold"
-        android:textSize="16sp"
-        android:paddingBottom="4dp"/>
+        android:textColor="@android:color/black"
+        android:layout_marginBottom="8dp" />
 
-    <!-- BẮT BUỘC dùng ListView cho collection widget -->
     <ListView
-        android:id="@+id/list_activities"
+        android:id="@+id/lv_activities"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:divider="@null"
-        android:dividerHeight="0dp"/>
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:divider="@android:color/transparent"
+        android:dividerHeight="8dp" />
 
     <TextView
-        android:id="@+id/widget_empty_text"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:id="@+id/tv_empty"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
         android:text="Chưa có hoạt động nào"
-        android:visibility="gone"
-        android:layout_gravity="center"
-        android:padding="16dp"/>
+        android:textSize="16sp"
+        android:textColor="@android:color/darker_gray"
+        android:visibility="gone" />
+
 </LinearLayout>

@@ -3,19 +3,18 @@ package com.example.nhom4.ui.page.main;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.CountDownTimer;
-import android.widget.ImageView; // btnClose là ImageView hoặc Button đều được, ở đây XML là MaterialButton nhưng cast về View/ImageView đều ok nếu chỉ setOnClick
+import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.view.View; // Import thêm View
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.bumptech.glide.Glide;
 import com.example.nhom4.R;
-import com.google.android.material.floatingactionbutton.FloatingActionButton; // [QUAN TRỌNG] Thêm import này
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.progressindicator.CircularProgressIndicator;
-import com.google.android.material.imageview.ShapeableImageView; // Cập nhật cho đúng XML
+import com.google.android.material.imageview.ShapeableImageView;
 
 import java.util.Locale;
 
@@ -23,19 +22,13 @@ public class FocusActivity extends AppCompatActivity {
 
     private TextView tvTimer, tvTitle;
     private CircularProgressIndicator progressIndicator;
-
-    // [SỬA LỖI] Đổi từ FrameLayout -> FloatingActionButton
     private FloatingActionButton btnFinish;
-
-    // [CẬP NHẬT] Đổi ImageView -> View hoặc MaterialButton cho đúng logic, nhưng View là đủ dùng
     private View btnClose;
-    private ShapeableImageView imgCenterIcon; // Cập nhật cho đúng XML (ShapeableImageView)
+    private ShapeableImageView imgCenterIcon;
 
     private CountDownTimer countDownTimer;
     private long totalTimeInMillis;
     private long timeLeftInMillis;
-
-    public static final String EXTRA_ACTIVITY_RESULT = "extra_activity_result";
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -51,17 +44,11 @@ public class FocusActivity extends AppCompatActivity {
         tvTimer = findViewById(R.id.tv_timer);
         tvTitle = findViewById(R.id.tv_activity_title);
         progressIndicator = findViewById(R.id.progress_timer);
-
-        // [SỬA LỖI] Ánh xạ đúng kiểu
         btnFinish = findViewById(R.id.btn_finish);
-
         btnClose = findViewById(R.id.btn_close);
         imgCenterIcon = findViewById(R.id.img_center_icon);
 
-        // Nút Hoàn thành -> Kết thúc
         btnFinish.setOnClickListener(v -> finishFocusSession());
-
-        // Nút Đóng -> Hủy bỏ
         btnClose.setOnClickListener(v -> {
             setResult(RESULT_CANCELED);
             finish();
@@ -108,8 +95,7 @@ public class FocusActivity extends AppCompatActivity {
     private void updateCountDownText() {
         int minutes = (int) (timeLeftInMillis / 1000) / 60;
         int seconds = (int) (timeLeftInMillis / 1000) % 60;
-        String timeFormatted = String.format(Locale.getDefault(), "%02d:%02d", minutes, seconds);
-        tvTimer.setText(timeFormatted);
+        tvTimer.setText(String.format(Locale.getDefault(), "%02d:%02d", minutes, seconds));
     }
 
     private void updateProgressBar() {
@@ -119,9 +105,7 @@ public class FocusActivity extends AppCompatActivity {
 
     private void finishFocusSession() {
         if (countDownTimer != null) countDownTimer.cancel();
-
-        Intent resultIntent = new Intent();
-        setResult(RESULT_OK, resultIntent);
+        setResult(RESULT_OK);
         finish();
     }
 

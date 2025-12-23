@@ -17,7 +17,10 @@ import com.example.nhom4.R;
 import com.example.nhom4.data.Resource;
 import com.example.nhom4.data.bean.Activity;
 import com.example.nhom4.ui.page.calendar.StoryAllActivity;
+import com.example.nhom4.ui.page.main.FocusActivity;
 import com.example.nhom4.ui.viewmodel.DetailViewModel;
+
+import com.google.android.material.button.MaterialButton;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -30,10 +33,11 @@ public class DetailActivity extends AppCompatActivity {
     private DetailViewModel viewModel;
     private Activity currentActivity;
 
-    private TextView tvTitle, tvTime, tvMembers, tvProgress;
+    private TextView tvTitle, tvTime, tvMembers, tvProgress, tvFinished;
     private ImageView imgHeader;
     private GridLayout gridDays;
     private Toolbar toolbar;
+    private MaterialButton btnStartFocus;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,6 +70,7 @@ public class DetailActivity extends AppCompatActivity {
         bindData();
         setupGridDays();
         observeViewModel();
+        checkTodayCheckedIn();  // Kiểm tra và hiển thị nút phù hợp
     }
 
     private void initViews() {
@@ -73,6 +78,8 @@ public class DetailActivity extends AppCompatActivity {
         tvTime = findViewById(R.id.tv_time);
         tvMembers = findViewById(R.id.tv_members);
         tvProgress = findViewById(R.id.tv_progress);
+        tvFinished = findViewById(R.id.tv_finished);
+        btnStartFocus = findViewById(R.id.btn_start_focus);
         imgHeader = findViewById(R.id.img_header);
         gridDays = findViewById(R.id.grid_days);
     }
@@ -101,13 +108,12 @@ public class DetailActivity extends AppCompatActivity {
         int count = participants != null ? participants.size() : 1;
         tvMembers.setText(count + " member" + (count > 1 ? "s" : ""));
 
-        // --- HEADER IMAGE (Dùng Glide) ---
-        // Đảm bảo bạn đã thêm dependency Glide trong build.gradle
+        // --- HEADER IMAGE ---
         if (currentActivity.getImageUrl() != null && !currentActivity.getImageUrl().isEmpty()) {
             Glide.with(this)
                     .load(currentActivity.getImageUrl())
-                    .placeholder(R.drawable.default_image_background) // Ảnh chờ (cần có trong drawable)
-                    .error(R.drawable.default_image_background)       // Ảnh lỗi
+                    .placeholder(R.drawable.default_image_background)
+                    .error(R.drawable.default_image_background)
                     .centerCrop()
                     .into(imgHeader);
         } else {
@@ -131,19 +137,63 @@ public class DetailActivity extends AppCompatActivity {
             final int finalDay = day;
             viewModel.isDayCheckedIn(currentActivity.getId(), finalDay).observe(this, checked -> {
                 if (checked != null && checked) {
-                    // Nếu ngày đó có check-in -> Hiện icon sáng
-                    imgSun.setImageResource(R.drawable.outline_light_mode_24); // Đảm bảo có resource này
+                    // Ngày có post → load first photoUrl
+                    viewModel.getFirstPhotoUrlOfDay(currentActivity.getId(), finalDay).observe(this, photoUrl -> {
+                        if (photoUrl != null) {
+                            Glide.with(DetailActivity.this)
+                                    .load(photoUrl)
+                                    .placeholder(R.drawable.outline_light_mode_24)
+                                    .error(R.drawable.outline_light_mode_24)
+                                    .centerCrop()
+                                    .into(imgSun);
+                        } else {
+                            imgSun.setImageResource(R.drawable.outline_light_mode_24); // Icon sáng
+                        }
+                    });
 
                     dayView.setOnClickListener(v -> openStoryAll(finalDay));
                 } else {
-                    // Nếu không -> Hiện icon mờ/tối
-                    imgSun.setImageResource(R.drawable.outline_light_mode_24);
-
+                    imgSun.setImageResource(R.drawable.outline_light_mode_24); // Icon tối
                     dayView.setOnClickListener(null);
                 }
             });
 
             gridDays.addView(dayView);
+        }
+    }
+
+    private void checkTodayCheckedIn() {
+        int today = Calendar.getInstance().get(Calendar.DAY_OF_MONTH);
+        viewModel.isDayCheckedIn(currentActivity.getId(), today).observe(this, checked -> {
+            if (checked != null && checked) {
+                // Đã check-in hôm nay → hiện "Finished"
+                tvFinished.setVisibility(View.VISIBLE);
+                btnStartFocus.setVisibility(View.GONE);
+            } else {
+                // Chưa check-in → hiện nút "Thực hiện"
+                tvFinished.setVisibility(View.GONE);
+                btnStartFocus.setVisibility(View.VISIBLE);
+                btnStartFocus.setOnClickListener(v -> startFocusSession());
+            }
+        });
+    }
+
+    private void startFocusSession() {
+        Intent intent = new Intent(this, FocusActivity.class);
+        intent.putExtra("title", currentActivity.getTitle());
+        intent.putExtra("duration", currentActivity.getDurationSeconds());
+        intent.putExtra("imgUrl", currentActivity.getImageUrl());
+        startActivityForResult(intent, 100);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == 100 && resultCode == RESULT_OK) {
+            // Cập nhật progress, grid days và trạng thái nút sau khi hoàn thành focus
+            viewModel.loadProgress();
+            setupGridDays();
+            checkTodayCheckedIn();
         }
     }
 
