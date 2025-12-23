@@ -7,18 +7,44 @@
     android:minHeight="140dp"
     android:orientation="horizontal"
     android:padding="12dp"
-    android:background="@drawable/widget_bg_rounded">   <!-- bo góc toàn widget -->
+    android:background="@drawable/widget_bg_rounded">
 
-    <!-- PHẦN TEXT – đẹp hơn rất nhiều -->
+    <!-- PHẦN TEXT + AVATAR -->
     <LinearLayout
         android:layout_width="0dp"
         android:layout_height="match_parent"
         android:layout_weight="1"
-        android:orientation="vertical"
-        android:gravity="center_vertical"
-        android:paddingEnd="8dp">
+        android:orientation="vertical">
 
-        <!-- Nền mờ gradient + bo góc nhẹ cho phần text -->
+        <!-- Avatar + DisplayName -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="4dp">
+
+            <ImageView
+                android:id="@+id/img_avatar"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:layout_marginEnd="8dp"
+                android:scaleType="centerCrop"
+                android:src="@drawable/default_image_background"
+                android:background="@drawable/default_image_background"/>
+
+            <TextView
+                android:id="@+id/tv_display_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="#FFFFFF"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:maxLines="1"
+                android:ellipsize="end"/>
+        </LinearLayout>
+
+        <!-- Title + Caption -->
         <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -38,50 +64,35 @@
                     android:textColor="#FFFFFF"
                     android:textSize="17sp"
                     android:textStyle="bold"
-                    android:shadowColor="#80000000"
-                    android:shadowDx="0"
-                    android:shadowDy="1"
-                    android:shadowRadius="3"
                     android:maxLines="2"
-                    android:ellipsize="end" />
+                    android:ellipsize="end"/>
 
                 <TextView
                     android:id="@+id/tv_caption"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
-                    android:text="Những khám phá mới nhất từ kính viễn vọng James Webb..."
+                    android:text="Những khám phá mới nhất..."
                     android:textColor="#E0FFFFFF"
                     android:textSize="13sp"
                     android:maxLines="3"
-                    android:ellipsize="end"
-                    android:shadowColor="#80000000"
-                    android:shadowDx="0"
-                    android:shadowDy="1"
-                    android:shadowRadius="2" />
-
+                    android:ellipsize="end"/>
             </LinearLayout>
         </FrameLayout>
     </LinearLayout>
 
-    <!-- PHẦN ẢNH – đẹp như widget chính chủ Google/Apple -->
+    <!-- PHẦN ẢNH CHÍNH -->
     <FrameLayout
         android:layout_width="0dp"
         android:layout_height="match_parent"
         android:layout_weight="1">
 
-        <!-- Ảnh chính -->
         <ImageView
             android:id="@+id/img_photo"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:scaleType="centerCrop"
-            android:src="@drawable/default_image" />
-
-        <!-- Bo góc + overlay tối đẹp lung linh -->
-        <ImageView
-            android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+            android:src="@drawable/default_image"/>
     </FrameLayout>
 
 </LinearLayout>

@@ -162,7 +162,32 @@
                 </LinearLayout>
 
                 <!-- Row tiện ích khác có thể thêm ở đây -->
+                <!-- Row tiện ích 2: Thêm Widget cho activity-->
+                <LinearLayout
+                    android:id="@+id/row_add_acwidget"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:paddingVertical="8dp">
 
+                    <TextView
+                        android:id="@+id/tv_add_acwidget"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Thêm Widget Activity"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
+                        android:textColor="?attr/colorOnSurface"/>
+
+                    <ImageView
+                        android:id="@+id/iv_add_acwidget_icon"
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
+                        android:src="@drawable/ic_utilities"
+                        app:tint="?attr/colorPrimary"/>
+                </LinearLayout>
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 

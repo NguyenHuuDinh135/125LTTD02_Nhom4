@@ -217,4 +217,19 @@ public class MainViewModel extends ViewModel {
     public void refreshActivities() {
         loadJoinedActivities();
     }
+    // ====================== OPEN POST FROM WIDGET ======================
+    private final MutableLiveData<String> openPostId = new MutableLiveData<>();
+
+    public LiveData<String> getOpenPostId() {
+        return openPostId;
+    }
+
+    public void setOpenPostId(String postId) {
+        openPostId.setValue(postId);
+    }
+
+    public void clearOpenPostId() {
+        openPostId.setValue(null);
+    }
+
 }

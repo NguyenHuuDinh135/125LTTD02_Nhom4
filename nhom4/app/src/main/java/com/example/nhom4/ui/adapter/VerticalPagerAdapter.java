@@ -83,4 +83,11 @@ public class VerticalPagerAdapter extends FragmentStateAdapter {
         }
         return false;
     }
+    public String getPostIdAt(int position) {
+        if (position >= 0 && position < postList.size()) {
+            return postList.get(position).getPostId();
+        }
+        return null;
+    }
+
 }

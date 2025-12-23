@@ -10,11 +10,13 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.bumptech.glide.Glide;
 import com.example.nhom4.ui.adapter.MainPagerAdapter;
 import com.example.nhom4.ui.page.calendar.ProfileActivity;
+import com.example.nhom4.ui.viewmodel.MainViewModel;
 import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.imageview.ShapeableImageView;
 import com.google.firebase.auth.FirebaseAuth;
@@ -49,8 +51,16 @@ public class MainActivity extends AppCompatActivity {
         setupStatusBarInset();   // 👈 FIX STATUS BAR
         setupViewPager();
         loadCurrentUserAvatar();
+        handleOpenPostFromWidget(getIntent());
+
     }
 
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent); // ⚠️ RẤT QUAN TRỌNG
+        handleOpenPostFromWidget(intent);
+    }
     /**
      * XỬ LÝ INSET STATUS BAR CHO TOP BAR
      */
@@ -118,6 +128,25 @@ public class MainActivity extends AppCompatActivity {
                         updateTopBarUI(position);
                     }
                 });
+    }
+
+    private void handleOpenPostFromWidget(Intent intent) {
+        if (intent == null) return;
+
+        boolean openPost = intent.getBooleanExtra("OPEN_POST", false);
+        if (!openPost) return;
+
+        String postId = intent.getStringExtra("POST_ID");
+        if (postId == null || postId.isEmpty()) return;
+
+        // Chuyển về tab Feed
+        viewPagerMain.setCurrentItem(1, false);
+
+        // 🔥 LƯU POST ID VÀO VIEWMODEL
+        MainViewModel viewModel =
+                new ViewModelProvider(this).get(MainViewModel.class);
+
+        viewModel.setOpenPostId(postId);
     }
 
     private void updateTopBarUI(int position) {

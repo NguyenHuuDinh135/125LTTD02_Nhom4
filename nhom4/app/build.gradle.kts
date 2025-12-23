@@ -39,6 +39,7 @@ android {
 val cameraxVersion = "1.3.4"
 
 dependencies {
+    implementation(libs.emoji2.bundled)
     // --- THÊM THƯ VIỆN DESUGARING TẠI ĐÂY ---
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
 
@@ -82,4 +83,7 @@ dependencies {
     implementation("androidx.emoji2:emoji2:1.4.0") // Đủ dùng, không cần emojipicker nếu chỉ hiển thị
     implementation("androidx.emoji2:emoji2-views:1.4.0") // Nếu dùng EmojiTextView
     implementation("com.google.code.gson:gson:2.10.1")
+    implementation("androidx.emoji2:emoji2-emojipicker:1.4.0")
+    implementation("androidx.emoji2:emoji2-views-helper:1.4.0")
+
 }
