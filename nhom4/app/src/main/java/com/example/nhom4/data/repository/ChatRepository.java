@@ -28,6 +28,7 @@ public class ChatRepository {
 
     // Giữ reference để hủy lắng nghe khi cần
     private ListenerRegistration conversationListener;
+    private ListenerRegistration relationshipListener; // THÊM: Để lắng nghe realtime bạn bè
 
     /**
      * LOAD DANH SÁCH HỘI THOẠI (REALTIME + FULL FRIENDS)
@@ -37,17 +38,24 @@ public class ChatRepository {
         if (conversationListener != null) {
             conversationListener.remove();
         }
+        if (relationshipListener != null) {
+            relationshipListener.remove();
+        }
 
         result.postValue(Resource.loading(null));
 
-        // BƯỚC 1: LẤY DANH SÁCH BẠN BÈ (Lấy 1 lần)
-        db.collection("relationships")
+        // BƯỚC 1: LẮNG NGHE REALTIME DANH SÁCH BẠN BÈ (status=accepted)
+        relationshipListener = db.collection("relationships")
                 .whereArrayContains("members", currentUserId)
                 .whereEqualTo("status", "accepted")
-                .get()
-                .addOnSuccessListener(relSnaps -> {
+                .addSnapshotListener((relSnaps, relError) -> {
+                    if (relError != null) {
+                        result.postValue(Resource.error(relError.getMessage(), null));
+                        return;
+                    }
+
                     List<String> friendIds = new ArrayList<>();
-                    for (DocumentSnapshot doc : relSnaps) {
+                    for (QueryDocumentSnapshot doc : relSnaps) {
                         List<String> members = (List<String>) doc.get("members");
                         if (members != null) {
                             for (String memberId : members) {
@@ -61,142 +69,112 @@ public class ChatRepository {
                         return;
                     }
 
-                    // Lấy thông tin chi tiết (Avatar, Tên) của bạn bè
-                    fetchFriendsInfoAndListenToChat(currentUserId, friendIds, result);
-                })
-                .addOnFailureListener(e -> result.postValue(Resource.error("Lỗi lấy bạn bè: " + e.getMessage(), null)));
-    }
+                    // BƯỚC 2: LOAD THÔNG TIN BẠN BÈ (REALTIME)
+                    db.collection("users")
+                            .whereIn("uid", friendIds)
+                            .addSnapshotListener((userSnaps, userError) -> {
+                                if (userError != null) {
+                                    result.postValue(Resource.error(userError.getMessage(), null));
+                                    return;
+                                }
 
-    private void fetchFriendsInfoAndListenToChat(String currentUserId, List<String> friendIds, MutableLiveData<Resource<List<Conversation>>> result) {
-        // Chia nhỏ list nếu quá 10 người (Firestore limit), ở đây làm đơn giản cho <10
-        List<Task<DocumentSnapshot>> tasks = new ArrayList<>();
-        for (String fid : friendIds) {
-            tasks.add(db.collection("users").document(fid).get());
-        }
-
-        Tasks.whenAllSuccess(tasks).addOnSuccessListener(objects -> {
-            List<User> friendsList = new ArrayList<>();
-            for (Object obj : objects) {
-                DocumentSnapshot doc = (DocumentSnapshot) obj;
-                if (doc.exists()) {
-                    User u = doc.toObject(User.class);
-                    u.setUid(doc.getId());
-                    friendsList.add(u);
-                }
-            }
-
-            // BƯỚC 2 & 3: LẮNG NGHE CONVERSATION REALTIME VÀ GỘP
-            startListeningToConversations(currentUserId, friendsList, result);
-        });
-    }
-
-    private void startListeningToConversations(String currentUserId, List<User> friendsList, MutableLiveData<Resource<List<Conversation>>> result) {
-        // Lắng nghe bảng conversations REALTIME
-        conversationListener = db.collection("conversations")
-                .whereArrayContains("members", currentUserId)
-                .addSnapshotListener((snapshots, error) -> {
-                    if (error != null) {
-                        Log.e("ChatRepo", "Listen error", error);
-                        return;
-                    }
-
-                    Map<String, Conversation> activeChatMap = new HashMap<>();
-                    if (snapshots != null) {
-                        for (DocumentSnapshot doc : snapshots) {
-                            Conversation c = doc.toObject(Conversation.class); // Tự động map field lastMessageAt vào Timestamp
-                            c.setConversationId(doc.getId());
-
-                            // Xác định ID đối phương
-                            String partnerId = null;
-                            if (c.getMembers() != null) {
-                                for (String m : c.getMembers()) {
-                                    if (!m.equals(currentUserId)) {
-                                        partnerId = m;
-                                        break;
+                                Map<String, User> friendMap = new HashMap<>();
+                                for (QueryDocumentSnapshot doc : userSnaps) {
+                                    User friend = doc.toObject(User.class);
+                                    if (friend != null) {
+                                        friendMap.put(friend.getUid(), friend);
                                     }
                                 }
-                            }
-                            if (partnerId != null) {
-                                activeChatMap.put(partnerId, c);
-                            }
-                        }
-                    }
 
-                    // BƯỚC 4: GỘP DANH SÁCH (MERGE)
-                    List<Conversation> finalDisplayList = new ArrayList<>();
+                                // BƯỚC 3: LẮNG NGHE REALTIME DANH SÁCH CONVERSATION CỦA TÔI
+                                conversationListener = db.collection("conversations")
+                                        .whereArrayContains("members", currentUserId)
+                                        .addSnapshotListener((convSnaps, convError) -> {
+                                            if (convError != null) {
+                                                result.postValue(Resource.error(convError.getMessage(), null));
+                                                return;
+                                            }
 
-                    for (User friend : friendsList) {
-                        Conversation displayItem;
+                                            List<Conversation> conversations = new ArrayList<>();
+                                            for (QueryDocumentSnapshot doc : convSnaps) {
+                                                Conversation conv = doc.toObject(Conversation.class);
+                                                if (conv != null) {
+                                                    conv.setConversationId(doc.getId());
 
-                        if (activeChatMap.containsKey(friend.getUid())) {
-                            // Đã có tin nhắn -> Dùng conversation thật
-                            displayItem = activeChatMap.get(friend.getUid());
-                        } else {
-                            // Chưa có tin nhắn -> Tạo conversation giả để hiển thị
-                            displayItem = new Conversation();
-                            displayItem.setMembers(Arrays.asList(currentUserId, friend.getUid()));
-                            displayItem.setLastMessage("Bắt đầu trò chuyện ngay");
-                        }
+                                                    // Tìm ID bạn từ mảng members (loại trừ chính mình)
+                                                    for (String memberId : conv.getMembers()) {
+                                                        if (!memberId.equals(currentUserId)) {
+                                                            User friend = friendMap.get(memberId);
+                                                            if (friend != null) {
+                                                                conv.setFriendId(memberId);
+                                                                conv.setFriendName(friend.getUsername());
+                                                                conv.setFriendAvatar(friend.getProfilePhotoUrl());
+                                                                break;
+                                                            }
+                                                        }
+                                                    }
 
-                        // Luôn set lại thông tin hiển thị từ User mới nhất
-                        displayItem.setFriendId(friend.getUid());
-                        displayItem.setFriendName(friend.getUsername());
-                        displayItem.setFriendAvatar(friend.getProfilePhotoUrl());
+                                                    conversations.add(conv);
+                                                }
+                                            }
 
-                        finalDisplayList.add(displayItem);
-                    }
+                                            // Sắp xếp theo thời gian lastMessageAt mới nhất (DESC)
+                                            conversations.sort((c1, c2) -> Long.compare(c2.getTimestampLong(), c1.getTimestampLong()));
 
-                    // Sắp xếp: Ai có tin nhắn mới nhất lên đầu
-                    finalDisplayList.sort((c1, c2) -> Long.compare(c2.getTimestampLong(), c1.getTimestampLong()));
-
-                    result.postValue(Resource.success(finalDisplayList));
+                                            result.postValue(Resource.success(conversations));
+                                        });
+                            });
                 });
     }
 
-    // --- CÁC HÀM CŨ GIỮ NGUYÊN (Create, Send Message...) ---
+    // [MỚI] Tìm hoặc tạo Conversation ID (Cho chat 1-1)
+    public void findOrCreateConversation(String userId1, String userId2, MutableLiveData<Resource<String>> result) {
+        result.postValue(Resource.loading(null));
 
-    public void findOrCreateConversation(String currentUserId, String targetUserId, MutableLiveData<Resource<String>> result) {
+        String[] sortedIds = {userId1, userId2};
+        Arrays.sort(sortedIds);
+        String convKey = sortedIds[0] + "_" + sortedIds[1];
+
+        // Tìm conversation hiện có
         db.collection("conversations")
-                .whereArrayContains("members", currentUserId)
+                .whereArrayContains("members", userId1)
                 .get()
                 .addOnSuccessListener(snapshots -> {
-                    String foundId = null;
-                    for (QueryDocumentSnapshot doc : snapshots) {
+                    for (DocumentSnapshot doc : snapshots) {
                         List<String> members = (List<String>) doc.get("members");
-                        if (members != null && members.contains(targetUserId)) {
-                            foundId = doc.getId();
-                            break;
+                        if (members != null && members.contains(userId2)) {
+                            result.postValue(Resource.success(doc.getId()));
+                            return;
                         }
                     }
-                    if (foundId != null) {
-                        result.postValue(Resource.success(foundId));
-                    } else {
-                        createConversation(currentUserId, targetUserId, result);
-                    }
+
+                    // Không tìm thấy -> Tạo mới
+                    Map<String, Object> newConv = new HashMap<>();
+                    newConv.put("members", Arrays.asList(userId1, userId2));
+                    newConv.put("createdAt", FieldValue.serverTimestamp());
+                    newConv.put("lastMessage", null);
+                    newConv.put("lastMessageAt", null);
+                    newConv.put("lastSenderId", null);
+
+                    db.collection("conversations")
+                            .add(newConv)
+                            .addOnSuccessListener(ref -> result.postValue(Resource.success(ref.getId())))
+                            .addOnFailureListener(e -> result.postValue(Resource.error(e.getMessage(), null)));
                 })
                 .addOnFailureListener(e -> result.postValue(Resource.error(e.getMessage(), null)));
     }
 
-    private void createConversation(String currentUserId, String targetUserId, MutableLiveData<Resource<String>> result) {
-        Map<String, Object> conv = new HashMap<>();
-        conv.put("members", Arrays.asList(currentUserId, targetUserId));
-        conv.put("createdAt", FieldValue.serverTimestamp());
-        conv.put("lastMessage", "Đã gửi một phản hồi");
-        conv.put("lastMessageAt", FieldValue.serverTimestamp());
-        conv.put("lastSenderId", currentUserId);
-
-        db.collection("conversations").add(conv)
-                .addOnSuccessListener(doc -> result.postValue(Resource.success(doc.getId())))
-                .addOnFailureListener(e -> result.postValue(Resource.error(e.getMessage(), null)));
-    }
-
+    // Gửi tin nhắn + Update lastMessage
     public void sendMessage(String currentUserId, String conversationId, Message message, MutableLiveData<Resource<Boolean>> result) {
+        result.postValue(Resource.loading(null));
+
+        // Gửi tin nhắn vào sub-collection "messages"
         db.collection("conversations").document(conversationId)
                 .collection("messages")
                 .add(message)
-                .addOnSuccessListener(doc -> {
-                    String preview = "post_reply".equals(message.getType()) ? "Đã phản hồi bài viết" : message.getContent();
-                    updateLastMessage(currentUserId, conversationId, preview);
+                .addOnSuccessListener(ref -> {
+                    // Update lastMessage
+                    updateLastMessage(currentUserId, conversationId, message.getContent());
                     result.postValue(Resource.success(true));
                 })
                 .addOnFailureListener(e -> result.postValue(Resource.error(e.getMessage(), false)));

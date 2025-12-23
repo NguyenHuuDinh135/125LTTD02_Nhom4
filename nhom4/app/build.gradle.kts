@@ -79,7 +79,7 @@ dependencies {
     // Widget
     implementation("com.squareup.picasso:picasso:2.71828")
     implementation("androidx.glance:glance-appwidget:1.1.0")
-
+    implementation("com.giphy.sdk:ui:2.3.0")
     // Icon
     implementation("androidx.emoji2:emoji2:1.4.0") // Đủ dùng, không cần emojipicker nếu chỉ hiển thị
     implementation("androidx.emoji2:emoji2-views:1.4.0") // Nếu dùng EmojiTextView

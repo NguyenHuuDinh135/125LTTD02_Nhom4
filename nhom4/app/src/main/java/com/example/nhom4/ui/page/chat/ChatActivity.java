@@ -168,33 +168,55 @@ public class ChatActivity extends AppCompatActivity {
     }
 
     private void loadPartnerInfo() {
-        // Ưu tiên hiển thị dữ liệu truyền từ Intent cho nhanh
-        if (partnerName != null && !partnerName.isEmpty()) {
-            tvName.setText(partnerName);
-            tvStatus.setText("Đang hoạt động");
-            if (partnerAvatar != null && !partnerAvatar.isEmpty()) {
-                Glide.with(this).load(partnerAvatar).placeholder(R.drawable.avatar_placeholder).circleCrop().into(imgAvatar);
-            }
-            return;
-        }
+        tvName.setText(partnerName != null ? partnerName : "Người dùng");
 
-        // Nếu Intent thiếu thông tin, load lại từ Firestore
-        if (partnerId != null) {
+        String avatarUrl = partnerAvatar; // Từ Intent
+
+        if (avatarUrl != null && !avatarUrl.isEmpty()) {
+            // Load avatar từ Intent vào toolbar
+            Glide.with(this)
+                    .load(avatarUrl)
+                    .placeholder(R.drawable.avatar_placeholder)
+                    .error(R.drawable.avatar_placeholder)
+                    .circleCrop()
+                    .into(imgAvatar);
+
+            // Truyền avatar vào adapter để bind vào tin nhắn nhận
+            adapter.setPartnerAvatarUrl(avatarUrl);
+        } else if (partnerId != null) {
+            // Fallback: Load avatar từ Firestore nếu Intent không có
             FirebaseFirestore.getInstance().collection("users").document(partnerId)
                     .get()
                     .addOnSuccessListener(doc -> {
                         if (doc.exists()) {
-                            User user = doc.toObject(User.class);
-                            if (user != null) {
-                                tvName.setText(user.getUsername());
-                                String avatarUrl = user.getProfilePhotoUrl();
-                                if (avatarUrl != null && !avatarUrl.isEmpty()) {
-                                    Glide.with(ChatActivity.this).load(avatarUrl).placeholder(R.drawable.avatar_placeholder).circleCrop().into(imgAvatar);
-                                }
+                            String url = doc.getString("profilePhotoUrl"); // Hoặc field bạn dùng (ví dụ: avatarUrl)
+                            if (url != null && !url.isEmpty()) {
+                                Glide.with(ChatActivity.this)
+                                        .load(url)
+                                        .placeholder(R.drawable.avatar_placeholder)
+                                        .error(R.drawable.avatar_placeholder)
+                                        .circleCrop()
+                                        .into(imgAvatar);
+
+                                // Truyền avatar vào adapter
+                                adapter.setPartnerAvatarUrl(url);
+                            } else {
+                                // Nếu không có avatar trong Firestore, dùng placeholder
+                                imgAvatar.setImageResource(R.drawable.avatar_placeholder);
+                                adapter.setPartnerAvatarUrl(null); // Hoặc empty string
                             }
                         }
                     })
-                    .addOnFailureListener(e -> tvName.setText("Người dùng"));
+                    .addOnFailureListener(e -> {
+                        // Lỗi → dùng placeholder
+                        imgAvatar.setImageResource(R.drawable.avatar_placeholder);
+                        adapter.setPartnerAvatarUrl(null);
+                        Toast.makeText(this, "Không tải được avatar", Toast.LENGTH_SHORT).show();
+                    });
+        } else {
+            // Không có partnerId → placeholder
+            imgAvatar.setImageResource(R.drawable.avatar_placeholder);
+            adapter.setPartnerAvatarUrl(null);
         }
     }
 
