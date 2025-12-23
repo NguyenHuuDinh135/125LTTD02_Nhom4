@@ -10,7 +10,8 @@
         android:id="@+id/img_sun"
         android:layout_width="48dp"
         android:layout_height="48dp"
-        android:src="@drawable/outline_light_mode_24" />
+        android:scaleType="centerCrop"
+    android:src="@drawable/outline_light_mode_24" />
 
     <TextView
         android:id="@+id/tv_day"

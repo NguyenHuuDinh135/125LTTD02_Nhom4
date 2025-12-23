@@ -49,7 +49,7 @@ public class DetailViewModel extends ViewModel {
     /**
      * Load progress (số lần check-in / target)
      */
-    private void loadProgress() {
+    public void loadProgress() {
         if (currentActivity == null || currentActivity.getId() == null) return;
 
         db.collection("posts")
@@ -93,6 +93,42 @@ public class DetailViewModel extends ViewModel {
                     result.postValue(!query.isEmpty());
                 })
                 .addOnFailureListener(e -> result.postValue(false));
+
+        return result;
+    }
+    public LiveData<String> getFirstPhotoUrlOfDay(String activityId, int day) {
+        MutableLiveData<String> result = new MutableLiveData<>();
+
+        Calendar cal = Calendar.getInstance();
+        cal.set(Calendar.DAY_OF_MONTH, day);
+        cal.set(Calendar.HOUR_OF_DAY, 0);
+        cal.set(Calendar.MINUTE, 0);
+        cal.set(Calendar.SECOND, 0);
+        Date startOfDay = cal.getTime();
+
+        cal.add(Calendar.DAY_OF_MONTH, 1);
+        Date endOfDay = cal.getTime();
+
+        db.collection("posts")
+                .whereEqualTo("activityId", activityId)
+                .whereGreaterThanOrEqualTo("createdAt", new Timestamp(startOfDay))
+                .whereLessThan("createdAt", new Timestamp(endOfDay))
+                .orderBy("createdAt", Query.Direction.DESCENDING) // Mới nhất trước
+                .limit(1) // Chỉ lấy 1 post đầu
+                .get()
+                .addOnSuccessListener(query -> {
+                    if (!query.isEmpty()) {
+                        Post post = query.getDocuments().get(0).toObject(Post.class);
+                        if (post != null && post.getPhotoUrl() != null && !post.getPhotoUrl().isEmpty()) {
+                            result.postValue(post.getPhotoUrl());
+                        } else {
+                            result.postValue(null);
+                        }
+                    } else {
+                        result.postValue(null);
+                    }
+                })
+                .addOnFailureListener(e -> result.postValue(null));
 
         return result;
     }

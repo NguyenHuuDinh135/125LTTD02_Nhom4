@@ -99,7 +99,7 @@
         </receiver>
 
         <service
-            android:name=".ui.page.widget.ActivityListWidgetService"
+            android:name=".ui.page.widget.ActivityWidgetRemoteViewsService"
             android:permission="android.permission.BIND_REMOTEVIEWS"
             android:exported="true" />
 
