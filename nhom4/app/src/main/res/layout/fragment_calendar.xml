@@ -25,7 +25,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                android:textSize="32dp"
+                android:textSize="24dp"
                 android:layout_marginBottom="8dp"
                 android:gravity="center"
                 tools:text="Khoảnh khắc đầu tiên: 03/03/2025"

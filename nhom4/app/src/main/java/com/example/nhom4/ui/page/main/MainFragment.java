@@ -128,7 +128,7 @@ public class MainFragment extends Fragment {
         setupThemeToggle();
         observeViewModel();
 
-
+        switchToMoodTab();
 
     }
 

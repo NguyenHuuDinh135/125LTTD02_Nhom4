@@ -93,7 +93,7 @@ public class CalendarFragment extends Fragment {
             if (stats != null) {
                 // Hiển thị Card Stats nếu có dữ liệu
                 cardStats.setVisibility(View.VISIBLE);
-                tvTotalLocket.setText(stats.totalPhotos + " Locket");
+                tvTotalLocket.setText(stats.totalPhotos + " Bài đăng");
                 tvCurrentStreak.setText(stats.currentStreak + "d chuỗi");
             } else {
                 cardStats.setVisibility(View.GONE);
