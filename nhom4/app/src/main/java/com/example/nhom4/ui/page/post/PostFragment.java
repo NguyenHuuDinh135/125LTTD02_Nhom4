@@ -212,7 +212,10 @@ public class PostFragment extends Fragment {
         if (checkIfEmptyState()) {
             return;
         }
-
+        layoutActivityInvite = view.findViewById(R.id.layout_activity_invite);
+        btnJoinActivity = view.findViewById(R.id.btn_join_activity);
+        imgInviterAvatar = view.findViewById(R.id.img_inviter_avatar);
+        tvInviteText = view.findViewById(R.id.tv_invite_text);
         setupMainUI();
         setupPostTypeLogic();
         setupReactionBar(view);
@@ -221,6 +224,7 @@ public class PostFragment extends Fragment {
         listenToReactionsRealtime();
         // Ẩn thanh reply + tham gia nếu là post của mình
         toggleCommentBarForOwnPost();
+
     }
     @Override
     public void onResume() {
@@ -463,6 +467,7 @@ public class PostFragment extends Fragment {
                 } else {
                     // Nếu chưa tham gia -> Hiện khung mời và cài đặt nút bấm
                     layoutActivityInvite.setVisibility(View.VISIBLE);
+                    btnJoinActivity.setVisibility(View.VISIBLE);
                     setupJoinButtonAction(targetActivityId);
                 }
             }
@@ -587,61 +592,10 @@ public class PostFragment extends Fragment {
 
     private void setupPostTypeLogic() {
         if ("activity".equals(postType)) {
-            // Đã xử lý ở toggleCommentBarForOwnPost() (ẩn nếu đã join)
-            tvInviteText.setText(userNameOfOwner + " rủ bạn tham gia!");
-
-            if (userAvatarOfOwner != null && !userAvatarOfOwner.isEmpty()) {
-                Glide.with(this).load(userAvatarOfOwner).into(imgInviterAvatar);
-            }
-            updateJoinButtonState(false);
-            btnJoinActivity.setOnClickListener(v -> {
-                Toast.makeText(getContext(), "Đã tham gia Activity!", Toast.LENGTH_SHORT).show();
-                updateJoinButtonState(true);
-            });
+            checkIfJoinedActivity();
+            btnHeartOverlay.setVisibility(View.VISIBLE);
         } else {
             layoutActivityInvite.setVisibility(View.GONE);
-        }
-        btnHeartOverlay.setVisibility(View.VISIBLE);
-    }
-
-    // 2. Cập nhật giao diện nút bấm (QUAN TRỌNG: Không ẩn layout, chỉ đổi trạng thái nút)
-    private void updateJoinButtonState(boolean isJoined) {
-        if (isJoined) {
-            // Trạng thái: ĐÃ THAM GIA
-            btnJoinActivity.setText("Đã tham gia");
-            btnJoinActivity.setIconResource(R.drawable.baseline_check_24); // Thêm icon tick (nếu có)
-            btnJoinActivity.setEnabled(false); // Không cho bấm nữa
-
-            // Đổi màu nút sang màu xám/nhạt để thể hiện disabled
-            btnJoinActivity.setBackgroundTintList(ColorStateList.valueOf(Color.GRAY));
-            btnJoinActivity.setTextColor(Color.WHITE);
-            btnJoinActivity.setAlpha(1f);
-        } else {
-            // Trạng thái: CHƯA THAM GIA (Mời tham gia)
-            btnJoinActivity.setText("Tham gia");
-            btnJoinActivity.setIcon(null);
-            btnJoinActivity.setEnabled(true);
-
-            TypedValue typedValue = new TypedValue();
-
-            btnJoinActivity.setBackgroundTintList(
-                    ColorStateList.valueOf(
-                            ContextCompat.getColor(
-                                    requireContext(),
-                                    R.color.md_theme_primary
-                            )
-                    )
-            );
-
-            btnJoinActivity.setTextColor(
-                    ContextCompat.getColor(
-                            requireContext(),
-                            R.color.md_theme_onPrimary
-                    )
-            );
-
-
-            btnJoinActivity.setAlpha(1f);
         }
     }
 
