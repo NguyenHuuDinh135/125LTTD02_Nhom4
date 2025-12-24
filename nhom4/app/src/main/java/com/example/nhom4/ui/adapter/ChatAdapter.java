@@ -69,7 +69,7 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             case TYPE_WIDGET_RECEIVED:
                 return new WidgetReceiverHolder(inflater.inflate(R.layout.item_message_widget_receiver, parent, false));
             case TYPE_SENT:
-                return new SentHolder(inflater.inflate(R.layout.item_message_sender, parent, false));
+                return new SentHolder(inflater.inflate(R.layout.item_message_sent, parent, false));
             default:
                 return new ReceivedHolder(inflater.inflate(R.layout.item_message_receiver, parent, false));
         }
