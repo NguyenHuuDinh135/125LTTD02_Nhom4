@@ -57,10 +57,6 @@ import java.util.Calendar;
 import java.util.List;
 
 public class MainFragment extends Fragment {
-    private LinearLayout layoutFilterContainer;
-    private TextView tvCurrentFilter;
-    // Biến lưu danh sách bạn bè tạm thời để tạo menu
-    private List<User> currentFriends = new ArrayList<>();
     // --- UI Components ---
     private MaterialButtonToggleGroup toggleGroupContentType;
     private RecyclerView moodRecyclerView, activityRecyclerView;
@@ -87,7 +83,7 @@ public class MainFragment extends Fragment {
     private int flashMode = ImageCapture.FLASH_MODE_OFF;
     private File currentPhotoFile = null;
     private MainViewModel viewModel;
-
+    // === FILTER UI (từ top bar) ===
     // [MỚI] Launcher để hứng kết quả từ FocusActivity
     private ActivityResultLauncher<Intent> focusActivityLauncher;
 
@@ -131,68 +127,11 @@ public class MainFragment extends Fragment {
         setupEventHandlers();
         setupThemeToggle();
         observeViewModel();
-        // 1. Quan sát danh sách bạn bè từ ViewModel
-        viewModel.getFriendListForMenu().observe(getViewLifecycleOwner(), users -> {
-            this.currentFriends = users;
-        });
 
-        // 2. Setup click sự kiện cho Top Bar Filter
-//       [SỬA ĐOẠN NÀY] Kiểm tra null trước khi set sự kiện click
-        if (layoutFilterContainer != null) {
-            layoutFilterContainer.setOnClickListener(v -> showDynamicFilterPopup(v));
-        }        toggleGroupContentType.check(R.id.btnTabMood);
-        switchToMoodTab();
+
+
     }
-    private void showDynamicFilterPopup(View anchor) {
-        PopupMenu popup = new PopupMenu(requireContext(), anchor);
-        Menu menu = popup.getMenu();
 
-        // --- NHÓM CỐ ĐỊNH ---
-        // Item 0: Mọi người (GroupId = 0)
-        menu.add(0, 0, 0, "Mọi người");
-
-        // Item 1: Bản thân (GroupId = 0)
-        menu.add(0, 1, 1, "Bản thân");
-
-        // --- NHÓM BẠN BÈ (Dynamic) ---
-        // Duyệt qua danh sách bạn bè và thêm vào menu
-        // GroupId = 1 để phân biệt
-        if (currentFriends != null && !currentFriends.isEmpty()) {
-            for (int i = 0; i < currentFriends.size(); i++) {
-                User friend = currentFriends.get(i);
-                // itemId = i + 100 để tránh trùng với các ID cố định
-                menu.add(1, i + 100, i + 2, friend.getUsername());
-            }
-        }
-
-        popup.setOnMenuItemClickListener(item -> {
-            String title = item.getTitle().toString();
-            int id = item.getItemId();
-            int groupId = item.getGroupId();
-
-            tvCurrentFilter.setText(title); // Cập nhật tên trên TopBar
-
-            if (groupId == 0) {
-                // Xử lý nhóm cố định
-                if (id == 0) {
-                    viewModel.setFilter(PostFilterType.ALL, null);
-                } else if (id == 1) {
-                    viewModel.setFilter(PostFilterType.SELF, null);
-                }
-            } else if (groupId == 1) {
-                // Xử lý nhóm bạn bè
-                int index = id - 100; // Lấy lại index gốc trong list
-                if (index >= 0 && index < currentFriends.size()) {
-                    User selectedFriend = currentFriends.get(index);
-                    // Lọc bài viết theo ID của người bạn này
-                    viewModel.setFilter(PostFilterType.SPECIFIC_USER, selectedFriend.getUid());
-                }
-            }
-            return true;
-        });
-
-        popup.show();
-    }
     private void setupThemeToggle() {
 //        btnNavLeft.setOnClickListener(v -> toggleTheme());
 
@@ -244,16 +183,7 @@ public class MainFragment extends Fragment {
         btnFlash = view.findViewById(R.id.btnFlash);
         btnAddActivity = view.findViewById(R.id.btnAddActivity);
         imgAnimationFloat = view.findViewById(R.id.imgAnimationFloat);
-        View topBar = view.findViewById(R.id.top_bar);
-        if (topBar != null) {
-            // Tìm các view con bên trong topBar
-            layoutFilterContainer = topBar.findViewById(R.id.layout_filter_container);
-            tvCurrentFilter = topBar.findViewById(R.id.tv_current_filter);
-        } else {
-            // Phòng trường hợp không tìm thấy top_bar, tìm trực tiếp từ view cha
-            layoutFilterContainer = view.findViewById(R.id.layout_filter_container);
-            tvCurrentFilter = view.findViewById(R.id.tv_current_filter);
-        }
+
         View bottomBar = view.findViewById(R.id.bottom_bar);
         btnNavLeft = bottomBar.findViewById(R.id.btn_nav_left);
         iconNavLeft = (ImageView) btnNavLeft;
@@ -626,6 +556,7 @@ public class MainFragment extends Fragment {
                 if (isMoodTabSelected) switchToMoodTab();
                 else switchToActivityTab();
             }
+
         });
 
         viewModel.getMoods().observe(getViewLifecycleOwner(), res -> {

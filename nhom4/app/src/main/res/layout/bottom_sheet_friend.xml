@@ -79,29 +79,6 @@
             android:paddingBottom="24dp">
 
             <com.google.android.material.textview.MaterialTextView
-                style="@style/TextAppearance.Material3.TitleMedium"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
-                android:layout_marginBottom="12dp"
-                android:text="@string/t_m_b_n_b_t_c_c_ng_d_ng_kh_c"
-                android:textColor="?attr/colorOnSurface"
-                android:textStyle="bold" />
-
-            <LinearLayout
-                android:id="@+id/icon_row_container"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:baselineAligned="false"
-                android:orientation="horizontal">
-
-                <include android:id="@+id/item_messenger" layout="@layout/item_social_icon" />
-                <include android:id="@+id/item_instagram" layout="@layout/item_social_icon" />
-                <include android:id="@+id/item_twitter" layout="@layout/item_social_icon" />
-                <include android:id="@+id/item_other" layout="@layout/item_social_icon" />
-            </LinearLayout>
-
-            <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/tv_section_requests"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -167,26 +144,6 @@
                 android:textAllCaps="false"
                 app:cornerRadius="12dp"
                 tools:ignore="HardcodedText" />
-
-            <com.google.android.material.textview.MaterialTextView
-                style="@style/TextAppearance.Material3.TitleMedium"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
-                android:layout_marginBottom="12dp"
-                android:text="@string/m_i_t_c_c_ng_d_ng_kh_c"
-                android:textColor="?attr/colorOnSurface"
-                android:textStyle="bold" />
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical">
-                <include android:id="@+id/invite_messenger" layout="@layout/item_invite_row" />
-                <include android:id="@+id/invite_facebook" layout="@layout/item_invite_row" />
-                <include android:id="@+id/invite_instagram" layout="@layout/item_invite_row" />
-                <include android:id="@+id/invite_other" layout="@layout/item_invite_row" />
-            </LinearLayout>
 
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
