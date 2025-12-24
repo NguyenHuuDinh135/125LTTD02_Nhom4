@@ -2,6 +2,7 @@ package com.example.nhom4.ui.page.activity;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.GridLayout;
 import android.widget.ImageView;
@@ -21,6 +22,7 @@ import com.example.nhom4.ui.page.main.FocusActivity;
 import com.example.nhom4.ui.viewmodel.DetailViewModel;
 
 import com.google.android.material.button.MaterialButton;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -44,7 +46,7 @@ public class DetailActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_detail);
 
-        // Setup Toolbar
+        // Toolbar setup
         toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         if (getSupportActionBar() != null) {
@@ -52,25 +54,66 @@ public class DetailActivity extends AppCompatActivity {
             getSupportActionBar().setDisplayShowHomeEnabled(true);
             getSupportActionBar().setTitle("");
         }
-
         toolbar.setNavigationOnClickListener(v -> finish());
 
-        // Nhận dữ liệu từ Intent
-        currentActivity = getIntent().getParcelableExtra("ACTIVITY");
-        if (currentActivity == null) {
+        viewModel = new ViewModelProvider(this).get(DetailViewModel.class);
+
+        // Debug intent chi tiết
+        Log.d("DetailActivity", "Intent action: " + getIntent().getAction());
+        Log.d("DetailActivity", "Intent component: " + getIntent().getComponent());
+        Log.d("DetailActivity", "Intent extras keys: " + (getIntent().getExtras() != null ? getIntent().getExtras().keySet().toString() : "null"));
+        Log.d("DetailActivity", "Intent extras full: " + (getIntent().getExtras() != null ? getIntent().getExtras().toString() : "null"));
+
+        String activityId = getIntent().getStringExtra("ACTIVITY_ID");
+        Activity parcelActivity = getIntent().getParcelableExtra("ACTIVITY");
+
+        if (parcelActivity != null) {
+            Log.d("DetailActivity", "From normal intent, full Activity");
+            currentActivity = parcelActivity;
+            viewModel.setCurrentActivity(currentActivity);
+            initViews();
+            bindData();
+            setupGridDays();
+            observeViewModel();
+            checkTodayCheckedIn();
+        } else if (activityId != null && !activityId.isEmpty()) {
+            Log.d("DetailActivity", "From widget, ID: " + activityId);
+            fetchActivityById(activityId);
+        } else {
+            Log.e("DetailActivity", "No activity ID or object");
             Toast.makeText(this, "Không tải được hoạt động", Toast.LENGTH_SHORT).show();
             finish();
-            return;
         }
+    }
 
-        viewModel = new ViewModelProvider(this).get(DetailViewModel.class);
-        viewModel.setCurrentActivity(currentActivity);
-
-        initViews();
-        bindData();
-        setupGridDays();
-        observeViewModel();
-        checkTodayCheckedIn();  // Kiểm tra và hiển thị nút phù hợp
+    private void fetchActivityById(String activityId) {
+        FirebaseFirestore.getInstance().collection("activities")
+                .document(activityId)
+                .get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        currentActivity = documentSnapshot.toObject(Activity.class);
+                        if (currentActivity != null) {
+                            currentActivity.setId(activityId); // Đảm bảo ID đúng
+                            viewModel.setCurrentActivity(currentActivity);
+                            initViews();
+                            bindData();
+                            setupGridDays();
+                            observeViewModel();
+                            checkTodayCheckedIn();
+                        } else {
+                            Toast.makeText(this, "Không tìm thấy hoạt động", Toast.LENGTH_SHORT).show();
+                            finish();
+                        }
+                    } else {
+                        Toast.makeText(this, "Hoạt động không tồn tại", Toast.LENGTH_SHORT).show();
+                        finish();
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(this, "Lỗi tải: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    finish();
+                });
     }
 
     private void initViews() {
