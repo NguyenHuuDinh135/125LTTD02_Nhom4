@@ -23,11 +23,35 @@
             android:orientation="vertical"
             android:paddingHorizontal="20dp">
 
-            <!-- === PHẦN 1: TRÒ CHUYỆN === -->
-            <!-- Sử dụng include để tái sử dụng header -->
-            <include
-                android:id="@+id/header_chat"
-                layout="@layout/component_section_header" />
+            <!-- === PHẦN 1: DANH SÁCH BẠN BÈ === -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingVertical="12dp">
+
+                <!-- Icon mục -->
+                <ImageView
+                    android:id="@+id/img_section_icon"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:contentDescription="@null"
+                    android:src="@drawable/outline_chat_24"
+                    app:tint="?attr/colorOnSurfaceVariant" />
+
+                <!-- Tên mục -->
+                <com.google.android.material.textview.MaterialTextView
+                    android:id="@+id/tv_section_title"
+                    style="@style/TextAppearance.Material3.TitleLarge"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="12dp"
+                    android:text="Danh Sách Bạn Bè"
+                    android:textColor="?attr/colorOnSurfaceVariant"
+                    android:textStyle="bold" />
+
+            </LinearLayout>
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/chatRecyclerView"
@@ -38,16 +62,40 @@
                 tools:itemCount="2"
                 tools:listitem="@layout/chat_item" />
 
-            <!-- Spacer thay cho margin cứng -->
+            <!-- Spacer -->
             <Space
                 android:layout_width="match_parent"
                 android:layout_height="24dp" />
 
-            <!-- === PHẦN 2: HOẠT ĐỘNG === -->
-            <!-- Tái sử dụng header lần 2 -->
-            <include
-                android:id="@+id/header_activity"
-                layout="@layout/component_section_header" />
+            <!-- === PHẦN 2: DANH SÁCH HOẠT ĐỘNG === -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingVertical="12dp">
+
+                <!-- Icon mục -->
+                <ImageView
+                    android:id="@+id/img_section_icon1"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:contentDescription="@null"
+                    android:src="@drawable/outline_accessible_forward_24"
+                    app:tint="?attr/colorOnSurfaceVariant" />
+
+                <!-- Tên mục -->
+                <com.google.android.material.textview.MaterialTextView
+                    android:id="@+id/tv_section_title2"
+                    style="@style/TextAppearance.Material3.TitleLarge"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="12dp"
+                    android:text="Danh Sách Hoạt Động"
+                    android:textColor="?attr/colorOnSurfaceVariant"
+                    android:textStyle="bold" />
+
+            </LinearLayout>
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/OperatorRecyclerView"

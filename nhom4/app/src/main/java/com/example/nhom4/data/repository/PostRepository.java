@@ -19,7 +19,7 @@ import com.google.firebase.storage.StorageReference;
 
 import java.util.ArrayList;
 import java.util.List;
-
+import com.example.nhom4.data.bean.PostFilterType;
 public class PostRepository {
 
     private final FirebaseFirestore db = FirebaseFirestore.getInstance();
@@ -206,5 +206,69 @@ public class PostRepository {
     public void cleanup() {
         if (postsListenerRegistration != null) postsListenerRegistration.remove();
         if (friendsListenerRegistration != null) friendsListenerRegistration.remove();
+    }
+    /**
+     * @param targetUserId: ID của người muốn xem (dùng khi type = SPECIFIC_USER hoặc SELF)
+     */
+    public void getPosts(MutableLiveData<Resource<List<Post>>> result, PostFilterType filterType, String targetUserId) {
+        if (auth.getCurrentUser() == null) {
+            result.postValue(Resource.error("Chưa đăng nhập", null));
+            return;
+        }
+        String currentUserId = auth.getCurrentUser().getUid();
+
+        // -------------------------------------------------------------
+        // TRƯỜNG HỢP 1: LỌC MỘT NGƯỜI CỤ THỂ (Bản thân hoặc 1 người bạn)
+        // -------------------------------------------------------------
+        if (filterType == PostFilterType.SPECIFIC_USER || filterType == PostFilterType.SELF) {
+            // Xác định ID cần lấy: nếu là SELF thì lấy currentUserId, nếu SPECIFIC thì lấy targetUserId
+            String finalTargetId = (filterType == PostFilterType.SELF) ? currentUserId : targetUserId;
+
+            if (finalTargetId == null) return;
+
+            // Hủy listener cũ của Feed (nếu có)
+            if (friendsListenerRegistration != null) friendsListenerRegistration.remove();
+
+            // Gọi hàm lắng nghe đơn giản chỉ cho 1 user
+            listenToPosts(java.util.Collections.singletonList(finalTargetId), result);
+            return;
+        }
+
+        // -------------------------------------------------------------
+        // TRƯỜNG HỢP 2: LẤY FEED TỔNG HỢP (ALL) - Giữ nguyên logic cũ
+        // -------------------------------------------------------------
+        if (filterType == PostFilterType.ALL) {
+            if (friendsListenerRegistration != null) {
+                friendsListenerRegistration.remove();
+            }
+
+            friendsListenerRegistration = db.collection("relationships")
+                    .whereArrayContains("members", currentUserId)
+                    .whereEqualTo("status", "accepted")
+                    .addSnapshotListener((snapshots, error) -> {
+                        if (error != null) {
+                            Log.e("PostRepo", "Lỗi lấy bạn bè", error);
+                            return;
+                        }
+
+                        List<String> validUserIds = new ArrayList<>();
+                        validUserIds.add(currentUserId); // Luôn thấy bài mình
+
+                        if (snapshots != null) {
+                            for (DocumentSnapshot doc : snapshots) {
+                                List<String> members = (List<String>) doc.get("members");
+                                if (members != null) {
+                                    for (String memberId : members) {
+                                        if (!memberId.equals(currentUserId)) {
+                                            validUserIds.add(memberId);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        // Lắng nghe bài viết từ danh sách ID này
+                        listenToPosts(validUserIds, result);
+                    });
+        }
     }
 }

@@ -140,6 +140,18 @@
         app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.Full"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"/>
+    <ImageButton
+        android:id="@+id/btnAddActivity"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:src="@drawable/baseline_add_circle_24"
+        app:tint="?attr/colorPrimary"
+        android:layout_margin="18dp"
+        android:visibility="gone"
+        android:contentDescription="Thêm hoạt động"
+        app:layout_constraintTop_toBottomOf="@id/imgAnimationFloat"
+        app:layout_constraintEnd_toEndOf="parent" />
 
     <LinearLayout
         android:id="@+id/control_layout"
@@ -174,16 +186,7 @@
                 android:text="Hoạt động" />
         </com.google.android.material.button.MaterialButtonToggleGroup>
 
-        <ImageButton
-            android:id="@+id/btnAddActivity"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:layout_marginStart="16dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:src="@drawable/baseline_add_circle_24"
-            app:tint="?attr/colorPrimary"
-            android:visibility="gone"
-            android:contentDescription="Thêm hoạt động" />
+
 
     </LinearLayout>
 

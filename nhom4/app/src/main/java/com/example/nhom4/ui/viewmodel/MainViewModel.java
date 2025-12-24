@@ -1,7 +1,7 @@
 package com.example.nhom4.ui.viewmodel;
 
 import android.net.Uri;
-
+import com.example.nhom4.data.bean.PostFilterType;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
@@ -11,8 +11,11 @@ import com.example.nhom4.data.bean.Activity;
 import com.example.nhom4.data.bean.ActivityLog;
 import com.example.nhom4.data.bean.Mood;
 import com.example.nhom4.data.bean.Post;
+import com.example.nhom4.data.bean.User;
 import com.example.nhom4.data.repository.AuthRepository;
 import com.example.nhom4.data.repository.PostRepository;
+import com.google.android.gms.tasks.Task;
+import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -52,6 +55,7 @@ public class MainViewModel extends ViewModel {
         loadPosts();
         loadMoods();
         loadJoinedActivities();
+        loadFriendListForMenu();
     }
 
     // ====================== GETTERS ======================
@@ -72,12 +76,13 @@ public class MainViewModel extends ViewModel {
     public LiveData<String> getOpenPostId() { return openPostId; }
     public void setOpenPostId(String postId) { openPostId.setValue(postId); }
     public void clearOpenPostId() { openPostId.setValue(null); }
+    private final MutableLiveData<List<User>> friendListForMenu = new MutableLiveData<>(); // [MỚI] Danh sách bạn bè để hiện Menu
+
+    // State lọc hiện tại
+    private PostFilterType currentFilterType = PostFilterType.ALL;
+    private String currentFilterTargetId = null;
 
     // ====================== LOAD DATA ======================
-    private void loadPosts() {
-        postRepository.getPosts(posts);
-    }
-
     private void loadMoods() {
         db.collection("Mood")
                 .get()
@@ -242,11 +247,77 @@ public class MainViewModel extends ViewModel {
     }
 
     // ====================== REFRESH ======================
-    public void refreshPosts() {
-        loadPosts();
-    }
 
     public void refreshActivities() {
         loadJoinedActivities();
+    }
+    // --- GETTERS ---
+    public LiveData<List<User>> getFriendListForMenu() { return friendListForMenu; }
+    public String getCurrentFilterName() {
+        // Helper để UI hiển thị tên
+        if (currentFilterType == PostFilterType.ALL) return "Mọi người";
+        if (currentFilterType == PostFilterType.SELF) return "Bản thân";
+        // Tên người dùng cụ thể sẽ được set trực tiếp ở Fragment khi click
+        return "Người dùng";
+    }
+
+    // --- LOGIC LOAD BẠN BÈ CHO MENU ---
+    private void loadFriendListForMenu() {
+        if (auth.getCurrentUser() == null) return;
+        String uid = auth.getCurrentUser().getUid();
+
+        // Lấy danh sách quan hệ -> Lấy User info
+        db.collection("relationships")
+                .whereArrayContains("members", uid)
+                .whereEqualTo("status", "accepted")
+                .get()
+                .addOnSuccessListener(snapshots -> {
+                    List<String> friendIds = new ArrayList<>();
+                    for (DocumentSnapshot doc : snapshots) {
+                        List<String> members = (List<String>) doc.get("members");
+                        if (members != null) {
+                            for (String memberId : members) {
+                                if (!memberId.equals(uid)) friendIds.add(memberId);
+                            }
+                        }
+                    }
+                    if (!friendIds.isEmpty()) fetchUsersDetails(friendIds);
+                });
+    }
+
+    private void fetchUsersDetails(List<String> userIds) {
+        // Firestore whereIn giới hạn 10, nên nếu list dài cần chia nhỏ hoặc load từng cái.
+        // Ở đây dùng cách load song song để đơn giản
+        List<Task<DocumentSnapshot>> tasks = new ArrayList<>();
+        for (String id : userIds) {
+            tasks.add(db.collection("users").document(id).get());
+        }
+
+        Tasks.whenAllSuccess(tasks).addOnSuccessListener(objects -> {
+            List<User> users = new ArrayList<>();
+            for (Object obj : objects) {
+                DocumentSnapshot doc = (DocumentSnapshot) obj;
+                if (doc.exists()) {
+                    users.add(doc.toObject(User.class));
+                }
+            }
+            friendListForMenu.postValue(users);
+        });
+    }
+
+    // --- LOGIC LỌC ---
+    public void setFilter(PostFilterType type, String targetId) {
+        this.currentFilterType = type;
+        this.currentFilterTargetId = targetId;
+        loadPosts();
+    }
+
+    private void loadPosts() {
+        postRepository.getPosts(posts, currentFilterType, currentFilterTargetId);
+    }
+
+    // Refresh cũng cần tôn trọng filter hiện tại
+    public void refreshPosts() {
+        loadPosts();
     }
 }

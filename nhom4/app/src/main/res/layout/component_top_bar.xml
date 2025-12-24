@@ -8,7 +8,6 @@
     android:background="@android:color/transparent"
     android:paddingHorizontal="16dp">
 
-    <!-- AVATAR -->
     <com.google.android.material.imageview.ShapeableImageView
         android:id="@+id/img_avatar"
         android:layout_width="40dp"
@@ -22,70 +21,42 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent" />
 
-    <!-- FRIENDS PILL -->
-    <com.google.android.material.card.MaterialCardView
-        android:id="@+id/card_friends_pill"
+    <LinearLayout
+        android:id="@+id/layout_filter_container"
         android:layout_width="wrap_content"
-        android:layout_height="36dp"
-        app:cardBackgroundColor="?attr/colorSecondaryContainer"
-        app:cardCornerRadius="18dp"
-        app:cardElevation="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:clickable="true"
+        android:focusable="true"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:paddingVertical="8dp"
+        android:paddingHorizontal="12dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent">
 
-        <LinearLayout
+        <TextView
+            android:id="@+id/tv_current_filter"
             android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:orientation="horizontal"
-            android:gravity="center"
-            android:paddingHorizontal="16dp">
+            android:layout_height="wrap_content"
+            android:text="Mọi người"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:textColor="?attr/colorOnSurface"
+            android:ellipsize="end"
+            android:maxWidth="180dp"
+            android:maxLines="1"
+            android:layout_marginEnd="4dp"/>
 
-            <ImageView
-                android:layout_width="20dp"
-                android:layout_height="20dp"
-                android:layout_marginEnd="8dp"
-                android:src="@drawable/outline_person_add_24"
-                app:tint="?attr/colorOnSecondaryContainer" />
+        <ImageView
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:src="@drawable/baseline_keyboard_arrow_down_24"
+            app:tint="?attr/colorOnSurface" />
+    </LinearLayout>
 
-            <TextView
-                android:id="@+id/tv_friend_count"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="10 bạn bè"
-                android:textSize="14sp"
-                android:textStyle="bold"
-                android:textColor="?attr/colorOnSecondaryContainer" />
-        </LinearLayout>
-    </com.google.android.material.card.MaterialCardView>
-
-    <!-- BUTTON RIGHT -->
-    <ImageView
-        android:id="@+id/btn_chat"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
-        android:padding="8dp"
-        android:src="@drawable/outline_chat_24"
-        app:tint="?attr/colorOnSurface"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent" />
-
-    <!-- BUTTON LEFT (BACK / PROFILE) -->
-    <ImageView
-        android:id="@+id/btn_nav_icon"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
-        android:padding="8dp"
-        android:visibility="gone"
-        android:src="@drawable/outline_arrow_back_ios_24"
-        app:tint="?attr/colorOnSurface"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent" />
-
-    <!-- TITLE -->
     <TextView
         android:id="@+id/tv_screen_title"
         android:layout_width="wrap_content"
@@ -97,6 +68,29 @@
         style="@style/TextAppearance.Material3.TitleMedium"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent" />
+
+    <ImageView
+        android:id="@+id/btn_chat"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:padding="8dp"
+        android:src="@drawable/outline_chat_24"
+        app:tint="?attr/colorOnSurface"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent" />
+
+    <ImageView
+        android:id="@+id/btn_nav_icon"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:padding="8dp"
+        android:visibility="gone"
+        android:src="@drawable/outline_arrow_back_ios_24"
+        app:tint="?attr/colorOnSurface"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent" />
 
